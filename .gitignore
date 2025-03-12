@@ -1,5 +1,5 @@
 /BicycleProject/.vs
-/BicycleProject/Binaries/*
-/BicycleProject/Saved/*
-/BicycleProject/Intermediate/*
-/BicycleProject/DerivedDataCache/*
+/BicycleProject/Binaries
+/BicycleProject/DerivedDataCache
+/BicycleProject/Intermediate
+/BicycleProject/Saved

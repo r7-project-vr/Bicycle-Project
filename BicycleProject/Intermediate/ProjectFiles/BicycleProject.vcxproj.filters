@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\BicycleProject.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\BicycleProject.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\BicycleProjectEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\BicycleProject">
+      <UniqueIdentifier>{449B098C-2B06-3ED6-82A2-4D8C46E054B5}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\BicycleProject\BicycleProject.Build.cs">
+      <Filter>Source\BicycleProject</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\BicycleProject\BicycleProject.cpp">
+      <Filter>Source\BicycleProject</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\BicycleProject\BicycleProject.h">
+      <Filter>Source\BicycleProject</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -32,10 +32,12 @@ public:
 	/// <summary>
 	/// デバイスとリンクする
 	/// </summary>
-	virtual void Connect();
+	/// <returns>true: 成功 / false: 失敗</returns>
+	virtual bool Connect();
 
 	/// <summary>
 	/// デバイスとのリンクを外す
 	/// </summary>
-	virtual void Disconnect();
+	/// <returns>true: 成功 / false: 失敗</returns>
+	virtual bool Disconnect();
 };

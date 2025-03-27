@@ -39,7 +39,14 @@ private:
 	/// </summary>
 	UDeviceManager* _deviceManager;
 
+	/// <summary>
+	/// スピード
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _speed;
 
+	/// <summary>
+	/// 単位速度
+	/// </summary>
+	const float _unitSpeed = 10000;
 };

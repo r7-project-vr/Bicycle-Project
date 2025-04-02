@@ -16,6 +16,7 @@ UBikeComponent::UBikeComponent()
 
 	// ...
 	_deviceManager = nullptr;
+	_speed = 25.0f;
 }
 
 

@@ -7,6 +7,7 @@
 #include <EnhancedInputSubsystems.h>
 #include "InputActionValue.h"
 #include <Kismet/KismetSystemLibrary.h>
+#include <Kismet/GameplayStatics.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateDevice);
 
@@ -22,11 +23,14 @@ UKeyboardDevice::UKeyboardDevice()
 void UKeyboardDevice::Init()
 {
 	SetupKey();
+
+	_isVR = false;
+	FString platform = UGameplayStatics::GetPlatformName();
+	UKismetSystemLibrary::PrintString(this, "platform: " + platform, true, false, FColor::Green, 10.f);
 }
 
 void UKeyboardDevice::SetupKey()
 {
-	// Add Input Mapping Context
 	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
 	if (!playerController)
 	{
@@ -35,6 +39,7 @@ void UKeyboardDevice::SetupKey()
 		return;
 	}
 
+	// Add Input Mapping Context
 	if (playerController)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
@@ -60,6 +65,11 @@ void UKeyboardDevice::OnMove(const FInputActionValue& Value)
 	FVector2D inputVector = Value.Get<FVector2D>();
 
 	FVector2D moveVector(inputVector.Y, inputVector.X);
+
+	if(_isVR)
+	{
+		moveVector = FVector2D(-inputVector.Y, -inputVector.X);
+	}
 
 	// notify
 	if(_onMoveEvent.IsBound())

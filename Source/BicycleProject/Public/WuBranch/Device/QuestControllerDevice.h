@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
-#include "KeyboardDevice.generated.h"
+#include "QuestControllerDevice.generated.h"
 
 class UInputMappingContext;
 class UInputAction;
@@ -14,13 +14,13 @@ struct FInputActionValue;
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API UKeyboardDevice : public UDevice
+class UQuestControllerDevice : public UDevice
 {
 	GENERATED_BODY()
-	
-public: 
 
-	UKeyboardDevice();
+public:
+
+	UQuestControllerDevice();
 
 	virtual void Init() override;
 
@@ -46,5 +46,4 @@ private:
 	/// 移動アクション
 	/// </summary>
 	UInputAction* _moveAction;
-
 };

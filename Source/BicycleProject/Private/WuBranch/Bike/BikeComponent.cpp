@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "WuBranch/Bike/BikeComponent.h"
@@ -6,6 +6,7 @@
 #include "WuBranch/Device/Device.h"
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include <Components/CapsuleComponent.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -16,7 +17,7 @@ UBikeComponent::UBikeComponent()
 
 	// ...
 	_deviceManager = nullptr;
-	_speed = 25.0f;
+	_speed = 50.0f;
 }
 
 
@@ -33,12 +34,11 @@ void UBikeComponent::BeginPlay()
 	}
 	else
 	{
-		UKismetSystemLibrary::PrintString(this, "device init start", true, false, FColor::Green, 10.f);
 		_deviceManager = gameInstance->GetDeviceManager();
-		_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		//_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		_deviceManager->ChangeDevice(EDeviceType::QuestController);
 		_deviceManager->BindMoveEvent(this, "OnMove");
 		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
-		UKismetSystemLibrary::PrintString(this, "bind move event complete", true, false, FColor::Green, 10.f);
 	}
 }
 
@@ -53,16 +53,14 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		UE_LOG(LogTemp, Error, TEXT("Device Manager is null!"));
 		return;
 	}
-
-	IDeviceInterface* rightHand = _deviceManager->GetDevice(EDevicePart::RightHand);
-	IDeviceInterface* leftHand = _deviceManager->GetDevice(EDevicePart::LeftHand);
 }
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
 	UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
-	APawn* pawn = Cast<APawn>(GetOwner());
 	FVector dir(direction.X, direction.Y, 0.0f);
-	pawn->AddMovementInput(dir, _speed);
+	// 移動
+	UCapsuleComponent* me = Cast<UCapsuleComponent>(GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"))[0]);
+	me->AddForce(dir * _unitSpeed * _speed);
 }
 

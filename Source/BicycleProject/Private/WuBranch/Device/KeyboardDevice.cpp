@@ -7,7 +7,6 @@
 #include <EnhancedInputSubsystems.h>
 #include "InputActionValue.h"
 #include <Kismet/KismetSystemLibrary.h>
-#include <Kismet/GameplayStatics.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateDevice);
 
@@ -23,10 +22,6 @@ UKeyboardDevice::UKeyboardDevice()
 void UKeyboardDevice::Init()
 {
 	SetupKey();
-
-
-	FString platform = UGameplayStatics::GetPlatformName();
-	UKismetSystemLibrary::PrintString(this, "platform: " + platform, true, false, FColor::Green, 10.f);
 }
 
 void UKeyboardDevice::SetupKey()

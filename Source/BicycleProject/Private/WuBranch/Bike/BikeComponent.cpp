@@ -7,6 +7,8 @@
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
+#include "IXRTrackingSystem.h"
+#include "HeadMountedDisplay.h"
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -35,8 +37,14 @@ void UBikeComponent::BeginPlay()
 	else
 	{
 		_deviceManager = gameInstance->GetDeviceManager();
-		//_deviceManager->ChangeDevice(EDeviceType::Keyboard);
-		_deviceManager->ChangeDevice(EDeviceType::QuestController);
+		if (IsVRConnect())
+		{
+			_deviceManager->ChangeDevice(EDeviceType::QuestController);
+		}
+		else
+		{
+			_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		}
 		_deviceManager->BindMoveEvent(this, "OnMove");
 		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
 	}
@@ -62,5 +70,10 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 移動
 	UCapsuleComponent* me = Cast<UCapsuleComponent>(GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"))[0]);
 	me->AddForce(dir * _unitSpeed * _speed);
+}
+
+bool UBikeComponent::IsVRConnect() const
+{
+	return GEngine->XRSystem.IsValid() && GEngine->XRSystem->GetHMDDevice() && GEngine->XRSystem->GetHMDDevice()->IsHMDConnected();
 }
 

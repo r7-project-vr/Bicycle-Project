@@ -35,6 +35,12 @@ private:
 	void OnMove(FVector2D direction);
 
 	/// <summary>
+	/// VRデバイスに接続しているか
+	/// </summary>
+	/// <returns>true: はい / false: いいえ</returns>
+	bool IsVRConnect() const;
+
+	/// <summary>
 	/// デバイスマネージャー
 	/// </summary>
 	UDeviceManager* _deviceManager;

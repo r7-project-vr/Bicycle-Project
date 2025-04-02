@@ -35,7 +35,8 @@ void UBikeComponent::BeginPlay()
 	else
 	{
 		_deviceManager = gameInstance->GetDeviceManager();
-		_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		//_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		_deviceManager->ChangeDevice(EDeviceType::QuestController);
 		_deviceManager->BindMoveEvent(this, "OnMove");
 		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
 	}
@@ -59,7 +60,7 @@ void UBikeComponent::OnMove(FVector2D direction)
 	UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
 	FVector dir(direction.X, direction.Y, 0.0f);
 	// 移動
-	UCapsuleComponent* me = GetOwner()->GetComponentByClass<UCapsuleComponent>();
+	UCapsuleComponent* me = Cast<UCapsuleComponent>(GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"))[0]);
 	me->AddForce(dir * _unitSpeed * _speed);
 }
 

@@ -3,6 +3,7 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
+#include <WuBranch/Device/QuestControllerDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 
 void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device)
@@ -45,6 +46,9 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 	case EDeviceType::Keyboard:
 		CreateKeyBoardDevice();
 		break;
+	case EDeviceType::QuestController:
+		CreateQuestControllerDevice();
+		break;
 	case EDeviceType::CustomDevice:
 		break;
 	default:
@@ -67,5 +71,11 @@ UDevice* UDeviceManager::GetDevice()
 void UDeviceManager::CreateKeyBoardDevice()
 {
 	_device = NewObject<UKeyboardDevice>(this);
+	_device->Init();
+}
+
+void UDeviceManager::CreateQuestControllerDevice()
+{
+	_device = NewObject<UQuestControllerDevice>(this);
 	_device->Init();
 }

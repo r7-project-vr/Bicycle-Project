@@ -12,6 +12,7 @@ UENUM(BlueprintType)
 enum class EDeviceType: uint8
 {
 	Keyboard UMETA(DisplayName = "KeyBoard"),
+	QuestController UMETA(DisplayName = "Quest Controller"),
 	CustomDevice UMETA(DisplayName = "My Device"),
 };
 

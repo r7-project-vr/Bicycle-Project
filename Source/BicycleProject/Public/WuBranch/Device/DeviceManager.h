@@ -75,6 +75,11 @@ private:
 	void CreateKeyBoardDevice();
 
 	/// <summary>
+	/// Meta Questのデバイスを作る
+	/// </summary>
+	void CreateQuestControllerDevice();
+
+	/// <summary>
 	/// 装置(複数の場合)
 	/// </summary>
 	TMap<EDevicePart, TScriptInterface<IDeviceInterface>> _devices;

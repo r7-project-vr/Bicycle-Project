@@ -47,8 +47,4 @@ private:
 	/// </summary>
 	UInputAction* _moveAction;
 
-	/// <summary>
-	/// VRヘッドセットが接続されているかどうか
-	/// </summary>
-	bool _isVR;
 };

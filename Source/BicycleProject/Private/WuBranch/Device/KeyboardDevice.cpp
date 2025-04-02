@@ -24,7 +24,7 @@ void UKeyboardDevice::Init()
 {
 	SetupKey();
 
-	_isVR = false;
+
 	FString platform = UGameplayStatics::GetPlatformName();
 	UKismetSystemLibrary::PrintString(this, "platform: " + platform, true, false, FColor::Green, 10.f);
 }
@@ -65,11 +65,6 @@ void UKeyboardDevice::OnMove(const FInputActionValue& Value)
 	FVector2D inputVector = Value.Get<FVector2D>();
 
 	FVector2D moveVector(inputVector.Y, inputVector.X);
-
-	if(_isVR)
-	{
-		moveVector = FVector2D(-inputVector.Y, -inputVector.X);
-	}
 
 	// notify
 	if(_onMoveEvent.IsBound())

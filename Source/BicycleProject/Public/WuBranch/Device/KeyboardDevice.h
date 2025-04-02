@@ -38,12 +38,12 @@ private:
 	void OnMove(const FInputActionValue& Value);
 
 	/// <summary>
-	/// 
+	/// デバイスマッピング
 	/// </summary>
 	UInputMappingContext* _mappingContext;
 
 	/// <summary>
-	/// 動作
+	/// 移動アクション
 	/// </summary>
 	UInputAction* _moveAction;
 

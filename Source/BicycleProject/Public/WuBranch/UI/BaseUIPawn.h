@@ -26,7 +26,20 @@ public:
 private:
 
 	/// <summary>
+	/// 停車領域に入ったら
+	/// </summary>
+	UFUNCTION()
+	void OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
-	class UWidgetComponent* widget;
+	class UWidgetComponent* _widget;
+
+	/// <summary>
+	/// 一時停車領域
+	/// </summary>
+	class UBoxComponent* _temporaryParkingArea;
 };

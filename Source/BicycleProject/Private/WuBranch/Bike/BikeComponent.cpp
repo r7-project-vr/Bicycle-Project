@@ -7,6 +7,7 @@
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
+#include <GameFramework/CharacterMovementComponent.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -18,6 +19,7 @@ UBikeComponent::UBikeComponent()
 	// ...
 	_deviceManager = nullptr;
 	_speed = 50.0f;
+	_isForcedControl = false;
 }
 
 
@@ -35,10 +37,20 @@ void UBikeComponent::BeginPlay()
 	else
 	{
 		_deviceManager = gameInstance->GetDeviceManager();
-		//_deviceManager->ChangeDevice(EDeviceType::Keyboard);
-		_deviceManager->ChangeDevice(EDeviceType::QuestController);
+		_deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		//_deviceManager->ChangeDevice(EDeviceType::QuestController);
 		_deviceManager->BindMoveEvent(this, "OnMove");
 		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
+	}
+
+	TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
+	if (playerCollisions.Num() != 0)
+	{
+		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
+		if (me)
+		{
+			_player = me;
+		}
 	}
 }
 
@@ -53,14 +65,57 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		UE_LOG(LogTemp, Error, TEXT("Device Manager is null!"));
 		return;
 	}
+
+	double speed = _player->GetComponentVelocity().Length();
+	UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
+}
+
+void UBikeComponent::OpenForcedControl()
+{
+	_isForcedControl = true;
+}
+
+void UBikeComponent::CloseForcedControl()
+{
+	_isForcedControl = false;
+}
+
+void UBikeComponent::ReduceVelocityTo0()
+{
+	//double speed = _player->GetComponentVelocity().Length();
+	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
 }
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
 	UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
+	if (_isForcedControl)
+		return;
+
 	FVector dir(direction.X, direction.Y, 0.0f);
 	// 移動
-	UCapsuleComponent* me = Cast<UCapsuleComponent>(GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"))[0]);
-	me->AddForce(dir * _unitSpeed * _speed);
+	/*TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
+	if (playerCollisions.Num() != 0)
+	{
+		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
+		if (me)
+		{
+			me->AddForce(dir * _unitSpeed * _speed);
+		}
+	}*/
+
+	TArray<UActorComponent*> bikeMesh = GetOwner()->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("BikeMesh"));
+	if (bikeMesh.Num() != 0)
+	{
+		UStaticMeshComponent* me = Cast<UStaticMeshComponent>(bikeMesh[0]);
+		if (me)
+		{
+			float max_speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->GetMaxSpeed();
+			if (me->GetComponentVelocity().Length() < max_speed)
+			{
+				me->AddForce(dir * _unitSpeed * _speed);
+			}
+		}
+	}
 }
 

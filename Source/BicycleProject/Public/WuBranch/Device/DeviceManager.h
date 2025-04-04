@@ -87,5 +87,7 @@ private:
 	/// <summary>
 	/// 装置(一つの場合)
 	/// </summary>
+	/// ここで必ずUPROPERTYをつける、そうでないとUObjectがUnrealのガベージコレクションに回収される
+	UPROPERTY()
 	UDevice* _device;
 };

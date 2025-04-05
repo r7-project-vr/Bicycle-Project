@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BaseUIPawn.generated.h"
+#include "BaseUIActor.generated.h"
 
 UCLASS()
-class BICYCLEPROJECT_API ABaseUIPawn : public AActor
+class BICYCLEPROJECT_API ABaseUIActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABaseUIPawn();
+	ABaseUIActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,20 +26,7 @@ public:
 private:
 
 	/// <summary>
-	/// 停車領域に入ったら
-	/// </summary>
-	UFUNCTION()
-	void OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-		const FHitResult& SweepResult);
-
-	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
 	class UWidgetComponent* _widget;
-
-	/// <summary>
-	/// 一時停車領域
-	/// </summary>
-	class UBoxComponent* _temporaryParkingArea;
 };

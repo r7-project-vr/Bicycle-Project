@@ -66,8 +66,8 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		return;
 	}
 
-	double speed = _player->GetComponentVelocity().Length();
-	UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
+	//double speed = _player->GetComponentVelocity().Length();
+	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
 void UBikeComponent::OpenForcedControl()
@@ -117,5 +117,32 @@ void UBikeComponent::OnMove(FVector2D direction)
 			}
 		}
 	}
+}
+
+void UBikeComponent::OnSelectLeftAnswer()
+{
+	UKismetSystemLibrary::PrintString(this, "Select Left Answer", true, false, FColor::Green, 10.f);
+	// 左に曲がる(今は機能しない)
+	GetOwner()->AddActorLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
+	// 二回目以降選ばせない
+	DisableSelectAnswer();
+	// 曲がったら強制コントロール解除
+	CloseForcedControl();
+}
+
+void UBikeComponent::OnSelectRightAnswer()
+{
+	UKismetSystemLibrary::PrintString(this, "Select Right Answer", true, false, FColor::Green, 10.f);
+	// 右に曲がる(今は機能しない)
+	GetOwner()->AddActorLocalRotation(FRotator(0.0f, 90.0f, 0.0f));
+	// 二回目以降選ばせない
+	DisableSelectAnswer();
+	// 曲がったら強制コントロール解除
+	CloseForcedControl();
+}
+
+void UBikeComponent::DisableSelectAnswer()
+{
+	_deviceManager->DisableSelectAnswerActions();
 }
 

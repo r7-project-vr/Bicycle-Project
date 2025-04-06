@@ -50,6 +50,23 @@ private:
 	void OnMove(FVector2D direction);
 
 	/// <summary>
+	/// 左の答えを選ぶ
+	/// </summary>
+	UFUNCTION()
+	void OnSelectLeftAnswer();
+
+	/// <summary>
+	/// 右の答えを選ぶ
+	/// </summary>
+	UFUNCTION()
+	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// 答えを選ぶ動作を機能させない
+	/// </summary>
+	void DisableSelectAnswer();
+
+	/// <summary>
 	/// デバイスマネージャー
 	/// </summary>
 	UDeviceManager* _deviceManager;

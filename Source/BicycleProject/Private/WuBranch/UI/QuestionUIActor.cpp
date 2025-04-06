@@ -4,6 +4,9 @@
 #include "WuBranch/UI/QuestionUIActor.h"
 #include "Components/BoxComponent.h"
 #include <WuBranch/Bike/BikeComponent.h>
+#include <WuBranch/MyGameInstance.h>
+#include "WuBranch/Device/DeviceManager.h"
+#include "WuBranch/Device/Device.h"
 #include <Kismet/KismetSystemLibrary.h>
 
 AQuestionUIActor::AQuestionUIActor()
@@ -19,13 +22,27 @@ AQuestionUIActor::AQuestionUIActor()
 	AddInstanceComponent(_temporaryParkingArea);
 }
 
+void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
+{
+	// 自転車のスピードを強制的に0まで下げる
+	bike->OpenForcedControl();
+	bike->ReduceVelocityTo0();
+
+	// プレイヤーに答えを選べるようにする
+	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	gameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+	gameInstance->GetDeviceManager()->BindSelectLeftEvent(bike, "OnSelectLeftAnswer");
+	gameInstance->GetDeviceManager()->BindSelectRightEvent(bike, "OnSelectRightAnswer");
+}
+
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{
-		UKismetSystemLibrary::PrintString(this, "Player enter area!", true, false, FColor::Orange, 100.f);
+		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Red, 10.f);
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		bike->OpenForcedControl();
-		bike->ReduceVelocityTo0();
+		HandlePlayerEnterArea(bike);
+		// エリアのコリジョンを機能させない
+		_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	}
 }

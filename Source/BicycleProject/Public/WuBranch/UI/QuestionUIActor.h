@@ -6,6 +6,8 @@
 #include "WuBranch/UI/BaseUIActor.h"
 #include "QuestionUIActor.generated.h"
 
+class UBikeComponent;
+
 /**
  * 
  */
@@ -19,6 +21,12 @@ public:
 	AQuestionUIActor();
 
 private:
+
+	/// <summary>
+	/// プレイヤーが停車エリアに入ったら
+	/// </summary>
+	/// <param name="bike"></param>
+	void HandlePlayerEnterArea(UBikeComponent* bike);
 
 	/// <summary>
 	/// 停車領域に入ったら

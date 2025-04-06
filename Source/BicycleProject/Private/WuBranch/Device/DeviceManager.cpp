@@ -58,9 +58,29 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 	}
 }
 
+void UDeviceManager::EnableSelectAnswerActions()
+{
+	IDeviceInterface::Execute_EnableSelectAnswerActions(_device);
+}
+
+void UDeviceManager::DisableSelectAnswerActions()
+{
+	IDeviceInterface::Execute_DisableSelectAnswerActions(_device);
+}
+
 void UDeviceManager::BindMoveEvent(UObject* object, FName functionName)
 {
 	IDeviceInterface::Execute_BindMoveEvent(_device, object, functionName);
+}
+
+void UDeviceManager::BindSelectLeftEvent(UObject* object, FName functionName)
+{
+	IDeviceInterface::Execute_BindSelectLeftEvent(_device, object, functionName);
+}
+
+void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
+{
+	IDeviceInterface::Execute_BindSelectRightEvent(_device, object, functionName);
 }
 
 UDevice* UDeviceManager::GetDevice()

@@ -7,6 +7,7 @@
 #include "DeviceInterface.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveDelegate, FVector2D, dir);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectAnswerDelegate);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
@@ -28,10 +29,26 @@ public:
 	/// <summary>
 	/// 移動イベントをバインドする
 	/// </summary>
-	/// <param name="object"></param>
-	/// <param name="functionName"></param>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	void BindMoveEvent(UObject* object, FName functionName);
+
+	/// <summary>
+	/// 左の答えを選ぶイベントをバインドする
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void BindSelectLeftEvent(UObject* object, FName functionName);
+
+	/// <summary>
+	/// 右の答えを選ぶイベントをバインドする
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void BindSelectRightEvent(UObject* object, FName functionName);
 
 	/// <summary>
 	/// デバイスとリンクする
@@ -67,4 +84,16 @@ public:
 	/// <returns></returns>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	EDeviceConnectType GetConnectState();
+
+	/// <summary>
+	/// 答えを選べるようにする
+	/// </summary>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void EnableSelectAnswerActions();
+
+	/// <summary>
+	/// 答えを選べないようにする
+	/// </summary>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void DisableSelectAnswerActions();
 };

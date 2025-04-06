@@ -34,8 +34,18 @@ public:
 
 	void BindMoveEvent_Implementation(UObject* object, FName functionName) override;
 
+	void BindSelectLeftEvent_Implementation(UObject* object, FName functionName) override;
+
+	void BindSelectRightEvent_Implementation(UObject* object, FName functionName) override;
+
 	UPROPERTY(BlueprintAssignable)
 	FMoveDelegate _onMoveEvent;
+
+	UPROPERTY(BlueprintAssignable)
+	FSelectAnswerDelegate _onSelectLeftEvent;
+
+	UPROPERTY(BlueprintAssignable)
+	FSelectAnswerDelegate _onSelectRightEvent;
 
 private:
 

@@ -54,11 +54,38 @@ public:
 	void ChangeDevice(EDeviceType type);
 
 	/// <summary>
-	/// 移動イベントを取得
+	/// 答えを選べるようにする
 	/// </summary>
-	/// <returns>移動イベント</returns>
+	void EnableSelectAnswerActions();
+
+	/// <summary>
+	/// 答えを選べないようにする
+	/// </summary>
+	void DisableSelectAnswerActions();
+
+	/// <summary>
+	/// 移動イベントをバインド
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
 	UFUNCTION()
 	void BindMoveEvent(UObject* object, FName functionName);
+
+	/// <summary>
+	/// 左の答えを選ぶイベントをバインドする
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
+	UFUNCTION()
+	void BindSelectLeftEvent(UObject* object, FName functionName);
+
+	/// <summary>
+	/// 左の答えを選ぶイベントをバインドする
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
+	UFUNCTION()
+	void BindSelectRightEvent(UObject* object, FName functionName);
 
 	/// <summary>
 	/// デバイスを取得

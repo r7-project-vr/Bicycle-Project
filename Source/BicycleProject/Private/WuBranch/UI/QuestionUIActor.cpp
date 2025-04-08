@@ -16,8 +16,8 @@ AQuestionUIActor::AQuestionUIActor()
 
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
-	_temporaryParkingArea->SetRelativeLocation(FVector(32.0f, 0.0f, 0.0f));
-	_temporaryParkingArea->InitBoxExtent(FVector(32.0f, 32.0f, 5.0f));
+	_temporaryParkingArea->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
+	_temporaryParkingArea->InitBoxExtent(FVector(100.0f, 32.0f, 5.0f));
 	_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
 	AddInstanceComponent(_temporaryParkingArea);
 }

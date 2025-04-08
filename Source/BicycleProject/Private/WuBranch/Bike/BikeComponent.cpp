@@ -8,6 +8,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
+#include <WuBranch/Bike/BikeCharacter.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -20,6 +21,8 @@ UBikeComponent::UBikeComponent()
 	_deviceManager = nullptr;
 	_speed = 50.0f;
 	_isForcedControl = false;
+	_inertiaDamping = 500.0f;
+	_inertiaVelocity = FVector::ZeroVector;
 }
 
 
@@ -66,6 +69,8 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		return;
 	}
 
+	//HandleInertia(DeltaTime);
+
 	//double speed = _player->GetComponentVelocity().Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
@@ -86,9 +91,23 @@ void UBikeComponent::ReduceVelocityTo0()
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
 }
 
+void UBikeComponent::HandleInertia(float DeltaTime)
+{
+	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
+	// 慣性で移動
+	GetOwner()->AddActorWorldOffset(_inertiaVelocity);
+
+	// 減衰
+	FVector damp = _inertiaVelocity.GetSafeNormal() * _inertiaDamping * DeltaTime;
+	if (damp.SizeSquared() > _inertiaVelocity.SizeSquared())
+		_inertiaVelocity = FVector::ZeroVector;
+	else
+		_inertiaVelocity -= damp;
+}
+
 void UBikeComponent::OnMove(FVector2D direction)
 {
-	UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
+	//UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
 	if (_isForcedControl)
 		return;
 
@@ -117,24 +136,26 @@ void UBikeComponent::OnMove(FVector2D direction)
 			}
 		}
 	}
+
+	//Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
+	//// 慣性を設定
+	//_inertiaVelocity = dir.GetSafeNormal() * 100.0f;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()
 {
-	UKismetSystemLibrary::PrintString(this, "Select Left Answer", true, false, FColor::Green, 10.f);
-	// 左に曲がる(今は機能しない)
-	GetOwner()->AddActorLocalRotation(FRotator(0.0f, -90.0f, 0.0f));
-	// 二回目以降選ばせない
-	DisableSelectAnswer();
-	// 曲がったら強制コントロール解除
-	CloseForcedControl();
+	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
-	UKismetSystemLibrary::PrintString(this, "Select Right Answer", true, false, FColor::Green, 10.f);
-	// 右に曲がる(今は機能しない)
-	GetOwner()->AddActorLocalRotation(FRotator(0.0f, 90.0f, 0.0f));
+	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
+}
+
+void UBikeComponent::HandleSelectAnswer(FRotator dir)
+{
+	// 曲がる
+	GetOwner()->AddActorLocalRotation(dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswer();
 	// 曲がったら強制コントロール解除

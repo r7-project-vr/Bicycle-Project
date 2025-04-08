@@ -43,6 +43,11 @@ public:
 private:
 
 	/// <summary>
+	/// 慣性の処理
+	/// </summary>
+	void HandleInertia(float DeltaTime);
+
+	/// <summary>
 	/// 移動
 	/// </summary>
 	/// <param name="direction">移動方向</param>
@@ -60,6 +65,12 @@ private:
 	/// </summary>
 	UFUNCTION()
 	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// 答えを選んだの処理
+	/// </summary>
+	/// <param name="dir">曲がりたい方向</param>
+	void HandleSelectAnswer(FRotator dir);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない
@@ -80,12 +91,23 @@ private:
 	/// <summary>
 	/// 単位速度
 	/// </summary>
-	const float _unitSpeed = 10000;
+	const float _unitSpeed = 1;
 
 	/// <summary>
 	/// 強制的にコントロールのスウィッチ
 	/// </summary>
 	bool _isForcedControl;
+
+	/// <summary>
+	/// 慣性の速度
+	/// </summary>
+	FVector _inertiaVelocity;
+
+	/// <summary>
+	/// 慣性の減衰
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _inertiaDamping;
 
 	class UCapsuleComponent* _player;
 };

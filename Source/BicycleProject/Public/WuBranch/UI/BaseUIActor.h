@@ -28,5 +28,6 @@ private:
 	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* _widget;
 };

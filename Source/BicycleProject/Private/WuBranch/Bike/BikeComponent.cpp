@@ -3,7 +3,6 @@
 
 #include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/Device/DeviceManager.h"
-#include "WuBranch/Device/Device.h"
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
@@ -20,7 +19,6 @@ UBikeComponent::UBikeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	_deviceManager = nullptr;
 	_speed = 50.0f;
 	_isForcedControl = false;
 	_inertiaDamping = 500.0f;
@@ -34,19 +32,6 @@ void UBikeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
-	if (!gameInstance) 
-	{
-		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
-	}
-	else
-	{
-		_deviceManager = gameInstance->GetDeviceManager();
-		_deviceManager->ChangeDevice(EDeviceType::Keyboard);
-		//_deviceManager->ChangeDevice(EDeviceType::QuestController);
-		_deviceManager->BindMoveEvent(this, "OnMove");
-		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
-	}
 
 	TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
 	if (playerCollisions.Num() != 0)
@@ -65,11 +50,6 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if (!_deviceManager)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Device Manager is null!"));
-		return;
-	}
 
 	HandleInertia(DeltaTime);
 
@@ -143,7 +123,9 @@ void UBikeComponent::HandleSelectAnswer(FRotator dir)
 
 void UBikeComponent::DisableSelectAnswer()
 {
-	_deviceManager->DisableSelectAnswerActions();
+	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+	deviceManager->DisableSelectAnswerActions();
 }
 
 bool UBikeComponent::IsVRConnect() const

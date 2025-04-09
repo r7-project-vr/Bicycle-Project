@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BikeCharacter.generated.h"
 
+class UBikeComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
 {
@@ -55,5 +57,9 @@ private:
 	/// </summary>
 	UStaticMeshComponent* _bikeMesh;
 
+	/// <summary>
+	/// 自転車の機能
+	/// </summary>
+	UBikeComponent* _bike;
 
 };

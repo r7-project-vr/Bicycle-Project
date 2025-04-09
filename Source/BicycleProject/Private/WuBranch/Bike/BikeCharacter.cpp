@@ -4,6 +4,9 @@
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include <WuBranch/MyGameInstance.h>
+#include "WuBranch/Device/DeviceManager.h"
+#include <WuBranch/Bike/BikeComponent.h>
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -17,6 +20,8 @@ ABikeCharacter::ABikeCharacter()
 	_bikeMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 	_bikeMesh->SetRelativeScale3D(FVector(1.4f, 1.4f, 1.4f));
 	AddInstanceComponent(_bikeMesh);
+
+	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 	AddInstanceComponent(_bike);
 
 	bUseControllerRotationYaw = false;
@@ -42,6 +47,17 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	if (!gameInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
+	}
+	else
+	{
+		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+		deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		deviceManager->BindMoveEvent(_bike, "OnMove");
+	}
 }
 
 void ABikeCharacter::ChangeBikeMesh()

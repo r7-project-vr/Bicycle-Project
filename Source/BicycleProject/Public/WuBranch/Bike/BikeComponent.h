@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "BikeComponent.generated.h"
 
-class UDeviceManager;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
@@ -80,11 +79,6 @@ private:
 	/// 答えを選ぶ動作を機能させない
 	/// </summary>
 	void DisableSelectAnswer();
-
-	/// <summary>
-	/// デバイスマネージャー
-	/// </summary>
-	UDeviceManager* _deviceManager;
 
 	/// <summary>
 	/// スピード

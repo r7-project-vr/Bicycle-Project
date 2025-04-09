@@ -106,6 +106,4 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _inertiaDamping;
-
-	class UCapsuleComponent* _player;
 };

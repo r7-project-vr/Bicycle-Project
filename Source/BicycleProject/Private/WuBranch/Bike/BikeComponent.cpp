@@ -32,16 +32,6 @@ void UBikeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-
-	TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
-	if (playerCollisions.Num() != 0)
-	{
-		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
-		if (me)
-		{
-			_player = me;
-		}
-	}
 }
 
 // Called every frame
@@ -53,7 +43,7 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	HandleInertia(DeltaTime);
 
-	//double speed = _player->GetComponentVelocity().Length();
+	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
@@ -69,7 +59,6 @@ void UBikeComponent::CloseForcedControl()
 
 void UBikeComponent::ReduceVelocityTo0()
 {
-	//double speed = _player->GetComponentVelocity().Length();
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
 }
 
@@ -93,12 +82,27 @@ void UBikeComponent::OnMove(FVector2D direction)
 	if (_isForcedControl)
 		return;
 
-	FVector dir(direction.X, direction.Y, 0.0f);
+	// 移動方向は自転車今向いている方向を中心に
+	FVector actorForward = GetOwner()->GetActorForwardVector();
+	FVector actorRight = GetOwner()->GetActorRightVector();
+	FVector dir;
+	if (direction.X != 0.0f)
+	{
+		dir += actorForward * direction.X;
+	}
+	if (direction.Y != 0.0f)
+	{
+		dir += actorRight * direction.Y;
+	}
+
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
-	Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
+	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
+	character->AddMovementInput(actorForward, dir.X);
+	character->AddMovementInput(actorRight, dir.Y);
+
 	// 慣性を設定
-	_inertiaVelocity = dir.GetSafeNormal() * 100.0f;
+	_inertiaVelocity = dir.GetSafeNormal() * _speed;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()

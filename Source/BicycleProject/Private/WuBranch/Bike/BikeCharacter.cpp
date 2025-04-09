@@ -55,7 +55,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	else
 	{
 		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-		deviceManager->ChangeDevice(EDeviceType::Keyboard);
+		deviceManager->ChangeDevice(EDeviceType::UESupportDevice);
 		deviceManager->BindMoveEvent(_bike, "OnMove");
 	}
 }

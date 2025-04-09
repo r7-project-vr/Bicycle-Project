@@ -34,13 +34,26 @@ public:
 
 private:
 
+	/// <summary>
+	/// 自転車メッシュをロード
+	/// </summary>
 	void LoadBikeMesh();
 
+	/// <summary>
+	/// ロード終わったら
+	/// </summary>
 	void LoadMeshComplete();
 
+	/// <summary>
+	/// ロード先の自転車メッシュ
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSoftObjectPtr<UStaticMesh> _bikeMesh;
+	TSoftObjectPtr<UStaticMesh> _bikeMeshNeedLoad;
 
-	UStaticMeshComponent* _bike;
+	/// <summary>
+	/// 実際の自転車メッシュ
+	/// </summary>
+	UStaticMeshComponent* _bikeMesh;
+
 
 };

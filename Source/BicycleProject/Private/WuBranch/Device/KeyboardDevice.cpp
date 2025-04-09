@@ -48,6 +48,18 @@ void UKeyboardDevice::EnableSelectAnswerActions_Implementation()
 		return;
 	}
 
+	if (!_answerSelectMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("answer select mapping Context is null!"));
+		return;
+	}
+
+	if (!_selectLeftAction || !_selectRightAction)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("select Action is null!"));
+		return;
+	}
+
 	// Add Input Mapping Context
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(_controller->GetLocalPlayer()))
 	{
@@ -101,6 +113,18 @@ void UKeyboardDevice::SetupKey()
 	{
 		UKismetSystemLibrary::PrintString(this, "player controller is null when enable default action", true, false, FColor::Red, 10.f);
 		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null when enable default action!"));
+		return;
+	}
+
+	if (!_defaultMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("mapping Context is null!"));
+		return;
+	}
+
+	if (!_moveAction)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("move Action is null!"));
 		return;
 	}
 

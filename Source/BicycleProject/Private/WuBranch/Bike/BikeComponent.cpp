@@ -115,7 +115,7 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 	FVector dir(direction.X, direction.Y, 0.0f);
 	// 移動
-	// AddForceで移動するとVRの中で小さい揺れが発生して酔いやすくなるので破棄します
+	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
 	Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * 100.0f;

@@ -71,7 +71,7 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		return;
 	}
 
-	//HandleInertia(DeltaTime);
+	HandleInertia(DeltaTime);
 
 	//double speed = _player->GetComponentVelocity().Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
@@ -115,33 +115,10 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 	FVector dir(direction.X, direction.Y, 0.0f);
 	// 移動
-	/*TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
-	if (playerCollisions.Num() != 0)
-	{
-		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
-		if (me)
-		{
-			me->AddForce(dir * _unitSpeed * _speed);
-		}
-	}*/
-
-	TArray<UActorComponent*> bikeMesh = GetOwner()->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("BikeMesh"));
-	if (bikeMesh.Num() != 0)
-	{
-		UStaticMeshComponent* me = Cast<UStaticMeshComponent>(bikeMesh[0]);
-		if (me)
-		{
-			float max_speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->GetMaxSpeed();
-			if (me->GetComponentVelocity().Length() < max_speed)
-			{
-				me->AddForce(dir * _unitSpeed * _speed);
-			}
-		}
-	}
-
-	//Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
-	//// 慣性を設定
-	//_inertiaVelocity = dir.GetSafeNormal() * 100.0f;
+	// AddForceで移動するとVRの中で小さい揺れが発生して酔いやすくなるので破棄します
+	Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
+	// 慣性を設定
+	_inertiaVelocity = dir.GetSafeNormal() * 100.0f;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()

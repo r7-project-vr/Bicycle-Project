@@ -18,8 +18,8 @@ ABikeCharacter::ABikeCharacter()
 	_bike->SetRelativeScale3D(FVector(1.4f, 1.4f, 1.4f));
 	AddInstanceComponent(_bike);
 
-	//bUseControllerRotationYaw = false;
-	//GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 // Called when the game starts or when spawned

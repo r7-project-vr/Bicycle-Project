@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "BikeComponent.generated.h"
 
-class UDeviceManager;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
@@ -82,11 +81,6 @@ private:
 	void DisableSelectAnswer();
 
 	/// <summary>
-	/// デバイスマネージャー
-	/// </summary>
-	UDeviceManager* _deviceManager;
-
-	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
@@ -112,6 +106,4 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _inertiaDamping;
-
-	class UCapsuleComponent* _player;
 };

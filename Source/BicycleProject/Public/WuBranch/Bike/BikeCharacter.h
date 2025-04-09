@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BikeCharacter.generated.h"
 
+class UBikeComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
 {
@@ -34,13 +36,30 @@ public:
 
 private:
 
+	/// <summary>
+	/// 自転車メッシュをロード
+	/// </summary>
 	void LoadBikeMesh();
 
+	/// <summary>
+	/// ロード終わったら
+	/// </summary>
 	void LoadMeshComplete();
 
+	/// <summary>
+	/// ロード先の自転車メッシュ
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSoftObjectPtr<UStaticMesh> _bikeMesh;
+	TSoftObjectPtr<UStaticMesh> _bikeMeshNeedLoad;
 
-	UStaticMeshComponent* _bike;
+	/// <summary>
+	/// 実際の自転車メッシュ
+	/// </summary>
+	UStaticMeshComponent* _bikeMesh;
+
+	/// <summary>
+	/// 自転車の機能
+	/// </summary>
+	UBikeComponent* _bike;
 
 };

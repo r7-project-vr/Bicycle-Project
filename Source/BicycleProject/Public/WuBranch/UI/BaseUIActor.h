@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BaseUIPawn.generated.h"
+#include "BaseUIActor.generated.h"
 
 UCLASS()
-class BICYCLEPROJECT_API ABaseUIPawn : public AActor
+class BICYCLEPROJECT_API ABaseUIActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABaseUIPawn();
+	ABaseUIActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,5 +28,5 @@ private:
 	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
-	class UWidgetComponent* widget;
+	class UWidgetComponent* _widget;
 };

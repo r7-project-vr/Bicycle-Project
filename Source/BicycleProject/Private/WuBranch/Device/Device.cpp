@@ -22,12 +22,32 @@ EDeviceConnectType UDevice::GetConnectState_Implementation()
 	return _state;
 }
 
-void UDevice::BindMoveEvent_Implementation(UObject* Object, FName functionName)
+void UDevice::BindMoveEvent_Implementation(UObject* object, FName functionName)
 {
-	if (Object)
+	if (object)
 	{
 		FScriptDelegate delegate;
-		delegate.BindUFunction(Object, functionName);
+		delegate.BindUFunction(object, functionName);
 		_onMoveEvent.Add(delegate);
+	}
+}
+
+void UDevice::BindSelectLeftEvent_Implementation(UObject* object, FName functionName)
+{
+	if (object)
+	{
+		FScriptDelegate delegate;
+		delegate.BindUFunction(object, functionName);
+		_onSelectLeftEvent.Add(delegate);
+	}
+}
+
+void UDevice::BindSelectRightEvent_Implementation(UObject* object, FName functionName)
+{
+	if (object)
+	{
+		FScriptDelegate delegate;
+		delegate.BindUFunction(object, functionName);
+		_onSelectRightEvent.Add(delegate);
 	}
 }

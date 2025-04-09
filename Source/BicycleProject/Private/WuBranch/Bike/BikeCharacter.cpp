@@ -3,6 +3,7 @@
 
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -16,6 +17,9 @@ ABikeCharacter::ABikeCharacter()
 	_bike->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 	_bike->SetRelativeScale3D(FVector(1.4f, 1.4f, 1.4f));
 	AddInstanceComponent(_bike);
+
+	//bUseControllerRotationYaw = false;
+	//GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 // Called when the game starts or when spawned

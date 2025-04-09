@@ -24,6 +24,10 @@ public:
 
 	virtual void Init() override;
 
+	void EnableSelectAnswerActions_Implementation() override;
+
+	void DisableSelectAnswerActions_Implementation() override;
+
 private:
 
 	/// <summary>
@@ -32,19 +36,61 @@ private:
 	void SetupKey();
 
 	/// <summary>
-	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらえるとこ
+	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ
 	/// </summary>
 	/// <param name="Value"></param>
 	void OnMove(const FInputActionValue& Value);
 
 	/// <summary>
-	/// デバイスマッピング
+	/// MappingContextで左の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
 	/// </summary>
-	UInputMappingContext* _mappingContext;
+	/// <param name="Value"></param>
+	void OnSelectLeftAnswer();
+
+	/// <summary>
+	/// MappingContextで右の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
+	/// </summary>
+	/// <param name="Value"></param>
+	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// プレイヤーコントローラー
+	/// </summary>
+	APlayerController* _controller;
+
+	/// <summary>
+	/// デフォルトアクションマップ
+	/// </summary>
+	UInputMappingContext* _defaultMap;
+
+	/// <summary>
+	/// 答えを選択するアクションマップ
+	/// </summary>
+	UInputMappingContext* _answerSelectMap;
 
 	/// <summary>
 	/// 移動アクション
 	/// </summary>
 	UInputAction* _moveAction;
+
+	/// <summary>
+	/// 左の答えを選択するアクション
+	/// </summary>
+	UInputAction* _selectLeftAction;
+
+	/// <summary>
+	/// 左の答えを選択するアクションのID
+	/// </summary>
+	uint32 _selectLeftActionID;
+
+	/// <summary>
+	/// 右の答えを選択するアクション
+	/// </summary>
+	UInputAction* _selectRightAction;
+
+	/// <summary>
+	/// 右の答えを選択するアクションのID
+	/// </summary>
+	uint32 _selectRightActionID;
 
 };

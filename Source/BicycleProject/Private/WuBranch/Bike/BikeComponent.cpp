@@ -21,7 +21,7 @@ UBikeComponent::UBikeComponent()
 	// ...
 	_speed = 50.0f;
 	_isForcedControl = false;
-	_inertiaDamping = 500.0f;
+	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
 }
 

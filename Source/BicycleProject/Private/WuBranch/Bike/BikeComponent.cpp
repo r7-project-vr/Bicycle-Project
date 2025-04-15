@@ -85,21 +85,14 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
-	FVector dir;
-	if (direction.X != 0.0f)
-	{
-		dir += actorForward * direction.X;
-	}
-	if (direction.Y != 0.0f)
-	{
-		dir += actorRight * direction.Y;
-	}
+	FVector dir = FVector::ZeroVector;
+	dir = actorForward * direction.X + actorRight * direction.Y;
 
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
 	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	character->AddMovementInput(actorForward, dir.X);
-	character->AddMovementInput(actorRight, dir.Y);
+	character->AddMovementInput(actorForward, direction.X);
+	character->AddMovementInput(actorRight, direction.Y);
 
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * _speed;

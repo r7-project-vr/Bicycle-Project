@@ -23,6 +23,8 @@ UBikeComponent::UBikeComponent()
 	_isForcedControl = false;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
+	_isRotate = false;
+	_targetRotator = FRotator::ZeroRotator;
 }
 
 
@@ -42,6 +44,8 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	// ...
 
 	HandleInertia(DeltaTime);
+
+	RotateBike();
 
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
@@ -111,11 +115,32 @@ void UBikeComponent::OnSelectRightAnswer()
 void UBikeComponent::HandleSelectAnswer(FRotator dir)
 {
 	// 曲がる
-	GetOwner()->AddActorLocalRotation(dir);
+	_targetRotator = GetOwner()->GetActorRotation() + dir;
+	_isRotate = true;
 	// 二回目以降選ばせない
 	DisableSelectAnswer();
-	// 曲がったら強制コントロール解除
-	CloseForcedControl();
+}
+
+void UBikeComponent::RotateBike()
+{
+	if (!_isRotate)
+		return;
+
+	FRotator current = GetOwner()->GetActorRotation();
+	// 曲がった
+	if (current.Equals(_targetRotator, 0.5f))
+	{
+		// 0.5度未満は同じと見なすため、強制的に角度を最終角度に設定します
+		GetOwner()->SetActorRelativeRotation(_targetRotator);
+		_isRotate = false;
+		// 強制コントロール解除
+		CloseForcedControl();
+		return;
+	}
+
+	float deltaTime = GetOwner()->GetWorld()->GetDeltaSeconds();
+	FRotator angle = FMath::RInterpTo(current, _targetRotator, deltaTime, _rotateSpeed);
+	GetOwner()->SetActorRelativeRotation(angle);
 }
 
 void UBikeComponent::DisableSelectAnswer()

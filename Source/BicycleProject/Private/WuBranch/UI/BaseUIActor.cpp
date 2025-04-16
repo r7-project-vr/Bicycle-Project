@@ -3,6 +3,7 @@
 
 #include "WuBranch/UI/BaseUIActor.h"
 #include <Components/WidgetComponent.h>
+#include <tokuamaru/QuestionWidget.h>
 
 // Sets default values
 ABaseUIActor::ABaseUIActor()
@@ -24,6 +25,16 @@ void ABaseUIActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+	UQuestionWidget* question = Cast<UQuestionWidget>(_widget->GetWidget());
+	if (!question) {
+		UE_LOG(LogTemp, Error, TEXT("Widget instance is null!"));
+	}
+	else {
+		question->SetQuestion("text1");
+		question->SetAnswer1("text2");
+		question->SetAnswer2("text3");
+	}
 }
 
 // Called every frame

@@ -45,4 +45,6 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		// エリアのコリジョンを機能させない
 		_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 	}
+
+
 }

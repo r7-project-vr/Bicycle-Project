@@ -47,11 +47,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* _finishLineCollision;
 
-	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectLeft;
-
-	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectRight;
 
 	bool _isReadyToChangeLevel;
 };

@@ -10,6 +10,8 @@
 #include "HeadMountedDisplay.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <WuBranch/Bike/BikeCharacter.h>
+#include <Kismet/GameplayStatics.h>
+#include <WuBranch/BikePlayerController.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -20,7 +22,6 @@ UBikeComponent::UBikeComponent()
 
 	// ...
 	_speed = 50.0f;
-	_isForcedControl = false;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
 	_isRotate = false;
@@ -51,16 +52,6 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
-void UBikeComponent::OpenForcedControl()
-{
-	_isForcedControl = true;
-}
-
-void UBikeComponent::CloseForcedControl()
-{
-	_isForcedControl = false;
-}
-
 void UBikeComponent::ReduceVelocityTo0()
 {
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
@@ -83,8 +74,6 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 void UBikeComponent::OnMove(FVector2D direction)
 {
 	//UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
-	if (_isForcedControl)
-		return;
 
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
@@ -134,7 +123,11 @@ void UBikeComponent::RotateBike()
 		GetOwner()->SetActorRelativeRotation(_targetRotator);
 		_isRotate = false;
 		// 強制コントロール解除
-		CloseForcedControl();
+		ABikePlayerController* pc = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (pc)
+		{
+			pc->SetPlayerEnabledState(true);
+		}
 		return;
 	}
 

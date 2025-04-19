@@ -7,6 +7,7 @@
 #include <EnhancedInputSubsystems.h>
 #include "InputActionValue.h"
 #include <Kismet/KismetSystemLibrary.h>
+#include <WuBranch/BikePlayerController.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateDevice);
 
@@ -67,7 +68,7 @@ void UKeyboardDevice::EnableSelectAnswerActions_Implementation()
 	}
 
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->InputComponent))
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->GetPawn()->InputComponent))
 	{
 		// 左の答えを選択するアクション
 		_selectLeftActionID = EnhancedInputComponent->BindAction(_selectLeftAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectLeftAnswer).GetHandle();
@@ -97,7 +98,7 @@ void UKeyboardDevice::DisableSelectAnswerActions_Implementation()
 	}
 
 	// バインドされた関数を解除
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->InputComponent))
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->GetPawn()->InputComponent))
 	{
 		// 左の答えを選択するアクション
 		EnhancedInputComponent->RemoveActionBindingForHandle(_selectLeftActionID);
@@ -135,7 +136,10 @@ void UKeyboardDevice::SetupKey()
 	}
 
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->InputComponent))
+	// ここはプレイヤコントローラのInputComponentではなく、プレイヤのアクターのInputComponentを利用する
+	// そうすると、Unreal本来の設計通り、PawnのEnableInput、DisableInputでコントロールできる
+	// *PlayerControllerとPawn両方ともActorの派生クラスなので、両方ともInputComponent持っています。ここは間違われやすい。
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(_controller->GetPawn()->InputComponent))
 	{
 		// 移動
 		EnhancedInputComponent->BindAction(_moveAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);

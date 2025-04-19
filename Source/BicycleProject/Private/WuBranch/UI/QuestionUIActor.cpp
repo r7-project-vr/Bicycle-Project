@@ -8,6 +8,8 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include "WuBranch/Device/Device.h"
 #include <Kismet/KismetSystemLibrary.h>
+#include <WuBranch/BikePlayerController.h>
+#include <Kismet/GameplayStatics.h>
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -24,8 +26,13 @@ AQuestionUIActor::AQuestionUIActor()
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
+	ABikePlayerController* pc = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (pc)
+	{
+		pc->SetPlayerEnabledState(false);
+	}
+
 	// 自転車のスピードを強制的に0まで下げる
-	bike->OpenForcedControl();
 	bike->ReduceVelocityTo0();
 
 	// プレイヤーに答えを選べるようにする

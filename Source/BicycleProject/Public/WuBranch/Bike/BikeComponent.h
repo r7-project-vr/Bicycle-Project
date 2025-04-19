@@ -25,16 +25,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
-	/// 強制的にコントロールをオンにする
-	/// </summary>
-	void OpenForcedControl();
-
-	/// <summary>
-	/// 強制的にコントロールをオフにする
-	/// </summary>
-	void CloseForcedControl();
-
-	/// <summary>
 	/// スピードを0まで下げる
 	/// </summary>
 	void ReduceVelocityTo0();
@@ -95,11 +85,6 @@ private:
 	/// 単位速度
 	/// </summary>
 	const float _unitSpeed = 1;
-
-	/// <summary>
-	/// 強制的にコントロールのスウィッチ
-	/// </summary>
-	bool _isForcedControl;
 
 	/// <summary>
 	/// 慣性の速度

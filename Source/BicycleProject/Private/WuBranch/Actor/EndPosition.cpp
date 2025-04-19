@@ -53,12 +53,7 @@ void AEndPosition::OnOverlapBeginFinishLine(UPrimitiveComponent* OverlappedCompo
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		bike->OpenForcedControl();
 
-		// エフェクト
-		if (_fireworkEffectLeft)
 		{
-			FVector offset = FVector(200.0f, 0.0f, 0.0f);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectLeft, GetActorLocation() - offset);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectRight, GetActorLocation() + offset);
 		}
 
 		//5秒後にレベルを再読み込み

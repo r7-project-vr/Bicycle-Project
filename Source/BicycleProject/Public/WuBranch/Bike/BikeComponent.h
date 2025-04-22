@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "BikeComponent.generated.h"
 
-class UDeviceManager;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
@@ -77,14 +76,14 @@ private:
 	void HandleSelectAnswer(FRotator dir);
 
 	/// <summary>
+	/// 自転車の方向を変える
+	/// </summary>
+	void RotateBike();
+
+	/// <summary>
 	/// 答えを選ぶ動作を機能させない
 	/// </summary>
 	void DisableSelectAnswer();
-
-	/// <summary>
-	/// デバイスマネージャー
-	/// </summary>
-	UDeviceManager* _deviceManager;
 
 	/// <summary>
 	/// スピード
@@ -113,5 +112,19 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _inertiaDamping;
 
-	class UCapsuleComponent* _player;
+	/// <summary>
+	/// 曲がるか
+	/// </summary>
+	bool _isRotate;
+
+	/// <summary>
+	/// 曲がるスピード
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _rotateSpeed = 10.f;
+
+	/// <summary>
+	/// 曲がる時の最終角度
+	/// </summary>
+	FRotator _targetRotator;
 };

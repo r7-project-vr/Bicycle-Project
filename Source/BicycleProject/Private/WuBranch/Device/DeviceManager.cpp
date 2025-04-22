@@ -43,11 +43,8 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 {
 	switch (type)
 	{
-	case EDeviceType::Keyboard:
+	case EDeviceType::UESupportDevice:
 		CreateKeyBoardDevice();
-		break;
-	case EDeviceType::QuestController:
-		CreateQuestControllerDevice();
 		break;
 	case EDeviceType::CustomDevice:
 		break;

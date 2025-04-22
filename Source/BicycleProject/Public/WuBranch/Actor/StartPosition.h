@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BaseUIActor.generated.h"
+#include "StartPosition.generated.h"
 
 UCLASS()
-class BICYCLEPROJECT_API ABaseUIActor : public AActor
+class BICYCLEPROJECT_API AStartPosition : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABaseUIActor();
+	AStartPosition();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,9 +25,7 @@ public:
 
 private:
 
-	/// <summary>
-	/// UIを表示させるもの
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* _widget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* _mesh;
+
 };

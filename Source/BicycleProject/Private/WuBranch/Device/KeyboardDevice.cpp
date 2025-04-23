@@ -154,7 +154,9 @@ void UKeyboardDevice::OnMove(const FInputActionValue& Value)
 {
 	FVector2D inputVector = Value.Get<FVector2D>();
 
-	FVector2D moveVector(inputVector.Y, inputVector.X);
+	// 左右の入力を一旦無視
+	//FVector2D moveVector(inputVector.Y, inputVector.X);
+	FVector2D moveVector(inputVector.Y, 0);
 
 	// notify
 	if(_onMoveEvent.IsBound())

@@ -29,7 +29,7 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 	ABikePlayerController* pc = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (pc)
 	{
-		pc->SetPlayerEnabledState(false);
+		//pc->SetPlayerEnabledState(false);
 	}
 
 	// 自転車のスピードを強制的に0まで下げる

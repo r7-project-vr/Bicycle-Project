@@ -18,7 +18,7 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
 }
 
 void AQuestionGameMode::PassTheGoal(AActor* passedActor)
@@ -35,15 +35,14 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		GameOver(true);
 
 		// エフェクト
-		if (_fireworks.Num() != 0)
+		// 花火を探す動作は一旦こちに移動、なぜか二回目世界をリロードする以降BeginPlayでは花火は見つからない
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
+		for (AActor* firework : _fireworks)
 		{
-			for (AActor* firework : _fireworks)
+			AFirework* fireworkActor = Cast<AFirework>(firework);
+			if (fireworkActor)
 			{
-				AFirework* fireworkActor = Cast<AFirework>(firework);
-				if (fireworkActor)
-				{
-					fireworkActor->Fire();
-				}
+				fireworkActor->Fire();
 			}
 		}
 

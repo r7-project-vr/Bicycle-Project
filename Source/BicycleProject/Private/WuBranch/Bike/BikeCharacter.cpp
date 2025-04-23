@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "WuBranch/Bike/BikeCharacter.h"
@@ -32,6 +32,7 @@ ABikeCharacter::ABikeCharacter()
 void ABikeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	LoadBikeMesh();
 }
 
@@ -40,6 +41,8 @@ void ABikeCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	UAnimInstance* animation = GetMesh()->GetAnimInstance();
+
 }
 
 // Called to bind functionality to input
@@ -67,17 +70,34 @@ void ABikeCharacter::ChangeBikeMesh()
 
 void ABikeCharacter::LoadBikeMesh()
 {
-	const FSoftObjectPath& assetRef = _bikeMeshNeedLoad.ToSoftObjectPath();
-	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-	Streamable.RequestAsyncLoad(assetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
+	// staticMeshの方、後で削除
+	/*{
+		const FSoftObjectPath& assetRef = _bikeMeshNeedLoad.ToSoftObjectPath();
+		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+		Streamable.RequestAsyncLoad(assetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
+	}*/
+	
+	// skeletalMesh
+	if (_bikeSkeletalNeedLoad)
+	{
+		const FSoftObjectPath& assetRef = _bikeSkeletalNeedLoad.ToSoftObjectPath();
+		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+		Streamable.RequestAsyncLoad(assetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
+	}
 }
 
 void ABikeCharacter::LoadMeshComplete()
 {
-	UStaticMesh* mesh = _bikeMeshNeedLoad.Get();
+	/*UStaticMesh* mesh = _bikeMeshNeedLoad.Get();
 	if (mesh)
 	{
 		_bikeMesh->SetStaticMesh(mesh);
+	}*/
+
+	USkeletalMesh* skeletalMesh = _bikeSkeletalNeedLoad.Get();
+	if (skeletalMesh)
+	{
+		GetMesh()->SetSkeletalMesh(skeletalMesh);
 	}
 }
 

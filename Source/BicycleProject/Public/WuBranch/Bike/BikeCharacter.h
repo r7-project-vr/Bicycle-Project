@@ -52,6 +52,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSoftObjectPtr<UStaticMesh> _bikeMeshNeedLoad;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<USkeletalMesh> _bikeSkeletalNeedLoad;
+
 	/// <summary>
 	/// 実際の自転車メッシュ
 	/// </summary>

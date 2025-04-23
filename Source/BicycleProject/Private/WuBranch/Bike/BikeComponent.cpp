@@ -3,7 +3,6 @@
 
 #include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/Device/DeviceManager.h"
-#include "WuBranch/Device/Device.h"
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
@@ -20,11 +19,12 @@ UBikeComponent::UBikeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	_deviceManager = nullptr;
 	_speed = 50.0f;
 	_isForcedControl = false;
-	_inertiaDamping = 500.0f;
+	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
+	_isRotate = false;
+	_targetRotator = FRotator::ZeroRotator;
 }
 
 
@@ -34,29 +34,6 @@ void UBikeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
-	if (!gameInstance) 
-	{
-		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
-	}
-	else
-	{
-		_deviceManager = gameInstance->GetDeviceManager();
-		_deviceManager->ChangeDevice(EDeviceType::Keyboard);
-		//_deviceManager->ChangeDevice(EDeviceType::QuestController);
-		_deviceManager->BindMoveEvent(this, "OnMove");
-		//deviceManager->GetDevice()->_onMoveEvent.AddDynamic(this, &UBikeComponent::OnMove);
-	}
-
-	TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
-	if (playerCollisions.Num() != 0)
-	{
-		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
-		if (me)
-		{
-			_player = me;
-		}
-	}
 }
 
 // Called every frame
@@ -65,15 +42,12 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if (!_deviceManager)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Device Manager is null!"));
-		return;
-	}
 
-	//HandleInertia(DeltaTime);
+	HandleInertia(DeltaTime);
 
-	//double speed = _player->GetComponentVelocity().Length();
+	RotateBike();
+
+	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
@@ -89,7 +63,6 @@ void UBikeComponent::CloseForcedControl()
 
 void UBikeComponent::ReduceVelocityTo0()
 {
-	//double speed = _player->GetComponentVelocity().Length();
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
 }
 
@@ -113,35 +86,20 @@ void UBikeComponent::OnMove(FVector2D direction)
 	if (_isForcedControl)
 		return;
 
-	FVector dir(direction.X, direction.Y, 0.0f);
+	// 移動方向は自転車今向いている方向を中心に
+	FVector actorForward = GetOwner()->GetActorForwardVector();
+	FVector actorRight = GetOwner()->GetActorRightVector();
+	FVector dir = FVector::ZeroVector;
+	dir = actorForward * direction.X + actorRight * direction.Y;
+
 	// 移動
-	/*TArray<UActorComponent*> playerCollisions = GetOwner()->GetComponentsByTag(UCapsuleComponent::StaticClass(), FName("PlayerCollision"));
-	if (playerCollisions.Num() != 0)
-	{
-		UCapsuleComponent* me = Cast<UCapsuleComponent>(playerCollisions[0]);
-		if (me)
-		{
-			me->AddForce(dir * _unitSpeed * _speed);
-		}
-	}*/
+	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
+	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
+	character->AddMovementInput(actorForward, direction.X);
+	character->AddMovementInput(actorRight, direction.Y);
 
-	TArray<UActorComponent*> bikeMesh = GetOwner()->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("BikeMesh"));
-	if (bikeMesh.Num() != 0)
-	{
-		UStaticMeshComponent* me = Cast<UStaticMeshComponent>(bikeMesh[0]);
-		if (me)
-		{
-			float max_speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->GetMaxSpeed();
-			if (me->GetComponentVelocity().Length() < max_speed)
-			{
-				me->AddForce(dir * _unitSpeed * _speed);
-			}
-		}
-	}
-
-	//Cast<ABikeCharacter>(GetOwner())->AddMovementInput(dir, _unitSpeed * _speed);
-	//// 慣性を設定
-	//_inertiaVelocity = dir.GetSafeNormal() * 100.0f;
+	// 慣性を設定
+	_inertiaVelocity = dir.GetSafeNormal() * _speed;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()
@@ -157,16 +115,39 @@ void UBikeComponent::OnSelectRightAnswer()
 void UBikeComponent::HandleSelectAnswer(FRotator dir)
 {
 	// 曲がる
-	GetOwner()->AddActorLocalRotation(dir);
+	_targetRotator = GetOwner()->GetActorRotation() + dir;
+	_isRotate = true;
 	// 二回目以降選ばせない
 	DisableSelectAnswer();
-	// 曲がったら強制コントロール解除
-	CloseForcedControl();
+}
+
+void UBikeComponent::RotateBike()
+{
+	if (!_isRotate)
+		return;
+
+	FRotator current = GetOwner()->GetActorRotation();
+	// 曲がった
+	if (current.Equals(_targetRotator, 0.5f))
+	{
+		// 0.5度未満は同じと見なすため、強制的に角度を最終角度に設定します
+		GetOwner()->SetActorRelativeRotation(_targetRotator);
+		_isRotate = false;
+		// 強制コントロール解除
+		CloseForcedControl();
+		return;
+	}
+
+	float deltaTime = GetOwner()->GetWorld()->GetDeltaSeconds();
+	FRotator angle = FMath::RInterpTo(current, _targetRotator, deltaTime, _rotateSpeed);
+	GetOwner()->SetActorRelativeRotation(angle);
 }
 
 void UBikeComponent::DisableSelectAnswer()
 {
-	_deviceManager->DisableSelectAnswerActions();
+	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+	deviceManager->DisableSelectAnswerActions();
 }
 
 bool UBikeComponent::IsVRConnect() const

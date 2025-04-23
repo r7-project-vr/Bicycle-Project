@@ -16,6 +16,6 @@ class BICYCLEPROJECT_API UTimerWidget : public UUserWidget
 
 public:
 
-	UFUNCTION()
-	virtual void SetCount();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void SetTimer(float time);
 };

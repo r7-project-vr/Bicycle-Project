@@ -3,3 +3,14 @@
 
 #include "tokuamaru/QuestionWidget.h"
 
+void SetQuestion(const FString& content) {
+
+}
+
+void SetAnswer1(const FString& content) {
+
+}
+
+void SetAnswer2(const FString& content) {
+
+}

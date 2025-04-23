@@ -3,6 +3,6 @@
 
 #include "tokuamaru/TimerWidget.h"
 
-void UTimerWidget::SetCount()
+void SetTimer(float time)
 {
 }

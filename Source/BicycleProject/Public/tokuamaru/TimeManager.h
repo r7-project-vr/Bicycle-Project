@@ -7,6 +7,9 @@
 #include <Components/WidgetComponent.h>
 #include <tokuamaru/TimerWidget.h>
 #include "GameFramework/Actor.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
+#include "InputActionValue.h"
 #include "TimeManager.generated.h"
 
 UCLASS()
@@ -22,6 +25,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void EventAction(const FInputActionValue& Value);
+
+	void EventAxis(const FInputActionValue& Value);
+
+
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* ActionInput;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* AxisInput;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -32,5 +47,19 @@ public:
 	class UWidgetComponent* _widgetT;
 	UTimerWidget* TimerW;
 
+private:
+	void SetupInput();
+
+	void PressedAction();
+	void ReleasedAction();
+
+	void PressedAxis(const FInputActionValue& Value);
+
+	bool stoper;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputMappingContext* DefaultMappingContext;
+
+	void TimerStop();
 
 };

@@ -6,10 +6,10 @@
 #include <WuBranch/Bike/BikeComponent.h>
 #include <WuBranch/MyGameInstance.h>
 #include "WuBranch/Device/DeviceManager.h"
-#include "WuBranch/Device/Device.h"
+//#include "WuBranch/Device/Device.h"
 #include <Kismet/KismetSystemLibrary.h>
-#include <WuBranch/BikePlayerController.h>
-#include <Kismet/GameplayStatics.h>
+//#include <WuBranch/BikePlayerController.h>
+
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -26,20 +26,16 @@ AQuestionUIActor::AQuestionUIActor()
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
-	ABikePlayerController* pc = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (pc)
-	{
-		//pc->SetPlayerEnabledState(false);
-	}
-
-	// 自転車のスピードを強制的に0まで下げる
-	bike->ReduceVelocityTo0();
-
-	// プレイヤーに答えを選べるようにする
+	// デフォルトアクションをキャンセル
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	gameInstance->GetDeviceManager()->DisableDefaultActions();
+	// プレイヤーに答えを選べるようにする
 	gameInstance->GetDeviceManager()->EnableSelectAnswerActions();
 	gameInstance->GetDeviceManager()->BindSelectLeftEvent(bike, "OnSelectLeftAnswer");
 	gameInstance->GetDeviceManager()->BindSelectRightEvent(bike, "OnSelectRightAnswer");
+
+	// 自転車のスピードを強制的に0まで下げる
+	bike->ReduceVelocityTo0();
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

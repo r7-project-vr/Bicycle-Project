@@ -10,8 +10,6 @@
 #include "HeadMountedDisplay.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <WuBranch/Bike/BikeCharacter.h>
-#include <Kismet/GameplayStatics.h>
-#include <WuBranch/BikePlayerController.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -119,15 +117,13 @@ void UBikeComponent::RotateBike()
 	// 曲がった
 	if (current.Equals(_targetRotator, 0.5f))
 	{
-		// 0.5度未満は同じと見なすため、強制的に角度を最終角度に設定します
+		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
 		GetOwner()->SetActorRelativeRotation(_targetRotator);
 		_isRotate = false;
 		// 強制コントロール解除
-		ABikePlayerController* pc = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		if (pc)
-		{
-			pc->SetPlayerEnabledState(true);
-		}
+		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+		deviceManager->EnableDefaultActions();
 		return;
 	}
 

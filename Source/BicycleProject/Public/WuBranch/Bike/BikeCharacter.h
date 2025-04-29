@@ -34,6 +34,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeBikeMesh();
 
+	/// <summary>
+	/// スピードを取得
+	/// </summary>
+	/// <returns>スピード</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetSpeed();
+
+	/// <summary>
+	/// ハンドラーの角度を取得
+	/// </summary>
+	/// <returns>ハンドラーの角度</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetHandlerAngle();
+
 private:
 
 	/// <summary>

@@ -68,6 +68,16 @@ void ABikeCharacter::ChangeBikeMesh()
 
 }
 
+float ABikeCharacter::GetSpeed()
+{
+	return GetCharacterMovement()->Velocity.Length();
+}
+
+float ABikeCharacter::GetHandlerAngle()
+{
+	return 0.0f;
+}
+
 void ABikeCharacter::LoadBikeMesh()
 {
 	// staticMeshの方、後で削除

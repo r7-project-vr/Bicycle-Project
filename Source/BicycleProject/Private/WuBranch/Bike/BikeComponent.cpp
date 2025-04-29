@@ -44,7 +44,7 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	HandleInertia(DeltaTime);
 
-	RotateBike();
+	RotateBike(DeltaTime);
 
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
@@ -108,7 +108,7 @@ void UBikeComponent::HandleSelectAnswer(FRotator dir)
 	DisableSelectAnswer();
 }
 
-void UBikeComponent::RotateBike()
+void UBikeComponent::RotateBike(float DeltaTime)
 {
 	if (!_isRotate)
 		return;
@@ -127,8 +127,7 @@ void UBikeComponent::RotateBike()
 		return;
 	}
 
-	float deltaTime = GetOwner()->GetWorld()->GetDeltaSeconds();
-	FRotator angle = FMath::RInterpTo(current, _targetRotator, deltaTime, _rotateSpeed);
+	FRotator angle = FMath::RInterpTo(current, _targetRotator, DeltaTime, _rotateSpeed);
 	GetOwner()->SetActorRelativeRotation(angle);
 }
 

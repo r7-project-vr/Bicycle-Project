@@ -68,7 +68,7 @@ private:
 	/// <summary>
 	/// 自転車の方向を変える
 	/// </summary>
-	void RotateBike();
+	void RotateBike(float DeltaTime);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない

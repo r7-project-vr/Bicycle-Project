@@ -14,11 +14,11 @@ UHeadLookComponent::UHeadLookComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	_enabled = false;
-
 	_lineOfSight = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("LineOfSight"));
 	_lineOfSight->SetupAttachment(this);
-	_lineOfSight->bShowDebug = true;
+	_lineOfSight->bShowDebug = false;
+	//_lineOfSight->bShowDebug = false;
+	_lineOfSight->DebugColor = FColor::Orange;
 }
 
 
@@ -30,13 +30,13 @@ void UHeadLookComponent::BeginPlay()
 	// ...
 	if (IsVRConnect())
 	{
-		_enabled = true;
+		SetActive(true);
+		OpenLine();
 	}
 	else
 	{
 		// VRデバイスに接続していない場合は、HeadLookComponentを無効にする
-		_enabled = false;
-		DestroyComponent();
+		SetActive(false);
 	}
 }
 
@@ -47,6 +47,16 @@ void UHeadLookComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UHeadLookComponent::OpenLine()
+{
+	_lineOfSight->bShowDebug = true;
+}
+
+void UHeadLookComponent::CloseLine()
+{
+	_lineOfSight->bShowDebug = false;
 }
 
 bool UHeadLookComponent::IsVRConnect() const

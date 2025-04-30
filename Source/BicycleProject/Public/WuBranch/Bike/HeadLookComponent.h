@@ -24,6 +24,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void OpenLine();
+
+	void CloseLine();
+
 private:
 
 	/// <summary>
@@ -31,8 +35,6 @@ private:
 	/// </summary>
 	/// <returns>true: はい / false: いいえ</returns>
 	bool IsVRConnect() const;
-
-	bool _enabled;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Head Look", meta = (AllowPrivateAccess = "true"))
 	class UWidgetInteractionComponent* _lineOfSight;

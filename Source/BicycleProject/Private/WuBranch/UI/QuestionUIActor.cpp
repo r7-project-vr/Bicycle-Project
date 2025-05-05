@@ -6,9 +6,8 @@
 #include <WuBranch/Bike/BikeComponent.h>
 #include <WuBranch/MyGameInstance.h>
 #include "WuBranch/Device/DeviceManager.h"
-//#include "WuBranch/Device/Device.h"
 #include <Kismet/KismetSystemLibrary.h>
-//#include <WuBranch/BikePlayerController.h>
+#include <Components/SplineComponent.h>
 
 
 AQuestionUIActor::AQuestionUIActor()
@@ -22,6 +21,49 @@ AQuestionUIActor::AQuestionUIActor()
 	_temporaryParkingArea->InitBoxExtent(FVector(100.0f, 32.0f, 5.0f));
 	_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
 	AddInstanceComponent(_temporaryParkingArea);
+
+	_autoPlayStart = CreateDefaultSubobject<USplineComponent>(FName("AutoPlayStart"));
+	_autoPlayStart->SetupAttachment(RootComponent);
+	_autoPlayStart->SetRelativeLocation(FVector(700.0f, 0.0f, 90.0f));
+	_autoPlayStart->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+
+	_exitLeft = CreateDefaultSubobject<USplineComponent>(FName("ExitLeft"));
+	_exitLeft->SetupAttachment(RootComponent);
+	_exitLeft->SetRelativeLocation(FVector(600.0f, 0.0f, 90.0f));
+	_exitLeft->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+
+	_exitRight = CreateDefaultSubobject<USplineComponent>(FName("ExitRight"));
+	_exitRight->SetupAttachment(RootComponent);
+	_exitRight->SetRelativeLocation(FVector(600.0f, 0.0f, 90.0f));
+	_exitRight->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+	
+	_autoPlayMoveSpeed = 10.0f;
+}
+
+void AQuestionUIActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetTarget(nullptr);
+	_exitTarget = nullptr;
+	_movedDistance = 0.0f;
+}
+
+void AQuestionUIActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	LeadToExit(DeltaTime);
+}
+
+void AQuestionUIActor::UseLeftExit()
+{
+	_exitTarget = _exitLeft;
+}
+
+void AQuestionUIActor::UseRightExit()
+{
+	_exitTarget = _exitRight;
 }
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
@@ -36,6 +78,11 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 
 	// 自転車のスピードを強制的に0まで下げる
 	bike->ReduceVelocityTo0();
+
+	// オートプレイのスタート地点へ誘導
+	bike->EnableAutoPlay(this);
+	FVector pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
+	bike->SetSynchPos(pos);
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -43,9 +90,42 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 	if (OtherActor->ActorHasTag("Player"))
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Red, 10.f);
+		
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
+		SetTarget(bike);
 		HandlePlayerEnterArea(bike);
+		
 		// エリアのコリジョンを機能させない
 		_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+	}
+}
+
+void AQuestionUIActor::SetTarget(UBikeComponent* target)
+{
+	_autoPlayTarget = target;
+}
+
+void AQuestionUIActor::LeadToExit(float DeltaTime)
+{
+	if (_exitTarget != nullptr)
+	{
+		// spline pointが一つ以下の時無視、出口設置していないので
+		if (_exitTarget->GetNumberOfSplinePoints() <= 1)
+			return;
+		
+		float deltaDis = DeltaTime * _autoPlayMoveSpeed;
+		_movedDistance += deltaDis;
+		//FTransform pos = _exitTarget->GetTransformAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);
+		FVector pos = _exitTarget->GetLocationAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);
+		if (_autoPlayTarget)
+		{
+			_autoPlayTarget->SetSynchPos(pos);
+		}
+		// 出口に着いた
+		if (_movedDistance > _exitTarget->GetSplineLength())
+		{
+			_exitTarget = nullptr;
+
+		}
 	}
 }

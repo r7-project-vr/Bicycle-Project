@@ -46,7 +46,13 @@ public:
 	/// </summary>
 	/// <returns>ハンドラーの角度</returns>
 	UFUNCTION(BlueprintCallable)
-	float GetHandlerAngle();
+	float GetHandlerAngle() const;
+
+	/// <summary>
+	/// 曲がるための角度を設置
+	/// </summary>
+	/// <param name="angle">角度</param>
+	void SetTurningAngle(FRotator angle);
 
 private:
 
@@ -59,6 +65,11 @@ private:
 	/// ロード終わったら
 	/// </summary>
 	void LoadMeshComplete();
+
+	/// <summary>
+	/// 自転車の方向を変える
+	/// </summary>
+	void RotateBike(float DeltaTime);
 
 	/// <summary>
 	/// ロード先の自転車メッシュ
@@ -79,4 +90,30 @@ private:
 	/// </summary>
 	UBikeComponent* _bike;
 
+	/// <summary>
+	/// 曲がるか
+	/// </summary>
+	bool _isRotate;
+
+	/// <summary>
+	/// 曲がるスピード
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _rotateSpeed = 10.f;
+
+	/// <summary>
+	/// 曲がる時の最終角度
+	/// </summary>
+	FRotator _targetRotator;
+
+	/// <summary>
+	/// ハンドルの角度
+	/// </summary>
+	float _handlebarsAngle;
+
+	/// <summary>
+	/// ハンドルの戻り速度
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _handlebarCenteringSpeed;
 };

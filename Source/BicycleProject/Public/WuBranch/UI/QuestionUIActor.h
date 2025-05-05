@@ -7,6 +7,7 @@
 #include "QuestionUIActor.generated.h"
 
 class UBikeComponent;
+class USplineComponent;
 
 /**
  * 
@@ -20,6 +21,18 @@ public:
 	// Sets default values for this actor's properties
 	AQuestionUIActor();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	void UseLeftExit();
+
+	void UseRightExit();
+
 private:
 
 	/// <summary>
@@ -29,7 +42,7 @@ private:
 	void HandlePlayerEnterArea(UBikeComponent* bike);
 
 	/// <summary>
-	/// 停車領域に入ったら
+	/// 停車エリアに入ったら
 	/// </summary>
 	UFUNCTION()
 	void OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -37,7 +50,54 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// オートプレイ対象を一旦記録して
+	/// </summary>
+	/// <param name="target"></param>
+	void SetTarget(UBikeComponent* target);
+
+	/// <summary>
+	/// オートプレイ対象を出口へ誘導
+	/// </summary>
+	void LeadToExit(float DeltaTime);
+
+	/// <summary>
 	/// 一時停車領域
 	/// </summary>
 	class UBoxComponent* _temporaryParkingArea;
+
+	/// <summary>
+	/// オートプレイ対象
+	/// </summary>
+	UBikeComponent* _autoPlayTarget;
+
+	/// <summary>
+	/// オートプレイのスタート地点
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+	USplineComponent* _autoPlayStart;
+
+	/// <summary>
+	/// 目標の出口
+	/// </summary>
+	USplineComponent* _exitTarget;
+
+	/// <summary>
+	/// オートプレイの左出口
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+	USplineComponent* _exitLeft;
+
+	/// <summary>
+	/// オートプレイの右出口
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+	USplineComponent* _exitRight;
+
+	/// <summary>
+	/// オートプレイする時の移動速度
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly)
+	float _autoPlayMoveSpeed;
+
+	float _movedDistance;
 };

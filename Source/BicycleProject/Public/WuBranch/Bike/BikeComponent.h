@@ -7,6 +7,8 @@
 #include "BikeComponent.generated.h"
 
 
+class AQuestionUIActor;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
 {
@@ -29,6 +31,34 @@ public:
 	/// </summary>
 	void ReduceVelocityTo0();
 
+	/// 左の答えを選ぶ
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void OnSelectLeftAnswer();
+
+	/// <summary>
+	/// 右の答えを選ぶ
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// オートプレイを起動
+	/// </summary>
+	/// <param name="actor"></param>
+	void EnableAutoPlay(AQuestionUIActor* actor);
+
+	/// <summary>
+	/// オートプレイをキャンセル
+	/// </summary>
+	void DisableAutoPlay();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="pos"></param>
+	void SetSynchPos(FVector pos);
+
 private:
 
 	/// <summary>
@@ -48,27 +78,12 @@ private:
 	/// </summary>
 	/// <returns>true: はい / false: いいえ</returns>
 	bool IsVRConnect() const;
-	/// 左の答えを選ぶ
-	/// </summary>
-	UFUNCTION()
-	void OnSelectLeftAnswer();
-
-	/// <summary>
-	/// 右の答えを選ぶ
-	/// </summary>
-	UFUNCTION()
-	void OnSelectRightAnswer();
 
 	/// <summary>
 	/// 答えを選んだの処理
 	/// </summary>
 	/// <param name="dir">曲がりたい方向</param>
 	void HandleSelectAnswer(FRotator dir);
-
-	/// <summary>
-	/// 自転車の方向を変える
-	/// </summary>
-	void RotateBike(float DeltaTime);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない
@@ -98,18 +113,14 @@ private:
 	float _inertiaDamping;
 
 	/// <summary>
-	/// 曲がるか
+	/// オートプレイ
 	/// </summary>
-	bool _isRotate;
+	bool _isAutoPlay;
 
 	/// <summary>
-	/// 曲がるスピード
+	/// オートプレイする時同期したい位置
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
-	float _rotateSpeed = 10.f;
+	FVector _synchronizePos;
 
-	/// <summary>
-	/// 曲がる時の最終角度
-	/// </summary>
-	FRotator _targetRotator;
+	AQuestionUIActor* _questionActor;
 };

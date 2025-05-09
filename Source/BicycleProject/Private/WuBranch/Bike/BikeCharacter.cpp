@@ -26,6 +26,8 @@ ABikeCharacter::ABikeCharacter()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	_handlebarCenteringSpeed = 1.0f;
 }
 
 // Called when the game starts or when spawned
@@ -34,6 +36,9 @@ void ABikeCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	LoadBikeMesh();
+	_isRotate = false;
+	_targetRotator = FRotator::ZeroRotator;
+	_handlebarsAngle = 0.0f;
 }
 
 // Called every frame
@@ -42,7 +47,7 @@ void ABikeCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	UAnimInstance* animation = GetMesh()->GetAnimInstance();
-
+	RotateBike(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -73,9 +78,21 @@ float ABikeCharacter::GetSpeed()
 	return GetCharacterMovement()->Velocity.Length();
 }
 
-float ABikeCharacter::GetHandlerAngle()
+float ABikeCharacter::GetHandlerAngle() const
 {
-	return 0.0f;
+	return _handlebarsAngle;
+}
+
+void ABikeCharacter::SetTurningAngle(FRotator angle)
+{
+	_targetRotator = GetActorRotation() + angle;
+	// 右折
+	if (angle.Yaw > 0)
+		_handlebarsAngle = -30.0f;
+	// 左折
+	else if (angle.Yaw < 0)
+		_handlebarsAngle = 30.0f;
+	_isRotate = true;
 }
 
 void ABikeCharacter::LoadBikeMesh()
@@ -109,5 +126,32 @@ void ABikeCharacter::LoadMeshComplete()
 	{
 		GetMesh()->SetSkeletalMesh(skeletalMesh);
 	}
+}
+
+void ABikeCharacter::RotateBike(float DeltaTime)
+{
+	if (!_isRotate)
+		return;
+
+	FRotator current = GetActorRotation();
+	// 曲がった
+	if (current.Equals(_targetRotator, 0.5f))
+	{
+		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
+		SetActorRelativeRotation(_targetRotator);
+		_isRotate = false;
+		// 強制コントロール解除
+		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+		deviceManager->EnableDefaultActions();
+		return;
+	}
+
+	// 自転車自身の角度の計算
+	FRotator angle = FMath::RInterpTo(current, _targetRotator, DeltaTime, _rotateSpeed);
+	SetActorRelativeRotation(angle);
+
+	// ハンドルの戻り角度の計算
+	_handlebarsAngle = FMath::FInterpTo(_handlebarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
 }
 

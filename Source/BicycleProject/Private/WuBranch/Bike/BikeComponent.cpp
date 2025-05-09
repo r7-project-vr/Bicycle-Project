@@ -10,6 +10,7 @@
 #include "HeadMountedDisplay.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <WuBranch/Bike/BikeCharacter.h>
+#include "WuBranch/UI/QuestionUIActor.h"
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -22,8 +23,6 @@ UBikeComponent::UBikeComponent()
 	_speed = 50.0f;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
-	_isRotate = false;
-	_targetRotator = FRotator::ZeroRotator;
 }
 
 
@@ -33,6 +32,8 @@ void UBikeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+
+	_isAutoPlay = false;
 }
 
 // Called every frame
@@ -42,9 +43,15 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// ...
 
-	HandleInertia(DeltaTime);
-
-	RotateBike(DeltaTime);
+	if (_isAutoPlay)
+	{
+		FVector deltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+		GetOwner()->SetActorLocation(deltaPos);
+	}
+	else
+	{
+		HandleInertia(DeltaTime);
+	}
 
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
@@ -53,6 +60,23 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UBikeComponent::ReduceVelocityTo0()
 {
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+}
+
+void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
+{
+	_isAutoPlay = true;
+	_questionActor = actor;
+}
+
+void UBikeComponent::DisableAutoPlay()
+{
+	_isAutoPlay = false;
+	_questionActor = nullptr;
+}
+
+void UBikeComponent::SetSynchPos(FVector pos)
+{
+	_synchronizePos = pos;
 }
 
 void UBikeComponent::HandleInertia(float DeltaTime)
@@ -92,43 +116,21 @@ void UBikeComponent::OnMove(FVector2D direction)
 void UBikeComponent::OnSelectLeftAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
+	_questionActor->UseLeftExit();
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
+	_questionActor->UseRightExit();
 }
 
 void UBikeComponent::HandleSelectAnswer(FRotator dir)
 {
 	// 曲がる
-	_targetRotator = GetOwner()->GetActorRotation() + dir;
-	_isRotate = true;
+	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswer();
-}
-
-void UBikeComponent::RotateBike(float DeltaTime)
-{
-	if (!_isRotate)
-		return;
-
-	FRotator current = GetOwner()->GetActorRotation();
-	// 曲がった
-	if (current.Equals(_targetRotator, 0.5f))
-	{
-		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
-		GetOwner()->SetActorRelativeRotation(_targetRotator);
-		_isRotate = false;
-		// 強制コントロール解除
-		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
-		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-		deviceManager->EnableDefaultActions();
-		return;
-	}
-
-	FRotator angle = FMath::RInterpTo(current, _targetRotator, DeltaTime, _rotateSpeed);
-	GetOwner()->SetActorRelativeRotation(angle);
 }
 
 void UBikeComponent::DisableSelectAnswer()

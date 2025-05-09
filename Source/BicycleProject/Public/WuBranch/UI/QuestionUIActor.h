@@ -99,5 +99,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float _autoPlayMoveSpeed;
 
+	/// <summary>
+	/// オートプレイする時の既に移動した距離
+	/// </summary>
 	float _movedDistance;
 };

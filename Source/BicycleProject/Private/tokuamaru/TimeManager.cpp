@@ -34,6 +34,7 @@ void ATimeManager::BeginPlay()
 	timer = 20.0f;
 	TimerW = Cast<UTimerWidget>(_widgetT->GetWidget());
 	stoper = false;
+	soundPlay = false;
 
 	SetupInput();
 }
@@ -60,6 +61,12 @@ void ATimeManager::Tick(float DeltaTime)
 			timer = 0;
 
 		}
+	}
+
+	if (timer <= 6) {
+		if(!soundPlay)
+		SoundPlay();
+		soundPlay = true;
 	}
 }
 
@@ -102,4 +109,13 @@ void ATimeManager::TimerStop()
 		stoper = false;
 	}
 
+}
+
+void ATimeManager::SoundPlay() {
+	if (!SoundToPlay) {
+		UE_LOG(LogTemp, Error, TEXT("SoundBase NULL"));
+	}
+	else {
+		UGameplayStatics::PlaySoundAtLocation(this, SoundToPlay, GetActorLocation());
+	}
 }

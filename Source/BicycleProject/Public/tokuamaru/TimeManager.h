@@ -9,6 +9,7 @@
 #include "GameFramework/Actor.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "Sound/SoundBase.h"
 #include "InputActionValue.h"
 #include "TimeManager.generated.h"
 
@@ -56,10 +57,16 @@ private:
 	void PressedAxis(const FInputActionValue& Value);
 
 	bool stoper;
+	bool soundPlay;
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputMappingContext* DefaultMappingContext;
 
 	void TimerStop();
+
+	void SoundPlay();
+
+	UPROPERTY(EditAnywhere,Category = "Sound")
+	USoundBase* SoundToPlay;
 
 };

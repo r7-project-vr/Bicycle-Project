@@ -141,6 +141,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	{
 		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
 		SetActorRelativeRotation(_targetRotator);
+		_handlebarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除
 		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());

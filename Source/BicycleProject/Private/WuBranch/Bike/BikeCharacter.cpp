@@ -65,6 +65,8 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 		deviceManager->ChangeDevice(EDeviceType::UESupportDevice);
 		deviceManager->BindMoveEvent(_bike, "OnMove");
+		deviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
+		deviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
 	}
 }
 

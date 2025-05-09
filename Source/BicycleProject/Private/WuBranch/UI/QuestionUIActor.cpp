@@ -68,13 +68,11 @@ void AQuestionUIActor::UseRightExit()
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
-	// デフォルトアクションを機能させない
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	// デフォルトアクションを機能させない
 	gameInstance->GetDeviceManager()->DisableDefaultActions();
 	// プレイヤーに答えを選べるようにする
 	gameInstance->GetDeviceManager()->EnableSelectAnswerActions();
-	gameInstance->GetDeviceManager()->BindSelectLeftEvent(bike, "OnSelectLeftAnswer");
-	gameInstance->GetDeviceManager()->BindSelectRightEvent(bike, "OnSelectRightAnswer");
 
 	// 自転車のスピードを強制的に0まで下げる
 	bike->ReduceVelocityTo0();

@@ -68,7 +68,7 @@ void AQuestionUIActor::UseRightExit()
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
-	// デフォルトアクションをキャンセル
+	// デフォルトアクションを機能させない
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	gameInstance->GetDeviceManager()->DisableDefaultActions();
 	// プレイヤーに答えを選べるようにする
@@ -125,7 +125,11 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 		if (_movedDistance > _exitTarget->GetSplineLength())
 		{
 			_exitTarget = nullptr;
-
+			// オートプレイ解除
+			_autoPlayTarget->DisableAutoPlay();
+			// デフォルトアクションを機能させる
+			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+			gameInstance->GetDeviceManager()->EnableDefaultActions();
 		}
 	}
 }

@@ -66,6 +66,8 @@ void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
 	_isAutoPlay = true;
 	_questionActor = actor;
+	// 慣性の力も0にする
+	_inertiaVelocity = FVector::ZeroVector;
 }
 
 void UBikeComponent::DisableAutoPlay()

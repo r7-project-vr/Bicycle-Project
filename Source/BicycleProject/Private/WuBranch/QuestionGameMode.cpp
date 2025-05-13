@@ -18,7 +18,8 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
+	_correctNum = 0;
+	_wrongNum = 0;
 }
 
 void AQuestionGameMode::PassTheGoal(AActor* passedActor)
@@ -50,6 +51,58 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle, this, &AQuestionGameMode::ChangeLevel, 5.f, false);
 	}
+}
+
+void AQuestionGameMode::CheckAnswer(bool answer)
+{
+	// call question manager to check answer
+	bool result = rand() % 2 == 0; // 仮の答え合わせ
+
+	if (result)
+		_correctNum++;
+	else
+		_wrongNum++;
+
+	_AnswerResults.Add(result);
+
+	if (IsGameFailed())
+	{
+		// ゲームオーバーUIの表示
+		
+		//5秒後に次の世界に行く
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AQuestionGameMode::ChangeLevel, 5.f, false);
+	}
+	else if (IsGameClear())
+	{
+		// ゲームクリア
+
+	}
+}
+
+TArray<bool> AQuestionGameMode::GetAnswerResults()
+{
+	return _AnswerResults;
+}
+
+int AQuestionGameMode::GetCurrectNumber() const
+{
+	return _correctNum;
+}
+
+int AQuestionGameMode::GetWrongNumber() const
+{
+	return _wrongNum;
+}
+
+bool AQuestionGameMode::IsGameFailed() const
+{
+	return _wrongNum >= _failCondition;
+}
+
+bool AQuestionGameMode::IsGameClear() const
+{
+	return _correctNum >= _successCondition;
 }
 
 void AQuestionGameMode::ChangeLevel()

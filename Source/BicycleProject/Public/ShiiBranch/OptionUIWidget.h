@@ -16,6 +16,10 @@ class BICYCLEPROJECT_API UOptionUIWidget : public UUserWidget
 	
 public:
 
+	void SetQuestionAndAnswer();
+
+protected:
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void SetQuestion(const FString& quest);
 

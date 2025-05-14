@@ -3,3 +3,8 @@
 
 #include "ShiiBranch/OptionUIWidget.h"
 
+//void UOptionUIWidget::SetQuestionAndAnswer(const FQuestion& Question)
+//{
+//	SetQuestion(Question.content);
+//	SetAnswer(Question.answers);
+//}

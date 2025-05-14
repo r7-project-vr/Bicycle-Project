@@ -56,6 +56,10 @@ void AQuestionUIActor::Tick(float DeltaTime)
 	LeadToExit(DeltaTime);
 }
 
+void AQuestionUIActor::SetProblem()
+{
+}
+
 void AQuestionUIActor::UseLeftExit()
 {
 	_exitTarget = _exitLeft;

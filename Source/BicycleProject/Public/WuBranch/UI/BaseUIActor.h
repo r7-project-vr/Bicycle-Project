@@ -23,6 +23,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// <summary>
+	/// UIを表示する
+	/// </summary>
+	void Display();
+
+	/// <summary>
+	/// UIを表示しない
+	/// </summary>
+	void NotDisplay();
+
 private:
 
 	/// <summary>

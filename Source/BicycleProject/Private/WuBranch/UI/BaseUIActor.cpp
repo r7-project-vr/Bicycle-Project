@@ -33,3 +33,13 @@ void ABaseUIActor::Tick(float DeltaTime)
 
 }
 
+void ABaseUIActor::Display()
+{
+	_widget->Activate(true);
+}
+
+void ABaseUIActor::NotDisplay()
+{
+	_widget->Activate(false);
+}
+

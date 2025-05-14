@@ -29,8 +29,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// <summary>
+	/// 問題資料を設置
+	/// </summary>
+	void SetProblem();
+
+	/// <summary>
+	/// 左出口から出る
+	/// </summary>
 	void UseLeftExit();
 
+	/// <summary>
+	/// 右出口から出る
+	/// </summary>
 	void UseRightExit();
 
 private:

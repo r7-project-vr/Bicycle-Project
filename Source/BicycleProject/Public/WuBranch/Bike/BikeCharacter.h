@@ -54,6 +54,11 @@ public:
 	/// <param name="angle">角度</param>
 	void SetTurningAngle(FRotator angle);
 
+	/// <summary>
+	/// ヒントラインを表示しない
+	/// </summary>
+	void DisableHintLine();
+
 private:
 
 	/// <summary>
@@ -89,6 +94,12 @@ private:
 	/// 自転車の機能
 	/// </summary>
 	UBikeComponent* _bike;
+
+	/// <summary>
+	/// UI操作用のヒントライン
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UWidgetInteractionHeadComponent* _widgetInteractionHeadComponent;
 
 	/// <summary>
 	/// 曲がるか

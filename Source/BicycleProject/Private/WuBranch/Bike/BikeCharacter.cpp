@@ -7,6 +7,7 @@
 #include <WuBranch/MyGameInstance.h>
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Bike/BikeComponent.h>
+#include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -35,6 +36,8 @@ void ABikeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// カメラの下に置いたヒントラインを取得
+	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_isRotate = false;
 	_targetRotator = FRotator::ZeroRotator;

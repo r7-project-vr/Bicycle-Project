@@ -33,13 +33,13 @@ void ABaseUIActor::Tick(float DeltaTime)
 
 }
 
-void ABaseUIActor::Display()
+void ABaseUIActor::DisplayUI()
 {
-	_widget->Activate(true);
+	_widget->GetWidget()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
-void ABaseUIActor::NotDisplay()
+void ABaseUIActor::NotDisplayUI()
 {
-	_widget->Activate(false);
+	_widget->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 }
 

@@ -133,6 +133,12 @@ void UBikeComponent::HandleSelectAnswer(FRotator dir)
 	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswer();
+	// ヒントラインを表示しない
+	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
+	if (character)
+	{
+		character->DisableHintLine();
+	}
 }
 
 void UBikeComponent::DisableSelectAnswer()

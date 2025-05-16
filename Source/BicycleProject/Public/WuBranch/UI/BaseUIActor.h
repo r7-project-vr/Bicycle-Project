@@ -26,12 +26,12 @@ public:
 	/// <summary>
 	/// UIを表示する
 	/// </summary>
-	void Display();
+	void DisplayUI();
 
 	/// <summary>
 	/// UIを表示しない
 	/// </summary>
-	void NotDisplay();
+	void NotDisplayUI();
 
 private:
 

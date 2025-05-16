@@ -63,11 +63,15 @@ void AQuestionUIActor::SetProblem()
 void AQuestionUIActor::UseLeftExit()
 {
 	_exitTarget = _exitLeft;
+	// 答えたのでUIを非表示
+	NotDisplayUI();
 }
 
 void AQuestionUIActor::UseRightExit()
 {
 	_exitTarget = _exitRight;
+	// 答えたのでUIを非表示
+	NotDisplayUI();
 }
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)

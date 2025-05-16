@@ -1,0 +1,54 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/WidgetInteractionComponent.h"
+#include "WidgetInteractionHeadComponent.generated.h"
+
+/**
+ * 
+ */
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class BICYCLEPROJECT_API UWidgetInteractionHeadComponent : public UWidgetInteractionComponent
+{
+	GENERATED_BODY()
+	
+public:
+
+	UWidgetInteractionHeadComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	/// <summary>
+	/// ヒントラインを表示する
+	/// </summary>
+	void EnableHintLine();
+
+	/// <summary>
+	/// ヒントラインを非表示にする
+	/// </summary>
+	void DisableHintLine();
+
+	/// <summary>
+	/// ヒントラインがUIを触ったら
+	/// </summary>
+	/// <param name="WidgetComponent"></param>
+	/// <param name="PreviousWidgetComponent"></param>
+	UFUNCTION()
+	void OnHoverWidget(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent);
+
+private:
+
+	/// <summary>
+	/// VRデバイスに接続しているか
+	/// </summary>
+	/// <returns>true: はい / false: いいえ</returns>
+	bool IsVRConnect() const;
+};

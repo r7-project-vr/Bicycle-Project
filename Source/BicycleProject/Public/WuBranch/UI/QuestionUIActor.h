@@ -44,6 +44,17 @@ public:
 	/// </summary>
 	void UseRightExit();
 
+	/// <summary>
+	/// 回答状況を取得
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool GetAnsweredStatus() const;
+
+	/// <summary>
+	/// 機能を無効にする
+	/// </summary>
+	void DisableFeature();
+
 private:
 
 	/// <summary>
@@ -70,6 +81,16 @@ private:
 	/// オートプレイ対象を出口へ誘導
 	/// </summary>
 	void LeadToExit(float DeltaTime);
+
+	/// <summary>
+	/// 状況を更新する
+	/// </summary>
+	void UpdateStatus();
+
+	/// <summary>
+	/// コリジョンを無効
+	/// </summary>
+	void DisableCollision();
 
 	/// <summary>
 	/// 一時停車領域
@@ -114,4 +135,9 @@ private:
 	/// オートプレイする時の既に移動した距離
 	/// </summary>
 	float _movedDistance;
+
+	/// <summary>
+	/// 回答済みですか
+	/// </summary>
+	bool _isAnswered;
 };

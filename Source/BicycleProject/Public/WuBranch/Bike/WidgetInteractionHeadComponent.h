@@ -27,17 +27,17 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
-	/// ヒントラインを表示する
+	/// UI補助線を表示する
 	/// </summary>
 	void EnableHintLine();
 
 	/// <summary>
-	/// ヒントラインを非表示にする
+	/// UI補助線を非表示にする
 	/// </summary>
 	void DisableHintLine();
 
 	/// <summary>
-	/// ヒントラインがUIを触ったら
+	/// UI補助線がUIを触ったら
 	/// </summary>
 	/// <param name="WidgetComponent"></param>
 	/// <param name="PreviousWidgetComponent"></param>

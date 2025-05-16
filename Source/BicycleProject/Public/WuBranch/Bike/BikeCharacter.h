@@ -55,7 +55,7 @@ public:
 	void SetTurningAngle(FRotator angle);
 
 	/// <summary>
-	/// ヒントラインを表示しない
+	/// UI補助線を表示しない
 	/// </summary>
 	void DisableHintLine();
 

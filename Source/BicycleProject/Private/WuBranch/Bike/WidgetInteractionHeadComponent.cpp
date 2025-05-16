@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "IXRTrackingSystem.h"
 #include "HeadMountedDisplay.h"
+#include <WuBranch/UI/QuestionUIActor.h>
 
 UWidgetInteractionHeadComponent::UWidgetInteractionHeadComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -43,9 +44,14 @@ void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComp
 	// 前に隠しているウィジェットがあれば、表示させる
 	if(WidgetComponent)
 	{
-		UUserWidget* Widget = WidgetComponent->GetWidget();
-		Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		EnableHintLine();
+		//未回答の問題だけ表示する
+		AQuestionUIActor* question = Cast<AQuestionUIActor>(WidgetComponent->GetOwner());
+		if (!question->GetAnsweredStatus())
+		{
+			UUserWidget* Widget = WidgetComponent->GetWidget();
+			Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			EnableHintLine();
+		}
 	}
 }
 

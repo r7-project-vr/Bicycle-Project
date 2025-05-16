@@ -76,7 +76,13 @@ private:
 	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
-	void ChangeLevel();
+	/// <param name="levelName">レベル名</param>
+	void ChangeLevel(FString levelName = "");
+
+	/// <summary>
+	/// すべての問題を無効にする
+	/// </summary>
+	void DisableAllQuestions();
 
 	/// <summary>
 	/// プレイヤー
@@ -98,6 +104,11 @@ private:
 	/// 問題の構造ができたらここを変える
 	/// </summary>
 	TArray<bool> _AnswerResults;
+
+	/// <summary>
+	/// すべての問題Actor
+	/// </summary>
+	TArray<class AActor*> _questionActors;
 
 	/// <summary>
 	/// 何問間違ったらゲームオーバー

@@ -54,10 +54,16 @@ public:
 	void DisableAutoPlay();
 
 	/// <summary>
-	/// 
+	/// オートプレイする時同期したい座標
 	/// </summary>
-	/// <param name="pos"></param>
+	/// <param name="pos">座標</param>
 	void SetSynchPos(FVector pos);
+
+	/// <summary>
+	/// 答えを選んだの処理
+	/// </summary>
+	/// <param name="dir">曲がりたい方向</param>
+	void HandleSelectAnswer(FRotator dir);
 
 private:
 
@@ -74,15 +80,9 @@ private:
 	void OnMove(FVector2D direction);
 
 	/// <summary>
-	/// 答えを選んだの処理
-	/// </summary>
-	/// <param name="dir">曲がりたい方向</param>
-	void HandleSelectAnswer(FRotator dir);
-
-	/// <summary>
 	/// 答えを選ぶ動作を機能させない
 	/// </summary>
-	void DisableSelectAnswer();
+	void DisableSelectAnswerAction();
 
 	/// <summary>
 	/// スピード

@@ -6,11 +6,11 @@
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
-#include "IXRTrackingSystem.h"
-#include "HeadMountedDisplay.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <WuBranch/Bike/BikeCharacter.h>
 #include "WuBranch/UI/QuestionUIActor.h"
+#include <Kismet/GameplayStatics.h>
+#include <WuBranch/QuestionGameMode.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -81,6 +81,20 @@ void UBikeComponent::SetSynchPos(FVector pos)
 	_synchronizePos = pos;
 }
 
+void UBikeComponent::HandleSelectAnswer(FRotator dir)
+{
+	// 曲がる
+	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
+	// 二回目以降選ばせない
+	DisableSelectAnswerAction();
+	// UI補助線を表示しない
+	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
+	if (character)
+	{
+		character->DisableHintLine();
+	}
+}
+
 void UBikeComponent::HandleInertia(float DeltaTime)
 {
 	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
@@ -103,13 +117,17 @@ void UBikeComponent::OnMove(FVector2D direction)
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
 	FVector dir = FVector::ZeroVector;
-	dir = actorForward * direction.X + actorRight * direction.Y;
+	// バックさせない
+	FVector2D bikeDir = direction;
+	if (bikeDir.X < 0)
+		bikeDir.X = 0;
+	dir = actorForward * bikeDir.X + actorRight * bikeDir.Y;
 
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
 	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	character->AddMovementInput(actorForward, direction.X);
-	character->AddMovementInput(actorRight, direction.Y);
+	character->AddMovementInput(actorForward, bikeDir.X);
+	character->AddMovementInput(actorRight, bikeDir.Y);
 
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * _speed;
@@ -118,30 +136,24 @@ void UBikeComponent::OnMove(FVector2D direction)
 void UBikeComponent::OnSelectLeftAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	gameMode->CheckAnswer(true);
+	//出口まで誘導
 	_questionActor->UseLeftExit();
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	gameMode->CheckAnswer(true);
+	//出口まで誘導
 	_questionActor->UseRightExit();
 }
 
-void UBikeComponent::HandleSelectAnswer(FRotator dir)
-{
-	// 曲がる
-	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
-	// 二回目以降選ばせない
-	DisableSelectAnswer();
-	// ヒントラインを表示しない
-	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	if (character)
-	{
-		character->DisableHintLine();
-	}
-}
-
-void UBikeComponent::DisableSelectAnswer()
+void UBikeComponent::DisableSelectAnswerAction()
 {
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
 	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();

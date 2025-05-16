@@ -15,13 +15,6 @@ ABikeCharacter::ABikeCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	_bikeMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("BikeMesh"));
-	_bikeMesh->SetupAttachment(RootComponent);
-	_bikeMesh->SetRelativeLocation(FVector(40.0f, 0.0f, -88.5f));
-	_bikeMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-	_bikeMesh->SetRelativeScale3D(FVector(1.4f, 1.4f, 1.4f));
-	AddInstanceComponent(_bikeMesh);
-
 	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 	AddInstanceComponent(_bike);
 
@@ -29,6 +22,8 @@ ABikeCharacter::ABikeCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	_handlebarCenteringSpeed = 1.0f;
+	_isRotate = false;
+	_handlebarsAngle = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -38,10 +33,11 @@ void ABikeCharacter::BeginPlay()
 
 	// カメラの下に置いたヒントラインを取得
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
+	// 自転車のメッシュをロード
 	LoadBikeMesh();
-	_isRotate = false;
+	//_isRotate = false;
 	_targetRotator = FRotator::ZeroRotator;
-	_handlebarsAngle = 0.0f;
+	//_handlebarsAngle = 0.0f;
 }
 
 // Called every frame
@@ -49,7 +45,6 @@ void ABikeCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	UAnimInstance* animation = GetMesh()->GetAnimInstance();
 	RotateBike(DeltaTime);
 }
 
@@ -100,16 +95,16 @@ void ABikeCharacter::SetTurningAngle(FRotator angle)
 	_isRotate = true;
 }
 
-void ABikeCharacter::LoadBikeMesh()
+void ABikeCharacter::DisableHintLine()
 {
-	// staticMeshの方、後で削除
-	/*{
-		const FSoftObjectPath& assetRef = _bikeMeshNeedLoad.ToSoftObjectPath();
-		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		Streamable.RequestAsyncLoad(assetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
-	}*/
-	
-	// skeletalMesh
+	if (_widgetInteractionHeadComponent)
+	{
+		_widgetInteractionHeadComponent->DisableHintLine();
+	}
+}
+
+void ABikeCharacter::LoadBikeMesh()
+{	
 	if (_bikeSkeletalNeedLoad)
 	{
 		const FSoftObjectPath& assetRef = _bikeSkeletalNeedLoad.ToSoftObjectPath();
@@ -120,12 +115,6 @@ void ABikeCharacter::LoadBikeMesh()
 
 void ABikeCharacter::LoadMeshComplete()
 {
-	/*UStaticMesh* mesh = _bikeMeshNeedLoad.Get();
-	if (mesh)
-	{
-		_bikeMesh->SetStaticMesh(mesh);
-	}*/
-
 	USkeletalMesh* skeletalMesh = _bikeSkeletalNeedLoad.Get();
 	if (skeletalMesh)
 	{

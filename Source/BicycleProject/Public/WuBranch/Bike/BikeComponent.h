@@ -74,12 +74,6 @@ private:
 	void OnMove(FVector2D direction);
 
 	/// <summary>
-	/// VRデバイスに接続しているか
-	/// </summary>
-	/// <returns>true: はい / false: いいえ</returns>
-	bool IsVRConnect() const;
-
-	/// <summary>
 	/// 答えを選んだの処理
 	/// </summary>
 	/// <param name="dir">曲がりたい方向</param>

@@ -47,6 +47,9 @@ void AQuestionUIActor::BeginPlay()
 	SetTarget(nullptr);
 	_exitTarget = nullptr;
 	_movedDistance = 0.0f;
+	_isAnswered = false;
+
+	NotDisplayUI();
 }
 
 void AQuestionUIActor::Tick(float DeltaTime)
@@ -62,16 +65,29 @@ void AQuestionUIActor::SetProblem()
 
 void AQuestionUIActor::UseLeftExit()
 {
+	_isAnswered = true;
 	_exitTarget = _exitLeft;
-	// 答えたのでUIを非表示
-	NotDisplayUI();
+	UpdateStatus();
 }
 
 void AQuestionUIActor::UseRightExit()
 {
+	_isAnswered = true;
 	_exitTarget = _exitRight;
-	// 答えたのでUIを非表示
+	UpdateStatus();
+}
+
+bool AQuestionUIActor::GetAnsweredStatus() const
+{
+	return _isAnswered;
+}
+
+void AQuestionUIActor::DisableFeature()
+{
+	// UI
 	NotDisplayUI();
+	// コリジョン
+	DisableCollision();
 }
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
@@ -95,14 +111,13 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{
-		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Red, 10.f);
+		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 		
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(bike);
 		HandlePlayerEnterArea(bike);
 		
-		// エリアのコリジョンを機能させない
-		_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+		DisableCollision();
 	}
 }
 
@@ -138,4 +153,19 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 			gameInstance->GetDeviceManager()->EnableDefaultActions();
 		}
 	}
+}
+
+void AQuestionUIActor::UpdateStatus()
+{
+	//回答済み
+	if (_isAnswered)
+	{
+		DisableFeature();
+	}
+}
+
+void AQuestionUIActor::DisableCollision()
+{
+	// エリアのコリジョン
+	_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 }

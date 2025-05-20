@@ -10,6 +10,8 @@
 #include "WuBranch/UI/QuestionUIActor.h"
 #include <WuBranch/MyGameInstance.h>
 #include "WuBranch/Device/DeviceManager.h"
+#include <UntakuBranch/Question.h>
+#include "WuBranch/Actor/EndPosition.h"
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -25,6 +27,7 @@ void AQuestionGameMode::BeginPlay()
 
 	_correctNum = 0;
 	_wrongNum = 0;
+	GetQuestions();
 }
 
 void AQuestionGameMode::PassTheGoal(AActor* passedActor)
@@ -37,7 +40,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 			_playerController->SetPlayerEnabledState(false);
 		}
 
-		// ゴールに到達したらゲームオーバー
+		// ゴールに到達したらゲームクリア
 		GameOver(true);
 
 		// エフェクト
@@ -54,55 +57,66 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
-		FTimerDelegate TimerDel;
-		TimerDel.BindUFunction(this, FName("ChangeLevel"), "TestMap");
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, TimerDel, 5.f, false);
+		/*FTimerDelegate timerDelegate;
+		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		FTimerHandle timerHandle;
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
 	}
 }
 
-void AQuestionGameMode::CheckAnswer(bool answer)
+void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
-	// call question manager to check answer
-	bool result = rand() % 2 == 0; // 仮の答え合わせ
-
+	// 問題システムに問題IDと解答を送って答えをもらう
+	bool result = rand() % 2 == 0;
+	// 正解と不正解の数を計算
 	if (result)
 		_correctNum++;
 	else
 		_wrongNum++;
 
-	_AnswerResults.Add(result);
+	// 答えを保存
+	// 問題IDがquestionIDの問題を見つける
+	FQuestion* question = _questions.FindByPredicate([questionID](const FQuestion& question) {
+		return question.ID == questionID;
+	});
+	if (question)
+	{
+		question->PlayerAnswer = answer;
+	}
+	
+	// UI更新
+	UpdateAnswerUI();
 	UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
-
+	
+	// ゲームオーバー
 	if (IsGameFailed())
 	{
-		// ゲームオーバーUIの表示
+		// UIの表示
 		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
 		// デフォルト入力を無効
 		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		gameInstance->GetDeviceManager()->DisableDefaultActions();
 		// すべての問題を無効にする
 		DisableAllQuestions();
+		// エフェクト
 
 		//5秒後に次の世界に行く
-		/*FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AQuestionGameMode::ChangeLevel, 5.f, false);*/
+		// 注意!!レベル名は間違わないように!!
+		/*FTimerDelegate timerDelegate;
+		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		FTimerHandle timerHandle;
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
 	}
+	// ゲームクリア
 	else if (IsGameClear())
 	{
 		// ゲームクリア
 		UKismetSystemLibrary::PrintString(this, "GameClear!", true, false, FColor::Green, 10.f);
-		// デフォルト入力を無効
-		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-		gameInstance->GetDeviceManager()->DisableDefaultActions();
 		// すべての問題を無効にする
 		DisableAllQuestions();
+		// ゴールをプレイヤーの進行先に置く
+		PlaceGoal();
 	}
-}
-
-TArray<bool> AQuestionGameMode::GetAnswerResults()
-{
-	return _AnswerResults;
 }
 
 int AQuestionGameMode::GetCurrectNumber() const
@@ -115,6 +129,13 @@ int AQuestionGameMode::GetWrongNumber() const
 	return _wrongNum;
 }
 
+void AQuestionGameMode::GetQuestions()
+{
+	// 問題システムをよび
+	// 未完成
+	//_questions = ;
+}
+
 bool AQuestionGameMode::IsGameFailed() const
 {
 	return _wrongNum >= _failCondition;
@@ -123,6 +144,11 @@ bool AQuestionGameMode::IsGameFailed() const
 bool AQuestionGameMode::IsGameClear() const
 {
 	return _correctNum >= _successCondition;
+}
+
+void AQuestionGameMode::UpdateAnswerUI()
+{
+	onUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
 }
 
 void AQuestionGameMode::ChangeLevel(FString levelName)
@@ -144,4 +170,21 @@ void AQuestionGameMode::DisableAllQuestions()
 			question->DisableFeature();
 		}
 	}
+}
+
+void AQuestionGameMode::PlaceGoal()
+{
+	// 地図上のゴールを探す
+	TArray<AActor*> goals;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), goals);
+	if (goals.Num() <= 0)
+		return;
+
+	AActor* goal = goals[0];
+	// プレイヤーの位置と向きをゲット
+	FVector playerLocation = _player->GetActorLocation();
+	FVector playerForward = _player->GetActorForwardVector();
+	// ゴールをプレイヤーの進行先に置く
+	float distance = 8000.0f;
+	goal->SetActorLocation(playerLocation + playerForward * distance);
 }

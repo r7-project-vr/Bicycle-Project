@@ -55,6 +55,14 @@ public:
 	/// </summary>
 	void DisableFeature();
 
+	/// <summary>
+	/// 出口の位置と向き方向を取得
+	/// </summary>
+	/// <param name="oLocation">位置</param>
+	/// <param name="oForward">向き方向</param>
+	/// <returns>true: 成功, false: 失敗</returns>
+	bool GetExitLocationAndForward(FVector& oLocation, FVector& oForward);
+
 private:
 
 	/// <summary>

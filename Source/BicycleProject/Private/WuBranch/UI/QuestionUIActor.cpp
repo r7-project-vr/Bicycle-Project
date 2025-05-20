@@ -90,6 +90,19 @@ void AQuestionUIActor::DisableFeature()
 	DisableCollision();
 }
 
+bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oForward)
+{
+	//出口がある
+	int exitNum = _exitTarget->GetNumberOfSplinePoints();
+	if (exitNum > 1)
+	{
+		oLocation = _exitTarget->GetLocationAtSplinePoint(exitNum - 1, ESplineCoordinateSpace::World);
+		oForward = _exitTarget->GetDirectionAtSplinePoint(exitNum - 1, ESplineCoordinateSpace::World);
+		return true;
+	}
+	return false;
+}
+
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());

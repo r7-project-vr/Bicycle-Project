@@ -136,21 +136,25 @@ void UBikeComponent::OnMove(FVector2D direction)
 void UBikeComponent::OnSelectLeftAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
-	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(true);
 	//出口まで誘導
 	_questionActor->UseLeftExit();
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	// 未完成
+	gameMode->CheckAnswer(45, 0);
+	
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
-	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(true);
 	//出口まで誘導
 	_questionActor->UseRightExit();
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	// 未完成
+	gameMode->CheckAnswer(2, 1);
+	
 }
 
 void UBikeComponent::DisableSelectAnswerAction()

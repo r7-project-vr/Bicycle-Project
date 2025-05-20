@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "QuestionGameMode.generated.h"
 
+struct FQuestion;
+
 /**
  * 
  */
@@ -27,18 +29,12 @@ public:
 	void PassTheGoal(AActor* passedActor);
 
 	/// <summary>
-	/// 答え合わせ(仮)
+	/// 答え合わせ
 	/// </summary>
-	/// <param name="question">答え</param>
+	/// <param name="questionID">問題ID</param>
+	/// <param name="answer">解答</param>
 	UFUNCTION(BlueprintCallable)
-	void CheckAnswer(bool answer = false);
-
-	/// <summary>
-	/// 今までの回答をゲット
-	/// </summary>
-	/// <returns>全部の回答</returns>
-	UFUNCTION(BlueprintCallable)
-	TArray<bool> GetAnswerResults();
+	void CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
 	/// 正解した答えの数をゲット
@@ -54,12 +50,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetWrongNumber() const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
+	
+	UPROPERTY(BlueprintAssignable)
+	FUpdateAnswerRateUIDelegate onUpdateAnswerUIDelegate;
+
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void GameOver(bool isFinish);
 
 private:
+
+	/// <summary>
+	/// 今回の問題を取得
+	/// </summary>
+	void GetQuestions();
 
 	/// <summary>
 	/// ゲームオーバーのチェック
@@ -74,6 +80,11 @@ private:
 	bool IsGameClear() const;
 
 	/// <summary>
+	/// UIを更新
+	/// </summary>
+	void UpdateAnswerUI();
+
+	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
 	/// <param name="levelName">レベル名</param>
@@ -83,6 +94,11 @@ private:
 	/// すべての問題を無効にする
 	/// </summary>
 	void DisableAllQuestions();
+
+	/// <summary>
+	/// ゴールを設置
+	/// </summary>
+	void PlaceGoal();
 
 	/// <summary>
 	/// プレイヤー
@@ -100,10 +116,9 @@ private:
 	TArray<class AActor*> _fireworks;
 
 	/// <summary>
-	/// 答えの結果(仮)
-	/// 問題の構造ができたらここを変える
+	/// 問題
 	/// </summary>
-	TArray<bool> _AnswerResults;
+	TArray<FQuestion> _questions;
 
 	/// <summary>
 	/// すべての問題Actor

@@ -9,6 +9,7 @@
 /**
  * 
  */
+struct FQuestion;
 UCLASS(Abstract, Blueprintable)
 class BICYCLEPROJECT_API UOptionUIWidget : public UUserWidget
 {
@@ -16,14 +17,18 @@ class BICYCLEPROJECT_API UOptionUIWidget : public UUserWidget
 	
 public:
 
-	void SetQuestionAndAnswer();
+	void SetQuestionAndAnswer(const FQuestion& Question);
 
 protected:
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent)
 	void SetQuestion(const FString& quest);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	void SetAnswer(const FString& answer);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetAnswer(int32 answerNum, const TArray<FString>& answers);
 
+private:
+	int32 questionID;
+
+	void GetQuestionID(int32 questionID);
 };

@@ -20,7 +20,7 @@ class BICYCLEPROJECT_API ATimeManager : public AActor
 	
 public:	
 	// Sets default values for this actor's properties
-	ATimeManager();
+	ATimeManager(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,6 +47,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* _widgetT;
 	UTimerWidget* TimerW;
+
+	//ディスパッチャー
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeEndDelegate);
+	UPROPERTY(BlueprintAssignable)
+	FTimeEndDelegate timeEnd;
+
+	UFUNCTION()
+	void printst();
 
 private:
 	void SetupInput();

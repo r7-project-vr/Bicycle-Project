@@ -7,17 +7,20 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "tokuamaru/TimerWidget.h"
+#include "tokuamaru/QuestionManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 class UInputMappingContext;
 
 // Sets default values
-ATimeManager::ATimeManager()
+ATimeManager::ATimeManager(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	RootComponent = CreateDefaultSubobject<USceneComponent>(FName("Root"));
+	
+	USceneComponent* scene = CreateDefaultSubobject<USceneComponent>(FName("Scene"));
+	RootComponent = scene;
 	AddInstanceComponent(RootComponent);
 
 	_widgetT = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
@@ -25,18 +28,32 @@ ATimeManager::ATimeManager()
 	AddInstanceComponent(_widgetT);
 
 
+	//UQuestionManager* QuestionInstance;
+	//QuestionInstance = ObjectInitializer.CreateDefaultSubobject<UQuestionManager>(this,TEXT("hoge"));
+
+	//timeEnd.AddDynamic(QuestionInstance, &UQuestionManager::printtest);
+
 }
 
 // Called when the game starts or when spawned
 void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
-	timer = 20.0f;
+
+	//UObjectの関数をバインドしている。もしアクター
+	UTimerWidget* WidgetInstance = NewObject<UTimerWidget>(this, UTimerWidget::StaticClass(), TEXT("hoge"));
+	if (WidgetInstance)
+	{
+		timeEnd.AddDynamic(WidgetInstance, &UTimerWidget::printet);
+	}
+
+	timer = 5.0f;
 	TimerW = Cast<UTimerWidget>(_widgetT->GetWidget());
 	stoper = false;
 	soundPlay = false;
 
 	SetupInput();
+
 }
 
 // Called every frame
@@ -59,6 +76,12 @@ void ATimeManager::Tick(float DeltaTime)
 		}
 		else if (timer < 0) {
 			timer = 0;
+			FVector timerVec = GetActorLocation();
+			TimerW->FinishTimer(timerVec);
+
+			timeEnd.Broadcast();
+
+			stoper = true;
 
 		}
 	}
@@ -68,6 +91,11 @@ void ATimeManager::Tick(float DeltaTime)
 		SoundPlay();
 		soundPlay = true;
 	}
+}
+
+void ATimeManager::printst()
+{
+	UE_LOG(LogTemp, Error, TEXT("w"));
 }
 
 void ATimeManager::SetupInput()

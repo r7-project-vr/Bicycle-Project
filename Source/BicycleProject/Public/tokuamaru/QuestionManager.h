@@ -13,5 +13,6 @@ UCLASS()
 class BICYCLEPROJECT_API UQuestionManager : public UObject
 {
 	GENERATED_BODY()
+public:
 	
 };

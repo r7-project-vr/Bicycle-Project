@@ -6,3 +6,8 @@
 void SetTimer(float time)
 {
 }
+
+void UTimerWidget::printet()
+{
+	UE_LOG(LogTemp, Error, TEXT("wowwow"));
+}

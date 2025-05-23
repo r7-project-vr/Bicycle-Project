@@ -54,6 +54,16 @@ public:
 	void ChangeDevice(EDeviceType type);
 
 	/// <summary>
+	/// デフォルトアクションを機能させる
+	/// </summary>
+	void EnableDefaultActions();
+
+	/// <summary>
+	/// デフォルトアクションを機能させない
+	/// </summary>
+	void DisableDefaultActions();
+
+	/// <summary>
 	/// 答えを選べるようにする
 	/// </summary>
 	void EnableSelectAnswerActions();

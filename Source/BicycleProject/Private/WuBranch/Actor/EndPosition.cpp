@@ -6,9 +6,7 @@
 #include "Components/BoxComponent.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
-#include <WuBranch/Bike/BikeComponent.h>
-#include <NiagaraFunctionLibrary.h>
-#include <NiagaraComponent.h>
+#include "WuBranch/QuestionGameMode.h"
 
 // Sets default values
 AEndPosition::AEndPosition()
@@ -24,8 +22,6 @@ AEndPosition::AEndPosition()
 	_mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	_mesh->SetupAttachment(RootComponent);
 	AddInstanceComponent(_mesh);
-
-	_isReadyToChangeLevel = false;
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +29,7 @@ void AEndPosition::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	_gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 }
 
 // Called every frame
@@ -44,32 +41,15 @@ void AEndPosition::Tick(float DeltaTime)
 
 void AEndPosition::OnOverlapBeginFinishLine(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag("Player") && !_isReadyToChangeLevel)
+	if (OtherActor->ActorHasTag("Player"))
 	{
 		// 再びトリガーしないように
-		_isReadyToChangeLevel = true;
+		_finishLineCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-		// 自転車の制御を強制的にオフにする 
-		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		bike->OpenForcedControl();
-
-		// エフェクト
-		if (_fireworkEffectLeft)
+		if (_gameMode)
 		{
-			FVector offset = FVector(200.0f, 0.0f, 0.0f);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectLeft, GetActorLocation() - offset);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectRight, GetActorLocation() + offset);
+			_gameMode->PassTheGoal(OtherActor);
 		}
-
-		//5秒後にレベルを再読み込み
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEndPosition::RestartLevel, 5.f, false);
 	}
-}
-
-void AEndPosition::RestartLevel()
-{
-	FString map = UGameplayStatics::GetCurrentLevelName(GetWorld());
-	UGameplayStatics::OpenLevel(GetWorld(), FName(map));
 }
 

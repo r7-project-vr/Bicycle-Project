@@ -31,11 +31,6 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
-	/// 今の世界を再読み込み
-	/// </summary>
-	void RestartLevel();
-
-	/// <summary>
 	/// ゴールのメッシュ
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -47,11 +42,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* _finishLineCollision;
 
-	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectLeft;
+	/// <summary>
+	/// ゲームモード
+	/// </summary>
+	class AQuestionGameMode* _gameMode;
 
-	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectRight;
-
-	bool _isReadyToChangeLevel;
 };

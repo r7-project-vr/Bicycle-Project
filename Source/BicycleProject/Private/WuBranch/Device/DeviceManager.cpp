@@ -55,6 +55,16 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 	}
 }
 
+void UDeviceManager::EnableDefaultActions()
+{
+	IDeviceInterface::Execute_EnableDefaultActions(_device);
+}
+
+void UDeviceManager::DisableDefaultActions()
+{
+	IDeviceInterface::Execute_DisableDefaultActions(_device);
+}
+
 void UDeviceManager::EnableSelectAnswerActions()
 {
 	IDeviceInterface::Execute_EnableSelectAnswerActions(_device);

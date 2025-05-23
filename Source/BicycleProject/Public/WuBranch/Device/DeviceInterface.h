@@ -86,6 +86,18 @@ public:
 	EDeviceConnectType GetConnectState();
 
 	/// <summary>
+	/// デフォルトアクションを機能させる
+	/// </summary>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void EnableDefaultActions();
+
+	/// <summary>
+	/// デフォルトアクションを機能させない
+	/// </summary>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
+	void DisableDefaultActions();
+
+	/// <summary>
 	/// 答えを選べるようにする
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")

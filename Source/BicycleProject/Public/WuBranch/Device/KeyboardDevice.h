@@ -24,6 +24,10 @@ public:
 
 	virtual void Init() override;
 
+	void EnableDefaultActions_Implementation() override;
+
+	void DisableDefaultActions_Implementation() override;
+
 	void EnableSelectAnswerActions_Implementation() override;
 
 	void DisableSelectAnswerActions_Implementation() override;
@@ -31,9 +35,9 @@ public:
 private:
 
 	/// <summary>
-	/// キーセットアップ
+	/// アクションをセットアップ
 	/// </summary>
-	void SetupKey();
+	void SetupAction();
 
 	/// <summary>
 	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ
@@ -79,18 +83,7 @@ private:
 	UInputAction* _selectLeftAction;
 
 	/// <summary>
-	/// 左の答えを選択するアクションのID
-	/// </summary>
-	uint32 _selectLeftActionID;
-
-	/// <summary>
 	/// 右の答えを選択するアクション
 	/// </summary>
 	UInputAction* _selectRightAction;
-
-	/// <summary>
-	/// 右の答えを選択するアクションのID
-	/// </summary>
-	uint32 _selectRightActionID;
-
 };

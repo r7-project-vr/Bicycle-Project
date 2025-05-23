@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "BaseUIActor.generated.h"
 
+class UWidgetComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API ABaseUIActor : public AActor
 {
@@ -23,11 +25,21 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
+	/// <summary>
+	/// UIを表示する
+	/// </summary>
+	void DisplayUI();
+
+	/// <summary>
+	/// UIを表示しない
+	/// </summary>
+	void NotDisplayUI();
+
+protected:
 
 	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* _widget;
+	UWidgetComponent* _widget;
 };

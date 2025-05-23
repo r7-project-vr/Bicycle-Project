@@ -27,7 +27,8 @@ void AQuestionGameMode::BeginPlay()
 
 	_correctNum = 0;
 	_wrongNum = 0;
-	GetQuestions();
+
+	GetAllQuestions();
 }
 
 void AQuestionGameMode::PassTheGoal(AActor* passedActor)
@@ -83,11 +84,11 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	{
 		question->PlayerAnswer = answer;
 	}
-	
+
 	// UI更新
 	UpdateAnswerUI();
 	UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
-	
+
 	// ゲームオーバー
 	if (IsGameFailed())
 	{
@@ -115,7 +116,7 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		// すべての問題を無効にする
 		DisableAllQuestions();
 		// ゴールをプレイヤーの進行先に置く
-		PlaceGoal();
+		PlaceGoal(questionID);
 	}
 }
 
@@ -129,11 +130,21 @@ int AQuestionGameMode::GetWrongNumber() const
 	return _wrongNum;
 }
 
-void AQuestionGameMode::GetQuestions()
+bool AQuestionGameMode::GetAllQuestions()
 {
-	// 問題システムをよび
+	// 問題システムを呼ぶ
 	// 未完成
 	//_questions = ;
+	return false;
+}
+
+FQuestion* AQuestionGameMode::GetQuestion()
+{
+	if (_questions.Num() > 0)
+	{
+		return &_questions[0];
+	}
+	return nullptr;
 }
 
 bool AQuestionGameMode::IsGameFailed() const
@@ -172,7 +183,7 @@ void AQuestionGameMode::DisableAllQuestions()
 	}
 }
 
-void AQuestionGameMode::PlaceGoal()
+void AQuestionGameMode::PlaceGoal(int32 questionID)
 {
 	// 地図上のゴールを探す
 	TArray<AActor*> goals;
@@ -181,10 +192,33 @@ void AQuestionGameMode::PlaceGoal()
 		return;
 
 	AActor* goal = goals[0];
-	// プレイヤーの位置と向きをゲット
-	FVector playerLocation = _player->GetActorLocation();
-	FVector playerForward = _player->GetActorForwardVector();
-	// ゴールをプレイヤーの進行先に置く
-	float distance = 8000.0f;
-	goal->SetActorLocation(playerLocation + playerForward * distance);
+	// 問題を特定
+	AQuestionUIActor* target = nullptr;
+	for (AActor* actor : _questionActors)
+	{
+		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
+		{
+			// 王さんを待つ
+			//if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidget()))
+			//{
+			//	// UIからもらったquestionIDと比べて目標となっているアクターをゲット
+			//	if(questionUI->questionID == questionID)
+			//		target = question;
+			//}
+		}
+	}
+	if (!target)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Did not find Question Actor!!"));
+		return;
+	}
+	// 問題の出口の位置と向きをゲット
+	FVector startLocation, forward;
+	if (target->GetExitLocationAndForward(startLocation, forward))
+	{
+		// ゴールを進行先に置く
+		float distance = 8000.0f;
+		goal->SetActorLocation(startLocation + forward * distance);
+	}
+
 }

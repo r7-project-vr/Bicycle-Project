@@ -23,6 +23,11 @@ protected:
 public:
 
 	/// <summary>
+	/// 問題を取得
+	/// </summary>
+	FQuestion* GetQuestion();
+
+	/// <summary>
 	/// ゴールに到達した
 	/// </summary>
 	/// <param name="passedActor"></param>
@@ -63,9 +68,9 @@ protected:
 private:
 
 	/// <summary>
-	/// 今回の問題を取得
+	/// ゲーム中に使う全部の問題を一気にゲット
 	/// </summary>
-	void GetQuestions();
+	bool GetAllQuestions();
 
 	/// <summary>
 	/// ゲームオーバーのチェック
@@ -98,7 +103,7 @@ private:
 	/// <summary>
 	/// ゴールを設置
 	/// </summary>
-	void PlaceGoal();
+	void PlaceGoal(int32 questionID);
 
 	/// <summary>
 	/// プレイヤー

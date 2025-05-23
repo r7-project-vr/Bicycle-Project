@@ -8,6 +8,8 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/SplineComponent.h>
+#include <WuBranch/QuestionGameMode.h>
+#include <Components/WidgetComponent.h>
 
 
 AQuestionUIActor::AQuestionUIActor()
@@ -126,6 +128,13 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 		
+		// 問題内容をゲット
+		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
+		FQuestion* question = gameMode->GetQuestion();
+		// 問題UIにデータを渡す
+		//_widget->GetWidget();
+
+		// オートプレイ対象の設置
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(bike);
 		HandlePlayerEnterArea(bike);

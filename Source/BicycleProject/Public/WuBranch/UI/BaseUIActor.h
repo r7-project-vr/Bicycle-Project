@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "BaseUIActor.generated.h"
 
+class UWidgetComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API ABaseUIActor : public AActor
 {
@@ -33,11 +35,11 @@ public:
 	/// </summary>
 	void NotDisplayUI();
 
-private:
+protected:
 
 	/// <summary>
 	/// UIを表示させるもの
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* _widget;
+	UWidgetComponent* _widget;
 };

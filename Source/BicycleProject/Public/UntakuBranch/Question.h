@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "Question.generated.h"
 
 /**
  *  Author : WangYunze
- *  Created : 2025-05-17 
+ *  Created : 2025-05-17 \
+ *  Version : v1.2
  */
 
 //難易度enum
@@ -21,7 +23,7 @@ enum class EQuestionLevel : uint8
 
 //問題結構体
 USTRUCT(BlueprintType)
-struct FQuestion
+struct FQuestion : public FTableRowBase
 {
     GENERATED_BODY()
 

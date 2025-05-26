@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DataTable.h"
 #include "Question.h"
 #include "QuestionManager.generated.h"
 
@@ -11,7 +12,7 @@
 /**
  *  Author : WangYunze
  *  Created : 2025-05-24 
- *  Version : v1.1
+ *  Version : v1.2
  */
 
 UCLASS()
@@ -37,4 +38,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Question")
 	TArray<FQuestion> GetRandomQuestions(int32 NumQuestions);
 
+private:
+	void TestRandomQuestions();	
 };

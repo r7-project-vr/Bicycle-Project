@@ -3,7 +3,7 @@
 
 #include "UntakuBranch/QuestionManager.h"
 #include "Engine/DataTable.h"
-
+#include "Engine/Engine.h"
 
 /**
  *  Author : WangYunze
@@ -55,3 +55,17 @@ TArray<FQuestion> AQuestionManager::GetRandomQuestions(int32 NumQuestions)
 	return Result;
 }
 
+
+void AQuestionManager::TestRandomQuestions()
+{
+	int32 NumToDraw = 3;//自由設定できる　抽選問題数
+	TArray<FQuestion> RandomQuestions = GetRandomQuestions(NumToDraw);
+
+	for (const FQuestion& Q : RandomQuestions)
+	{
+		FString Message = FString::Printf(TEXT("Get Question ID: %d CONTENT: %s"), Q.ID, *Q.Content);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Message);
+	}
+
+	
+}

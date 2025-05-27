@@ -8,7 +8,7 @@
 /**
  *  Author : WangYunze
  *  Created : 2025-05-24 
- *  Version : v1.1
+ *  Version : v1.3
  */
 
 // Sets default values
@@ -56,6 +56,8 @@ TArray<FQuestion> AQuestionManager::GetRandomQuestions(int32 NumQuestions)
 			Result.Add(*Question);
 		}
 	}
+	LastRandomQuestions = Result; //random結果保存
+	
 	return Result;
 }
 
@@ -84,4 +86,21 @@ void AQuestionManager::TestRandomQuestions()
 	}
 
 	
+}
+
+bool AQuestionManager::CheckPlayerAnswerInLastRandom(int32 QuestionID, int32 PlayerAnswer)
+{
+	for (const FQuestion& Q : LastRandomQuestions)
+	{
+		if (Q.ID == QuestionID)
+		{
+			bool bIsCorrect = (Q.Correct == PlayerAnswer);
+			UE_LOG(LogTemp, Log, TEXT("Check Last Random Question ID %d: %s"),
+				QuestionID, bIsCorrect ? TEXT("Correct") : TEXT("Wrong"));
+				return bIsCorrect;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Check Last Random Question ID %d: Not Found!"), QuestionID);
+	return false;
 }

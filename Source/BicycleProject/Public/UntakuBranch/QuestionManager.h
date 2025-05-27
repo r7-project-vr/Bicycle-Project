@@ -12,7 +12,7 @@
 /**
  *  Author : WangYunze
  *  Created : 2025-05-24 
- *  Version : v1.2
+ *  Version : v1.3
  */
 
 UCLASS()
@@ -38,6 +38,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Question")
 	TArray<FQuestion> GetRandomQuestions(int32 NumQuestions);
 
+	UFUNCTION(BlueprintCallable, Category = "Question")
+	bool CheckPlayerAnswerInLastRandom(int32 QuestionID, int32 PlayerAnswer);
+
 private:
-	void TestRandomQuestions();	
+	void TestRandomQuestions();
+
+	TArray<FQuestion> LastRandomQuestions;
 };

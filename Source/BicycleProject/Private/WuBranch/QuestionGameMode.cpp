@@ -12,6 +12,7 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <UntakuBranch/Question.h>
 #include "WuBranch/Actor/EndPosition.h"
+#include "UntakuBranch/QuestionManager.h"
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -24,6 +25,8 @@ void AQuestionGameMode::BeginPlay()
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
+
+	_questionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
 
 	_correctNum = 0;
 	_wrongNum = 0;
@@ -130,12 +133,16 @@ int AQuestionGameMode::GetWrongNumber() const
 	return _wrongNum;
 }
 
-bool AQuestionGameMode::GetAllQuestions()
+void AQuestionGameMode::GetAllQuestions()
 {
-	// 問題システムを呼ぶ
-	// 未完成
-	//_questions = ;
-	return false;
+	// 問題管理者から問題をゲット
+	if (!_questionManager)
+		return;
+
+	// 問題の総数はゲームオーバーになる不正解数とゲームクリアになる正解数の合計
+	_questions = _questionManager->GetRandomQuestions(_failCondition + _successCondition);
+	if (_questions.Num() <= 0)
+		UE_LOG(LogTemp, Error, TEXT("Get questions failed!!"));
 }
 
 FQuestion* AQuestionGameMode::GetQuestion()

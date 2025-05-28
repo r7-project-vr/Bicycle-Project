@@ -70,7 +70,7 @@ private:
 	/// <summary>
 	/// ゲーム中に使う全部の問題を一気にゲット
 	/// </summary>
-	bool GetAllQuestions();
+	void GetAllQuestions();
 
 	/// <summary>
 	/// ゲームオーバーのチェック
@@ -114,6 +114,11 @@ private:
 	/// プレイヤコントローラー
 	/// </summary>
 	class ABikePlayerController* _playerController;
+
+	/// <summary>
+	/// 問題の管理者
+	/// </summary>
+	class AQuestionManager* _questionManager;
 
 	/// <summary>
 	/// レベル上全部の花火

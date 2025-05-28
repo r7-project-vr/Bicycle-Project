@@ -18,3 +18,8 @@ void UOptionUIWidget::OnSelectedOption(int32 OptionIndex)
 		OnOptionSelected.Broadcast(OptionIndex);
 	}
 }
+
+int UOptionUIWidget::GetQuestionID()const
+{
+	return questionID;
+}

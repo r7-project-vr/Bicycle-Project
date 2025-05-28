@@ -33,6 +33,7 @@ protected:
 	void SetAnswer(int32 answerNum, const TArray<FString>& answers);
 
 private:
+	UPROPERTY(BlueprintReadOnly,meta=(AllowPrivateAccess="true"))
 	int32 questionID;
 	int32 MaxPressTime=3.f;
 

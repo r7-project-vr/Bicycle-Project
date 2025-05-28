@@ -6,6 +6,7 @@
 
 void UOptionUIWidget::SetQuestionAndAnswer(const FQuestion& Question)
 {
+	questionID = Question.ID;
 	SetQuestion(Question.Content);
 	SetAnswer(Question.AnswerNum, Question.AnswerContents);
 }

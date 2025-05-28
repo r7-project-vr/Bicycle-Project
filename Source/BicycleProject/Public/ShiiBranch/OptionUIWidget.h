@@ -9,6 +9,8 @@
 /**
  * 
  */
+struct FQuestion;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOptionSelected, int32, SelectedOptionIndex);
 UCLASS(Abstract, Blueprintable)
 class BICYCLEPROJECT_API UOptionUIWidget : public UUserWidget
 {
@@ -16,10 +18,23 @@ class BICYCLEPROJECT_API UOptionUIWidget : public UUserWidget
 	
 public:
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void SetQuestionAndAnswer(const FQuestion& Question);
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnOptionSelected OnOptionSelected;
+
+	void OnSelectedOption(int32 OptionIndex);
+
+protected:
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void SetQuestion(const FString& quest);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	void SetAnswer(const FString& answer);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetAnswer(int32 answerNum, const TArray<FString>& answers);
 
+private:
+	int32 questionID;
+	int32 MaxPressTime=3.f;
+
+	void GetQuestionID(int32 questionID);
 };

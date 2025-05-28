@@ -13,6 +13,8 @@
 #include <UntakuBranch/Question.h>
 #include "WuBranch/Actor/EndPosition.h"
 #include "UntakuBranch/QuestionManager.h"
+#include <ShiiBranch/OptionUIWidget.h>
+#include <Components/WidgetComponent.h>
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -71,7 +73,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
-	bool result = rand() % 2 == 0;
+	bool result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
 	// 正解と不正解の数を計算
 	if (result)
 		_correctNum++;
@@ -137,7 +139,10 @@ void AQuestionGameMode::GetAllQuestions()
 {
 	// 問題管理者から問題をゲット
 	if (!_questionManager)
+	{
+		UE_LOG(LogTemp, Error, TEXT("question Manager is not found!!"));
 		return;
+	}
 
 	// 問題の総数はゲームオーバーになる不正解数とゲームクリアになる正解数の合計
 	_questions = _questionManager->GetRandomQuestions(_failCondition + _successCondition);
@@ -205,13 +210,12 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	{
 		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
 		{
-			// 王さんを待つ
-			//if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidget()))
-			//{
-			//	// UIからもらったquestionIDと比べて目標となっているアクターをゲット
-			//	if(questionUI->questionID == questionID)
-			//		target = question;
-			//}
+			if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidgetComponent()->GetWidget()))
+			{
+				// UIからもらったquestionIDと比べて目標となっているアクターをゲット
+				/*if(questionUI->questionID == questionID)
+					target = question;*/
+			}
 		}
 	}
 	if (!target)

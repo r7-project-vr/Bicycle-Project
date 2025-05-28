@@ -43,3 +43,8 @@ void ABaseUIActor::NotDisplayUI()
 	_widget->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 }
 
+UWidgetComponent* ABaseUIActor::GetWidgetComponent()
+{
+	return _widget;
+}
+

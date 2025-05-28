@@ -35,6 +35,12 @@ public:
 	/// </summary>
 	void NotDisplayUI();
 
+	/// <summary>
+	/// UIをゲット
+	/// </summary>
+	/// <returns>UI</returns>
+	UWidgetComponent* GetWidgetComponent();
+
 protected:
 
 	/// <summary>

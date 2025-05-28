@@ -9,3 +9,11 @@ void UOptionUIWidget::SetQuestionAndAnswer(const FQuestion& Question)
 	SetQuestion(Question.Content);
 	SetAnswer(Question.AnswerNum, Question.AnswerContents);
 }
+
+void UOptionUIWidget::OnSelectedOption(int32 OptionIndex)
+{
+	if (OnOptionSelected.IsBound())
+	{
+		OnOptionSelected.Broadcast(OptionIndex);
+	}
+}

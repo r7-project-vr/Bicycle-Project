@@ -40,7 +40,7 @@ void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//UObjectの関数をバインドしている。もしアクター
+	//UObjectの関数をバインドしている。もしアクターを使用する場合、処理を変える。
 	UTimerWidget* WidgetInstance = NewObject<UTimerWidget>(this, UTimerWidget::StaticClass(), TEXT("hoge"));
 	if (WidgetInstance)
 	{

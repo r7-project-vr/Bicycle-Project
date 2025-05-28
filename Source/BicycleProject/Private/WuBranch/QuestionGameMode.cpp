@@ -213,8 +213,11 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 			if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidgetComponent()->GetWidget()))
 			{
 				// UIからもらったquestionIDと比べて目標となっているアクターをゲット
-				/*if(questionUI->questionID == questionID)
-					target = question;*/
+				if (questionUI->GetQuestionID() == questionID)
+				{
+					target = question;
+					return;
+				}
 			}
 		}
 	}

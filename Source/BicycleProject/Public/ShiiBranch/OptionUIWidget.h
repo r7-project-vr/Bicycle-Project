@@ -24,10 +24,13 @@ public:
 
 	void OnSelectedOption(int32 OptionIndex);
 
+	int GetQuestionID()const;
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetQuestion(const FString& quest);
+
+
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetAnswer(int32 answerNum, const TArray<FString>& answers);

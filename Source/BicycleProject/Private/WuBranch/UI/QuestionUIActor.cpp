@@ -10,6 +10,7 @@
 #include <Components/SplineComponent.h>
 #include <WuBranch/QuestionGameMode.h>
 #include <Components/WidgetComponent.h>
+#include <ShiiBranch/OptionUIWidget.h>
 
 
 AQuestionUIActor::AQuestionUIActor()
@@ -132,7 +133,10 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 		FQuestion* question = gameMode->GetQuestion();
 		// 問題UIにデータを渡す
-		//_widget->GetWidget();
+		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(_widget->GetWidget()))
+		{
+			UI->SetQuestionAndAnswer(*question);
+		}
 
 		// オートプレイ対象の設置
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();

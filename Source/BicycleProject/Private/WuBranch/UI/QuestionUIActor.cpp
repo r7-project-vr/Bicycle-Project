@@ -11,6 +11,7 @@
 #include <WuBranch/QuestionGameMode.h>
 #include <Components/WidgetComponent.h>
 #include <ShiiBranch/OptionUIWidget.h>
+#include "UntakuBranch/Question.h"
 
 
 AQuestionUIActor::AQuestionUIActor()

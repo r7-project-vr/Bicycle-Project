@@ -148,4 +148,9 @@ private:
 	/// 回答済みですか
 	/// </summary>
 	bool _isAnswered;
+
+	/// <summary>
+	/// ゲーム終了したか
+	/// </summary>
+	bool _isGameFinished;
 };

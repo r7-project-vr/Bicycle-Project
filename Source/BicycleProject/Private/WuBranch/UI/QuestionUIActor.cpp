@@ -52,6 +52,7 @@ void AQuestionUIActor::BeginPlay()
 	_exitTarget = nullptr;
 	_movedDistance = 0.0f;
 	_isAnswered = false;
+	_isGameFinished = false;
 
 	NotDisplayUI();
 }
@@ -88,6 +89,7 @@ bool AQuestionUIActor::GetAnsweredStatus() const
 
 void AQuestionUIActor::DisableFeature()
 {
+	_isGameFinished = true;
 	// UI
 	NotDisplayUI();
 	// コリジョン
@@ -126,7 +128,7 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag("Player"))
+	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 		

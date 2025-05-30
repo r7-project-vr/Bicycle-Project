@@ -175,9 +175,6 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 			_exitTarget = nullptr;
 			// オートプレイ解除
 			_autoPlayTarget->DisableAutoPlay();
-			// デフォルトアクションを機能させる
-			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-			gameInstance->GetDeviceManager()->EnableDefaultActions();
 		}
 	}
 }

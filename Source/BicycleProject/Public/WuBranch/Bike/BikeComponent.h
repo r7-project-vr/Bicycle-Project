@@ -31,16 +31,31 @@ public:
 	/// </summary>
 	void ReduceVelocityTo0();
 
+	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
-	UFUNCTION(BlueprintCallable)
 	void OnSelectLeftAnswer();
+
+	/// <summary>
+	/// 左の答えを選ぶ
+	/// </summary>
+	/// <param name="questionID">問題ID</param>
+	/// <param name="answer">答え</param>
+	UFUNCTION(BlueprintCallable)
+	void SelectLeftAnswer(int questionID, int answer);
 
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
-	UFUNCTION(BlueprintCallable)
 	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// 右の答えを選ぶ
+	/// </summary>
+	/// <param name="questionID">問題ID</param>
+	/// <param name="answer">答え</param>
+	UFUNCTION(BlueprintCallable)
+	void SelectRightAnswer(int questionID, int answer);
 
 	/// <summary>
 	/// オートプレイを起動

@@ -55,6 +55,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetWrongNumber() const;
 
+	/// <summary>
+	/// ゲームオーバーのチェック
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool IsGameFailed() const;
+
+	/// <summary>
+	/// ゲームクリアのチェック
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool IsGameClear() const;
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
 	
 	UPROPERTY(BlueprintAssignable)
@@ -71,18 +83,6 @@ private:
 	/// ゲーム中に使う全部の問題を一気にゲット
 	/// </summary>
 	void GetAllQuestions();
-
-	/// <summary>
-	/// ゲームオーバーのチェック
-	/// </summary>
-	/// <returns>true: はい, false: いいえ</returns>
-	bool IsGameFailed() const;
-
-	/// <summary>
-	/// ゲームクリアのチェック
-	/// </summary>
-	/// <returns>true: はい, false: いいえ</returns>
-	bool IsGameClear() const;
 
 	/// <summary>
 	/// UIを更新

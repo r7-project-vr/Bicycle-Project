@@ -10,6 +10,8 @@
 #include <Components/SplineComponent.h>
 #include <WuBranch/QuestionGameMode.h>
 #include <Components/WidgetComponent.h>
+#include <ShiiBranch/OptionUIWidget.h>
+#include "UntakuBranch/Question.h"
 
 
 AQuestionUIActor::AQuestionUIActor()
@@ -50,6 +52,7 @@ void AQuestionUIActor::BeginPlay()
 	_exitTarget = nullptr;
 	_movedDistance = 0.0f;
 	_isAnswered = false;
+	_isGameFinished = false;
 
 	NotDisplayUI();
 }
@@ -86,6 +89,7 @@ bool AQuestionUIActor::GetAnsweredStatus() const
 
 void AQuestionUIActor::DisableFeature()
 {
+	_isGameFinished = true;
 	// UI
 	NotDisplayUI();
 	// コリジョン
@@ -124,7 +128,7 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag("Player"))
+	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 		
@@ -132,7 +136,10 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 		FQuestion* question = gameMode->GetQuestion();
 		// 問題UIにデータを渡す
-		//_widget->GetWidget();
+		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(_widget->GetWidget()))
+		{
+			UI->SetQuestionAndAnswer(*question);
+		}
 
 		// オートプレイ対象の設置
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
@@ -170,9 +177,6 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 			_exitTarget = nullptr;
 			// オートプレイ解除
 			_autoPlayTarget->DisableAutoPlay();
-			// デフォルトアクションを機能させる
-			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-			gameInstance->GetDeviceManager()->EnableDefaultActions();
 		}
 	}
 }

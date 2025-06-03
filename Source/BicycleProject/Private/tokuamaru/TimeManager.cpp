@@ -8,7 +8,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "tokuamaru/TimerWidget.h"
-#include "tokuamaru/QuestionManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 class UInputMappingContext;

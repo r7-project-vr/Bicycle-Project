@@ -20,5 +20,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void SetRotationF(float cnt_);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void SetColorAndText(float r_, float g_, float b_, float a_,const FText& t_);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void SetPercent(float percent_);
 	
 };

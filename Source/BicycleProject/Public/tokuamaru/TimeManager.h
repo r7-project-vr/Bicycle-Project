@@ -76,5 +76,4 @@ private:
 
 	UPROPERTY(EditAnywhere,Category = "Sound")
 	USoundBase* SoundToPlay;
-
 };

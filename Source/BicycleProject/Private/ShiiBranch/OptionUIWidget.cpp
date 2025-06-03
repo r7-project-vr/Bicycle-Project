@@ -6,6 +6,7 @@
 
 void UOptionUIWidget::SetQuestionAndAnswer(const FQuestion& Question)
 {
+	questionID = Question.ID;
 	SetQuestion(Question.Content);
 	SetAnswer(Question.AnswerNum, Question.AnswerContents);
 }
@@ -16,4 +17,9 @@ void UOptionUIWidget::OnSelectedOption(int32 OptionIndex)
 	{
 		OnOptionSelected.Broadcast(OptionIndex);
 	}
+}
+
+int UOptionUIWidget::GetQuestionID()const
+{
+	return questionID;
 }

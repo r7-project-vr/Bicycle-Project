@@ -32,6 +32,7 @@ void AQuestionGameMode::BeginPlay()
 
 	_correctNum = 0;
 	_wrongNum = 0;
+	_questionIndex = 0;
 
 	GetAllQuestions();
 }
@@ -142,7 +143,7 @@ FQuestion* AQuestionGameMode::GetQuestion()
 {
 	if (_questions.Num() > 0)
 	{
-		return &_questions[0];
+		return &_questions[_questionIndex++];
 	}
 	return nullptr;
 }

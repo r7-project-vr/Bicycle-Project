@@ -127,6 +127,11 @@ private:
 	TArray<FQuestion> _questions;
 
 	/// <summary>
+	/// 問題のインデックス
+	/// </summary>
+	int _questionIndex;
+
+	/// <summary>
 	/// すべての問題Actor
 	/// </summary>
 	TArray<class AActor*> _questionActors;

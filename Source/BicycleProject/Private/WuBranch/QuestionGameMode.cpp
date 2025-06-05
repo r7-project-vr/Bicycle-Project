@@ -205,7 +205,7 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 				if (questionUI->GetQuestionID() == questionID)
 				{
 					target = question;
-					return;
+					break;
 				}
 			}
 		}
@@ -220,8 +220,10 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	if (target->GetExitLocationAndForward(startLocation, forward))
 	{
 		// ゴールを進行先に置く
-		float distance = 8000.0f;
+		float distance = 5000.0f;
+		startLocation.Z = 0.f;
 		goal->SetActorLocation(startLocation + forward * distance);
+		goal->SetActorRotation(forward.Rotation());
 	}
 
 }

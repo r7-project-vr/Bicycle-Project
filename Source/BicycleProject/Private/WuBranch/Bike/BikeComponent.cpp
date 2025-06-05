@@ -60,14 +60,14 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UBikeComponent::ReduceVelocityTo0()
 {
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+	// 慣性の力も0にする
+	_inertiaVelocity = FVector::ZeroVector;
 }
 
 void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
 	_isAutoPlay = true;
 	_questionActor = actor;
-	// 慣性の力も0にする
-	_inertiaVelocity = FVector::ZeroVector;
 }
 
 void UBikeComponent::DisableAutoPlay()

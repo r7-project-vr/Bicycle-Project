@@ -46,6 +46,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		{
 			_playerController->SetPlayerEnabledState(false);
 		}
+		_player->GetBikeComponent()->ReduceVelocityTo0();
 
 		// ゴールに到達したらゲームクリア
 		GameOver(true);

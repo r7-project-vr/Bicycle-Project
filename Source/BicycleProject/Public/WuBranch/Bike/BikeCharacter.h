@@ -59,6 +59,12 @@ public:
 	/// </summary>
 	void DisableHintLine();
 
+	/// <summary>
+	/// BikeComponentをゲット
+	/// </summary>
+	/// <returns></returns>
+	UBikeComponent* GetBikeComponent();
+
 private:
 
 	/// <summary>

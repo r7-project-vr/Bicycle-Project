@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "EndPosition.generated.h"
 
+class UNiagaraComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API AEndPosition : public AActor
 {
@@ -31,6 +33,16 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// 花火の初期化
+	/// </summary>
+	void CreateFirework();
+
+	/// <summary>
+	/// 花火発射
+	/// </summary>
+	void Fire();
+
+	/// <summary>
 	/// ゴールのメッシュ
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -46,5 +58,26 @@ private:
 	/// ゲームモード
 	/// </summary>
 	class AQuestionGameMode* _gameMode;
+
+	/// <summary>
+	/// 花火
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect1;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect2;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect3;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect4;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect5;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect6;
 
 };

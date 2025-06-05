@@ -49,18 +49,6 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		// ゴールに到達したらゲームクリア
 		GameOver(true);
 
-		// エフェクト
-		// 花火を探す動作は一旦こちに移動、なぜか二回目世界をリロードする以降BeginPlayでは花火は見つからない
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
-		for (AActor* firework : _fireworks)
-		{
-			AFirework* fireworkActor = Cast<AFirework>(firework);
-			if (fireworkActor)
-			{
-				fireworkActor->Fire();
-			}
-		}
-
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
 		/*FTimerDelegate timerDelegate;

@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BikeCharacter.generated.h"
 
+class UBikeComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
 {
@@ -32,15 +34,89 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeBikeMesh();
 
+	/// <summary>
+	/// スピードを取得
+	/// </summary>
+	/// <returns>スピード</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetSpeed();
+
+	/// <summary>
+	/// ハンドラーの角度を取得
+	/// </summary>
+	/// <returns>ハンドラーの角度</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetHandlerAngle() const;
+
+	/// <summary>
+	/// 曲がるための角度を設置
+	/// </summary>
+	/// <param name="angle">角度</param>
+	void SetTurningAngle(FRotator angle);
+
+	/// <summary>
+	/// UI補助線を表示しない
+	/// </summary>
+	void DisableHintLine();
+
 private:
 
+	/// <summary>
+	/// 自転車メッシュをロード
+	/// </summary>
 	void LoadBikeMesh();
 
+	/// <summary>
+	/// ロード終わったら
+	/// </summary>
 	void LoadMeshComplete();
 
+	/// <summary>
+	/// 自転車の方向を変える
+	/// </summary>
+	void RotateBike(float DeltaTime);
+
+	/// <summary>
+	/// ロード先の自転車メッシュ
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSoftObjectPtr<UStaticMesh> _bikeMesh;
+	TSoftObjectPtr<USkeletalMesh> _bikeSkeletalNeedLoad;
 
-	UStaticMeshComponent* _bike;
+	/// <summary>
+	/// 自転車の機能
+	/// </summary>
+	UBikeComponent* _bike;
 
+	/// <summary>
+	/// UI操作用のヒントライン
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UWidgetInteractionHeadComponent* _widgetInteractionHeadComponent;
+
+	/// <summary>
+	/// 曲がるか
+	/// </summary>
+	bool _isRotate;
+
+	/// <summary>
+	/// 曲がるスピード
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _rotateSpeed = 10.f;
+
+	/// <summary>
+	/// 曲がる時の最終角度
+	/// </summary>
+	FRotator _targetRotator;
+
+	/// <summary>
+	/// ハンドルの角度
+	/// </summary>
+	float _handlebarsAngle;
+
+	/// <summary>
+	/// ハンドルの戻り速度
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float _handlebarCenteringSpeed;
 };

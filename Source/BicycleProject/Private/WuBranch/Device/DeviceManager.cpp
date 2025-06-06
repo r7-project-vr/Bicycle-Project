@@ -43,11 +43,8 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 {
 	switch (type)
 	{
-	case EDeviceType::Keyboard:
+	case EDeviceType::UESupportDevice:
 		CreateKeyBoardDevice();
-		break;
-	case EDeviceType::QuestController:
-		CreateQuestControllerDevice();
 		break;
 	case EDeviceType::CustomDevice:
 		break;
@@ -56,6 +53,16 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		UE_LOG(LogTemplateDevice, Error, TEXT("The constructor method for this device type (%s) has not been implemented yet."), *typeName);
 		break;
 	}
+}
+
+void UDeviceManager::EnableDefaultActions()
+{
+	IDeviceInterface::Execute_EnableDefaultActions(_device);
+}
+
+void UDeviceManager::DisableDefaultActions()
+{
+	IDeviceInterface::Execute_DisableDefaultActions(_device);
 }
 
 void UDeviceManager::EnableSelectAnswerActions()

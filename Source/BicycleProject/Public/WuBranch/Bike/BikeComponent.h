@@ -71,6 +71,12 @@ public:
 	void DisableAutoPlay();
 
 	/// <summary>
+	/// 今オートプレイしているですか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool GetIsAutoPlay() const;
+
+	/// <summary>
 	/// オートプレイする時同期したい座標
 	/// </summary>
 	/// <param name="pos">座標</param>

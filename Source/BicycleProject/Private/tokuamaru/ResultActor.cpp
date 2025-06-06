@@ -25,29 +25,39 @@ void AResultActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	answerTrue = 0.5f;
-	answerFalse = 0.5f;
+	answerTrue = 1.0f;
+	answerFalse = 0.0f;
 	resultWidget = Cast<UResultWidget>(_widgetResult->GetWidget());
 	resultWidget->SetRotation(answerTrue);
 	resultWidget->SetRotationF(answerFalse);
 	resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
 	resultWidget->SetPercent(0.0f);
+
+	gamemode = GetWorld()->SpawnActor<AQuestionGameMode>(AQuestionGameMode::StaticClass());
+	if (!gamemode) {
+		UE_LOG(LogTemp, Error, TEXT("gamemode NULLPtr!  ResultActor"));
+	}
 }
 
 // Called every frame
 void AResultActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//if (answerTrue >= 0.1f) {
-	//	answerTrue -= 0.01;
-	//}
-	//else {
-	//	resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
-	//}
 
-	//if (answerFalse <= 0.9f) {
-	//	answerFalse += 0.001f;
+	//if (gamemode) {
+	//	answerTrue = gamemode->GetCurrectNumber();
+	//	answerFalse = gamemode->GetWrongNumber();
 	//}
+	if (answerTrue >= 0.1f) {
+		answerTrue -= 0.001f;
+	}
+	else {
+		resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
+	}
+
+	if (answerFalse <= 0.9f) {
+		answerFalse += 0.001f;
+	}
 	resultWidget->SetRotation(answerTrue);
 	resultWidget->SetRotationF(answerFalse);
 

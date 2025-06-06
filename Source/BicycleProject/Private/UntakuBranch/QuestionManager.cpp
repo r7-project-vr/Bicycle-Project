@@ -26,7 +26,7 @@ void AQuestionManager::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("BeginPlay triggered!"));
 	Super::BeginPlay();
 
-	TestRandomQuestions();
+	//TestRandomQuestions();
 	
 }
 

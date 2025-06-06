@@ -109,6 +109,11 @@ bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oF
 	return false;
 }
 
+FQuestion* AQuestionUIActor::GetNowQuestion()
+{
+	return _questionTmp;
+}
+
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
 {
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
@@ -135,6 +140,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		// 問題内容をゲット
 		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 		FQuestion* question = gameMode->GetQuestion();
+		_questionTmp = question;
 		// 問題UIにデータを渡す
 		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(_widget->GetWidget()))
 		{

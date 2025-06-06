@@ -34,6 +34,7 @@ public:
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
+	UFUNCTION()
 	void OnSelectLeftAnswer();
 
 	/// <summary>
@@ -47,6 +48,7 @@ public:
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
+	UFUNCTION()
 	void OnSelectRightAnswer();
 
 	/// <summary>

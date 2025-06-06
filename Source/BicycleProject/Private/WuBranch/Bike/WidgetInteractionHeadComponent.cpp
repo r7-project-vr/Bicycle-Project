@@ -6,6 +6,7 @@
 #include "IXRTrackingSystem.h"
 #include "HeadMountedDisplay.h"
 #include <WuBranch/UI/QuestionUIActor.h>
+#include <WuBranch/QuestionGameMode.h>
 
 UWidgetInteractionHeadComponent::UWidgetInteractionHeadComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -41,6 +42,11 @@ void UWidgetInteractionHeadComponent::DisableHintLine()
 
 void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent)
 {
+	// ゲーム終了した場合何もしない
+	AQuestionGameMode* questionGameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
+	if (questionGameMode->IsGameFailed() || questionGameMode->IsGameClear())
+		return;
+
 	// 前に隠しているウィジェットがあれば、表示させる
 	if(WidgetComponent)
 	{

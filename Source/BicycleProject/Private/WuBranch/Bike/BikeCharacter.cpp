@@ -8,6 +8,7 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Bike/BikeComponent.h>
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
+#include <WuBranch/QuestionGameMode.h>
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -135,10 +136,13 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		SetActorRelativeRotation(_targetRotator);
 		_handlebarsAngle = 0.0f;
 		_isRotate = false;
-		// 強制コントロール解除
-		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-		deviceManager->EnableDefaultActions();
+		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
+		if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
+		{
+			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+			UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+			deviceManager->EnableDefaultActions();
+		}
 		return;
 	}
 

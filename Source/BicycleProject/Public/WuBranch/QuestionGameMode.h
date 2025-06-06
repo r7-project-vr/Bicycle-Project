@@ -120,15 +120,16 @@ private:
 	/// </summary>
 	class AQuestionManager* _questionManager;
 
-	/// <summary>
-	/// レベル上全部の花火
-	/// </summary>
-	TArray<class AActor*> _fireworks;
 
 	/// <summary>
 	/// 問題
 	/// </summary>
 	TArray<FQuestion> _questions;
+
+	/// <summary>
+	/// 問題のインデックス
+	/// </summary>
+	int _questionIndex;
 
 	/// <summary>
 	/// すべての問題Actor

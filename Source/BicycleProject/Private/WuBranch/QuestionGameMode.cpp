@@ -32,6 +32,7 @@ void AQuestionGameMode::BeginPlay()
 
 	_correctNum = 0;
 	_wrongNum = 0;
+	_questionIndex = 0;
 
 	GetAllQuestions();
 }
@@ -45,21 +46,10 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		{
 			_playerController->SetPlayerEnabledState(false);
 		}
+		_player->GetBikeComponent()->ReduceVelocityTo0();
 
 		// ゴールに到達したらゲームクリア
 		GameOver(true);
-
-		// エフェクト
-		// 花火を探す動作は一旦こちに移動、なぜか二回目世界をリロードする以降BeginPlayでは花火は見つからない
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFirework::StaticClass(), _fireworks);
-		for (AActor* firework : _fireworks)
-		{
-			AFirework* fireworkActor = Cast<AFirework>(firework);
-			if (fireworkActor)
-			{
-				fireworkActor->Fire();
-			}
-		}
 
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
@@ -154,7 +144,7 @@ FQuestion* AQuestionGameMode::GetQuestion()
 {
 	if (_questions.Num() > 0)
 	{
-		return &_questions[0];
+		return &_questions[_questionIndex++];
 	}
 	return nullptr;
 }
@@ -216,7 +206,7 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 				if (questionUI->GetQuestionID() == questionID)
 				{
 					target = question;
-					return;
+					break;
 				}
 			}
 		}
@@ -231,8 +221,10 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	if (target->GetExitLocationAndForward(startLocation, forward))
 	{
 		// ゴールを進行先に置く
-		float distance = 8000.0f;
+		float distance = 5000.0f;
+		startLocation.Z = 0.f;
 		goal->SetActorLocation(startLocation + forward * distance);
+		goal->SetActorRotation(forward.Rotation());
 	}
 
 }

@@ -11,6 +11,7 @@
 #include "WuBranch/UI/QuestionUIActor.h"
 #include <Kismet/GameplayStatics.h>
 #include <WuBranch/QuestionGameMode.h>
+#include "UntakuBranch/Question.h"
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -60,20 +61,25 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UBikeComponent::ReduceVelocityTo0()
 {
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+	// 慣性の力も0にする
+	_inertiaVelocity = FVector::ZeroVector;
 }
 
 void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
 	_isAutoPlay = true;
 	_questionActor = actor;
-	// 慣性の力も0にする
-	_inertiaVelocity = FVector::ZeroVector;
 }
 
 void UBikeComponent::DisableAutoPlay()
 {
 	_isAutoPlay = false;
 	_questionActor = nullptr;
+}
+
+bool UBikeComponent::GetIsAutoPlay() const
+{
+	return _isAutoPlay;
 }
 
 void UBikeComponent::SetSynchPos(FVector pos)
@@ -135,7 +141,9 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 void UBikeComponent::OnSelectLeftAnswer()
 {
-	SelectLeftAnswer(45, 0);	
+	FQuestion* question = _questionActor->GetNowQuestion();
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectLeftAnswer"));
+	SelectLeftAnswer(question->ID, 0);
 }
 
 void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
@@ -150,7 +158,9 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 
 void UBikeComponent::OnSelectRightAnswer()
 {
-	SelectRightAnswer(2, 1);
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectRightAnswer"));
+	FQuestion* question = _questionActor->GetNowQuestion();
+	SelectRightAnswer(question->ID, 1);
 }
 
 void UBikeComponent::SelectRightAnswer(int questionID, int answer)

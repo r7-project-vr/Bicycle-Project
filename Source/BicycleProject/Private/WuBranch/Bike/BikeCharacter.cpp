@@ -104,6 +104,11 @@ void ABikeCharacter::DisableHintLine()
 	}
 }
 
+UBikeComponent* ABikeCharacter::GetBikeComponent()
+{
+	return _bike;
+}
+
 void ABikeCharacter::LoadBikeMesh()
 {	
 	if (_bikeSkeletalNeedLoad)

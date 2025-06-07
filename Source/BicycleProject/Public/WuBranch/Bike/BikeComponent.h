@@ -34,6 +34,7 @@ public:
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
+	UFUNCTION()
 	void OnSelectLeftAnswer();
 
 	/// <summary>
@@ -47,6 +48,7 @@ public:
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
+	UFUNCTION()
 	void OnSelectRightAnswer();
 
 	/// <summary>
@@ -67,6 +69,12 @@ public:
 	/// オートプレイをキャンセル
 	/// </summary>
 	void DisableAutoPlay();
+
+	/// <summary>
+	/// 今オートプレイしているですか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool GetIsAutoPlay() const;
 
 	/// <summary>
 	/// オートプレイする時同期したい座標

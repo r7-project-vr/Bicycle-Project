@@ -63,6 +63,8 @@ public:
 	/// <returns>true: 成功, false: 失敗</returns>
 	bool GetExitLocationAndForward(FVector& oLocation, FVector& oForward);
 
+	struct FQuestion* GetNowQuestion();
+
 private:
 
 	/// <summary>
@@ -153,4 +155,6 @@ private:
 	/// ゲーム終了したか
 	/// </summary>
 	bool _isGameFinished;
+
+	FQuestion* _questionTmp;
 };

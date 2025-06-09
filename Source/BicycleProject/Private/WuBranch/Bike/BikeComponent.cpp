@@ -77,6 +77,11 @@ void UBikeComponent::DisableAutoPlay()
 	_questionActor = nullptr;
 }
 
+bool UBikeComponent::GetIsAutoPlay() const
+{
+	return _isAutoPlay;
+}
+
 void UBikeComponent::SetSynchPos(FVector pos)
 {
 	_synchronizePos = pos;

@@ -74,6 +74,7 @@ public:
 	/// 今オートプレイしているですか
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
+	UFUNCTION(BlueprintCallable)
 	bool GetIsAutoPlay() const;
 
 	/// <summary>

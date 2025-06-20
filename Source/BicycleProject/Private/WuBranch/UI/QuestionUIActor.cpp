@@ -99,6 +99,8 @@ void AQuestionUIActor::DisableFeature()
 bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oForward)
 {
 	//出口がある
+	if (!_exitTarget)
+		return false;
 	int exitNum = _exitTarget->GetNumberOfSplinePoints();
 	if (exitNum > 1)
 	{

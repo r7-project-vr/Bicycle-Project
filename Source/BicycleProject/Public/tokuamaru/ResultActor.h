@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WuBranch/QuestionGameMode.h"
+#include "WuBranch/Bike/BikeComponent.h"
 #include <tokuamaru/ResultWidget.h>
 #include <Components/WidgetComponent.h>
 #include "ResultActor.generated.h"
@@ -31,9 +32,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* _widgetResult;
+
 	UResultWidget* resultWidget;
 
 
 	AQuestionGameMode* gamemode;
+
+	UBikeComponent* bikeComponent;
+	bool autoplay;
+
+
 
 };

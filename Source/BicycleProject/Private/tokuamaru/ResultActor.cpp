@@ -2,6 +2,7 @@
 
 
 #include "tokuamaru/ResultActor.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/InputComponent.h"
 #include "tokuamaru/ResultWidget.h"
 
@@ -33,9 +34,21 @@ void AResultActor::BeginPlay()
 	resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
 	resultWidget->SetPercent(0.0f);
 
-	gamemode = GetWorld()->SpawnActor<AQuestionGameMode>(AQuestionGameMode::StaticClass());
+	//gamemode = GetWorld()->SpawnActor<AQuestionGameMode>(AQuestionGameMode::StaticClass());
+	//if (!gamemode) {
+	//	UE_LOG(LogTemp, Error, TEXT("gamemode NULLPtr!  ResultActor"));
+	//}
+
+	gamemode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!gamemode) {
 		UE_LOG(LogTemp, Error, TEXT("gamemode NULLPtr!  ResultActor"));
+	}
+
+	bikeComponent = FindComponentByClass<UBikeComponent>();
+	if (!bikeComponent) {
+	}
+	else {
+		this->autoplay = bikeComponent->GetIsAutoPlay();
 	}
 }
 
@@ -51,9 +64,6 @@ void AResultActor::Tick(float DeltaTime)
 	if (answerTrue >= 0.1f) {
 		answerTrue -= 0.001f;
 	}
-	else {
-		resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
-	}
 
 	if (answerFalse <= 0.9f) {
 		answerFalse += 0.001f;
@@ -64,5 +74,12 @@ void AResultActor::Tick(float DeltaTime)
 	float answerPercent = answerTrue / (answerTrue + answerFalse) * 100;
 
 	resultWidget->SetPercent(answerPercent);
+
+	if (autoplay) {
+		resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
+	}
+	else {
+		resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
+	}
 }
 

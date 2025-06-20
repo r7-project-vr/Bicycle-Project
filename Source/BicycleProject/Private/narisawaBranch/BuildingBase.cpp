@@ -10,7 +10,6 @@ ABuildingBase::ABuildingBase()
 
     SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
     SnapPoint->SetupAttachment(Root);
-    SnapPoint->SetRelativeLocation(FVector(1000, 0, 0));
 }
 
 FVector ABuildingBase::GetSnapLocation() const

@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Engine/StreamableManager.h"
 #include "UObject/SoftObjectPtr.h"
+#include "Engine/StreamableManager.h"
 #include "SwitchTrigger.generated.h"
 
 class ABuildingBase;
@@ -16,23 +16,23 @@ class BICYCLEPROJECT_API ASwitchTrigger : public AActor
 public:
     ASwitchTrigger();
 
-    // スイッチが押されたときに呼ばれる関数
     UFUNCTION(BlueprintCallable, Category = "Building")
     void OnSwitchActivated();
 
 protected:
     virtual void BeginPlay() override;
 
-    // 生成対象の建物クラス
+    // 複数の建物クラスの登録
     UPROPERTY(EditAnywhere, Category = "Building")
-    TSoftClassPtr<ABuildingBase> BuildingToSpawn;
+    TArray<TSoftClassPtr<ABuildingBase>> BuildingCandidates;
 
-    // 最後に生成した建物を保持
     UPROPERTY()
     ABuildingBase* LastSpawnedBuilding = nullptr;
 
 private:
-    // ロード処理
+    // 現在の読み込み対象
+    TSoftClassPtr<ABuildingBase> CurrentSelectedBuilding;
+
     void SpawnBuildingAsync();
     void SpawnAfterLoad();
 };

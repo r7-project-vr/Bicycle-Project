@@ -1,27 +1,24 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "narisawaBranch/BuildingBase.h"
 
-// Sets default values
 ABuildingBase::ABuildingBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    RootComponent = Root;
+
+    SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
+    SnapPoint->SetupAttachment(Root);
+    SnapPoint->SetRelativeLocation(FVector(1000, 0, 0));
 }
 
-// Called when the game starts or when spawned
-void ABuildingBase::BeginPlay()
+FVector ABuildingBase::GetSnapLocation() const
 {
-	Super::BeginPlay();
-	
+    return SnapPoint->GetComponentLocation();
 }
 
-// Called every frame
-void ABuildingBase::Tick(float DeltaTime)
+FRotator ABuildingBase::GetSnapRotation() const
 {
-	Super::Tick(DeltaTime);
-
+    return SnapPoint->GetComponentRotation();
 }
-

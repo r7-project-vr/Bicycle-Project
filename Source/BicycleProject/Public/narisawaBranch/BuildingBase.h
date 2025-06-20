@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 #pragma once
 
@@ -6,21 +6,21 @@
 #include "GameFramework/Actor.h"
 #include "BuildingBase.generated.h"
 
+
 UCLASS()
 class BICYCLEPROJECT_API ABuildingBase : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ABuildingBase();
+    GENERATED_BODY()
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+public:
+    ABuildingBase();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Snap")
+    USceneComponent* Root;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Snap")
+    USceneComponent* SnapPoint;
+
+    FVector GetSnapLocation() const;
+    FRotator GetSnapRotation() const;
 };

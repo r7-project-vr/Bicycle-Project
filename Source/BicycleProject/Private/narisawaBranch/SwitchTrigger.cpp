@@ -21,10 +21,16 @@ void ASwitchTrigger::OnSwitchActivated()
 
 void ASwitchTrigger::SpawnBuildingAsync()
 {
-    if (!BuildingToSpawn.IsValid())
+    if (BuildingCandidates.Num() == 0) return;
+
+    // ランダムに1つ選択
+    int32 Index = FMath::RandRange(0, BuildingCandidates.Num() - 1);
+    CurrentSelectedBuilding = BuildingCandidates[Index];
+
+    if (!CurrentSelectedBuilding.IsValid())
     {
         FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-        Streamable.RequestAsyncLoad(BuildingToSpawn.ToSoftObjectPath(),
+        Streamable.RequestAsyncLoad(CurrentSelectedBuilding.ToSoftObjectPath(),
             FStreamableDelegate::CreateUObject(this, &ASwitchTrigger::SpawnAfterLoad));
     }
     else
@@ -35,10 +41,9 @@ void ASwitchTrigger::SpawnBuildingAsync()
 
 void ASwitchTrigger::SpawnAfterLoad()
 {
-    UClass* LoadedClass = BuildingToSpawn.Get();
+    UClass* LoadedClass = CurrentSelectedBuilding.Get();
     if (!LoadedClass) return;
 
-    // 生成位置
     FVector SpawnLocation = FVector::ZeroVector;
     FRotator SpawnRotation = FRotator::ZeroRotator;
 
@@ -49,11 +54,9 @@ void ASwitchTrigger::SpawnAfterLoad()
     }
     else
     {
-        // このスイッチの前方に配置
         SpawnLocation = GetActorLocation() + GetActorForwardVector() * 1000.0f;
     }
 
-    // アクター生成
     FActorSpawnParameters SpawnParams;
     ABuildingBase* NewBuilding = GetWorld()->SpawnActor<ABuildingBase>(LoadedClass, SpawnLocation, SpawnRotation, SpawnParams);
 

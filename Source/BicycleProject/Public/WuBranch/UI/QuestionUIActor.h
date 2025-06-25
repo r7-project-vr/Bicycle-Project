@@ -66,6 +66,9 @@ public:
 
 	struct FQuestion* GetNowQuestion();
 
+	virtual FVector GetSnapLocation_Implementation() const override;
+	virtual FRotator GetSnapRotation_Implementation() const override;
+
 private:
 
 	/// <summary>

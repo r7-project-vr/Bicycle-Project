@@ -1,38 +1,34 @@
+// SwitchTrigger.h
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UObject/SoftObjectPtr.h"
-#include "Engine/StreamableManager.h"
+#include "narisawaBranch/BuildingSnapInterface.h"
 #include "SwitchTrigger.generated.h"
 
-class ABuildingBase;
-
 UCLASS()
-class BICYCLEPROJECT_API ASwitchTrigger : public AActor
+class BICYCLEPROJECT_API ASwitchTrigger : public AActor, public IBuildingSnapInterface
 {
     GENERATED_BODY()
 
 public:
     ASwitchTrigger();
 
-    UFUNCTION(BlueprintCallable, Category = "Building")
-    void OnSwitchActivated();
+    UFUNCTION(BlueprintCallable, Category = "ProceduralGeneration")
+    void GenerateNextActor();
 
 protected:
     virtual void BeginPlay() override;
 
-    // 複数の建物クラスの登録
-    UPROPERTY(EditAnywhere, Category = "Building")
-    TArray<TSoftClassPtr<ABuildingBase>> BuildingCandidates;
+    // 生成候補のアクターリスト（建物、UIアクターなど何でも登録可能）
+    UPROPERTY(EditAnywhere, Category = "ProceduralGeneration")
+    TArray<TSoftClassPtr<AActor>> ActorCandidates;
 
-    UPROPERTY()
-    ABuildingBase* LastSpawnedBuilding = nullptr;
+    // 次のアクターを生成する位置と回転
+    FVector NextSpawnLocation;
+    FRotator NextSpawnRotation;
 
 private:
-    // 現在の読み込み対象
-    TSoftClassPtr<ABuildingBase> CurrentSelectedBuilding;
-
-    void SpawnBuildingAsync();
-    void SpawnAfterLoad();
+    TSoftClassPtr<AActor> CurrentSelectedActor;
+    void OnActorAssetLoaded();
 };

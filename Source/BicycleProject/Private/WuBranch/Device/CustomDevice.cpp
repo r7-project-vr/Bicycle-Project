@@ -2,58 +2,154 @@
 
 
 #include "WuBranch/Device/CustomDevice.h"
-
-//DEFINE_LOG_CATEGORY(LogTemplateDevice);
+#include "BleUtils.h"
+#include "Interface/BleManagerInterface.h"
+#include "Interface/BleDeviceInterface.h"
 
 UCustomDevice::UCustomDevice()
-	: _defaultActionSwitch(false)
-	, _selectAnswerSwitch(false)
+	: DefaultActionSwitch(false)
+	, SelectAnswerSwitch(false)
+	, BleManager(nullptr)
+	, MyDevice(nullptr)
 {
 }
 
 void UCustomDevice::Init()
 {
+#if !PLATFORM_ANDROID || !PLATFORM_IOS
+	UE_LOG(LogTemplateDevice, Error, TEXT("Sorry, this class only support for android or ios platform because of the plugin."));
+	return;
+#endif
+
+	BleManager = Cast<IBleManagerInterface>(UBleUtils::CreateBleManager().GetObject());
+
+	if (!CheckBluetooth())
+		return;
+
+	// サービスからデバイスを見つける
+	DecideTargetServices();
+	FindDeviceByServices();
+
 	EnableDefaultActions_Implementation();
 }
 
 void UCustomDevice::EnableDefaultActions_Implementation()
 {
-	_defaultActionSwitch = true;
+	DefaultActionSwitch = true;
 }
 
 void UCustomDevice::DisableDefaultActions_Implementation()
 {
-	_defaultActionSwitch = false;
+	DefaultActionSwitch = false;
 }
 
 void UCustomDevice::EnableSelectAnswerActions_Implementation()
 {
-	_selectAnswerSwitch = true;
+	SelectAnswerSwitch = true;
 }
 
 void UCustomDevice::DisableSelectAnswerActions_Implementation()
 {
-	_selectAnswerSwitch = false;
+	SelectAnswerSwitch = false;
+}
+
+void UCustomDevice::Connect_Implementation()
+{
+	
+	FBleDelegate SuccFunction;
+	FBleErrorDelegate ErrFunction;
+	DeviceInterface->Connect(SuccFunction, ErrFunction);
+}
+
+bool UCustomDevice::CheckBluetooth()
+{
+	if (BleManager)
+	{
+		if (!BleManager->IsBleSupported())
+		{
+			UE_LOG(LogTemplateDevice, Error, TEXT("This device is not support Bluetooth low energy"));
+			return false;
+		}
+
+		if (!BleManager->IsBluetoothEnabled())
+		{
+			UE_LOG(LogTemplateDevice, Warning, TEXT("This device did not open bluetooth"));
+#if PLATFORM_ANDROID
+			UE_LOG(LogTemplateDevice, Warning, TEXT("Open bluetooth"));
+			BleManager->SetBluetoothState(true);
+			return true;
+#else 
+			UE_LOG(LogTemplateDevice, Error, TEXT("This device did not open bluetooth"));
+			return false;
+#endif
+		}
+	}
+	return false;
+}
+
+void UCustomDevice::DecideTargetServices()
+{
+	// 少なくとも一つのサービスが必要
+	// そうでないと、すべてのデバイスが見つかって戻ってきって、大量のリソースが消耗されるだそうです。
+	// https://docs.ninevastudios.com/#/ue-plugins/ble-goodies?id=setup
+	UE_LOG(LogTemplateDevice, Display, TEXT("Prepare services's uuid"));
+	Services.Empty();
+	Services.Add(IO_SERVICE_UUID);
+}
+
+void UCustomDevice::FindDeviceByServices()
+{
+	if (BleManager)
+	{
+		FBleOnDeviceFoundDelegate Function;
+		Function.BindUFunction(this, FName("OnDeviceFound"));
+		FString JoinedString = FString::Join(Services, TEXT(","));
+		UE_LOG(LogTemplateDevice, Display, TEXT("Scan for devices: %s"), JoinedString);
+		BleManager->ScanForDevices(Services, Function);
+	}
+}
+
+void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
+{
+	if (IBleDeviceInterface* DeviceInterface = Cast<IBleDeviceInterface>(Device.GetObject()))
+	{
+		// 元々ない場合
+		if (!MyDevice)
+			MyDevice = DeviceInterface;
+		// 二つ以上見つかった場合
+		else if (MyDevice != DeviceInterface) {
+
+		}
+
+		// 繋いでない場合
+		if (!DeviceInterface->IsConnected())
+		{
+			
+		}
+		else {
+			
+		}
+	}
 }
 
 void UCustomDevice::OnMove()
 {
 	// (Y, X)
 	// Y: 前後, X: 左右(無視)
-	FVector2D moveVector(0, 0);
+	FVector2D MoveVector(0, 0);
 
-	if (_defaultActionSwitch && _onMoveEvent.IsBound())
-		_onMoveEvent.Broadcast(moveVector);
+	if (DefaultActionSwitch && _onMoveEvent.IsBound())
+		_onMoveEvent.Broadcast(MoveVector);
 }
 
 void UCustomDevice::OnSelectLeftAnswer()
 {
-	if (_selectAnswerSwitch && _onSelectLeftEvent.IsBound())
+	if (SelectAnswerSwitch && _onSelectLeftEvent.IsBound())
 		_onSelectLeftEvent.Broadcast();
 }
 
 void UCustomDevice::OnSelectRightAnswer()
 {
-	if (_selectAnswerSwitch && _onSelectRightEvent.IsBound())
+	if (SelectAnswerSwitch && _onSelectRightEvent.IsBound())
 		_onSelectRightEvent.Broadcast();
 }

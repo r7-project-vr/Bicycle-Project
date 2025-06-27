@@ -6,6 +6,12 @@
 #include "WuBranch/Device/Device.h"
 #include "CustomDevice.generated.h"
 
+//===================================================
+// BLE IO_SERVICE
+//===================================================
+//Service UUID
+#define IO_SERVICE_UUID "3c3e3e6a-8916-4f28-95c1-09e5ef9c8e4b"
+
 /**
  * 
  */
@@ -28,7 +34,33 @@ public:
 
 	void DisableSelectAnswerActions_Implementation() override;
 
+	void Connect_Implementation() override;
+
 private:
+
+	/// <summary>
+	/// Bluetooth周りの検査
+	/// </summary>
+	/// <returns></returns>
+	bool CheckBluetooth();
+
+	/// <summary>
+	/// 目標のサービスを決める
+	/// </summary>
+	void DecideTargetServices();
+
+	/// <summary>
+	/// 周囲のデバイスを探す
+	/// </summary>
+	void FindDeviceByServices();
+
+	/// <summary>
+	/// 新しいデバイスが見つかった時
+	/// </summary>
+	/// <param name="Device">デバイス</param>
+	void OnDeviceFound(TScriptInterface<class IBleDeviceInterface> Device);
+
+	void OnConnectSucc();
 
 	/// <summary>
 	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ
@@ -49,12 +81,27 @@ private:
 	void OnSelectRightAnswer();
 
 	/// <summary>
+	/// BLEマネジャー
+	/// </summary>
+	IBleManagerInterface* BleManager;
+
+	/// <summary>
+	/// 目標のサービス
+	/// </summary>
+	TArray<FString> Services;
+
+	/// <summary>
+	/// 目標のデバイス(今のところ一つしかない)
+	/// </summary>
+	IBleDeviceInterface* MyDevice;
+
+	/// <summary>
 	/// デフォルトアクションのスイッチ
 	/// </summary>
-	bool _defaultActionSwitch;
+	bool DefaultActionSwitch;
 
 	/// <summary>
 	/// 答えを選択するアクションのスイッチ
 	/// </summary>
-	bool _selectAnswerSwitch;
+	bool SelectAnswerSwitch;
 };

@@ -53,16 +53,14 @@ public:
 	/// <summary>
 	/// デバイスとリンクする
 	/// </summary>
-	/// <returns>true: 成功 / false: 失敗</returns>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
-	bool Connect();
+	void Connect();
 
 	/// <summary>
 	/// デバイスとのリンクを外す
 	/// </summary>
-	/// <returns>true: 成功 / false: 失敗</returns>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
-	bool Disconnect();
+	void Disconnect();
 
 	/// <summary>
 	/// デバイスの名前を取得

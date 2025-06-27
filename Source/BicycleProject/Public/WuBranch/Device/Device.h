@@ -47,7 +47,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FSelectAnswerDelegate _onSelectRightEvent;
 
-private:
+protected:
 
 	/// <summary>
 	/// デバイスの名前

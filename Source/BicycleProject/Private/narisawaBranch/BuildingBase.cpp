@@ -1,4 +1,3 @@
-
 #include "narisawaBranch/BuildingBase.h"
 
 ABuildingBase::ABuildingBase()

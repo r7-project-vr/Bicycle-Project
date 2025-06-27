@@ -1,5 +1,5 @@
-// SwitchTrigger.h
 #pragma once
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UObject/SoftObjectPtr.h"
@@ -20,11 +20,11 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    // 生成候補のアクターリスト（建物、UIアクターなど何でも登録可能）
+    //アクターリスト（建物、UIアクターなど何でも登録可能）
     UPROPERTY(EditAnywhere, Category = "ProceduralGeneration")
     TArray<TSoftClassPtr<AActor>> ActorCandidates;
 
-    // 次のアクターを生成する位置と回転
+    //次のアクターを生成する位置と回転
     FVector NextSpawnLocation;
     FRotator NextSpawnRotation;
 

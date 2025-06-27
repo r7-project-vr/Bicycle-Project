@@ -9,26 +9,30 @@
 UCLASS()
 class BICYCLEPROJECT_API ASwitchTrigger : public AActor, public IBuildingSnapInterface
 {
-    GENERATED_BODY()
+GENERATED_BODY()
 
 public:
-    ASwitchTrigger();
+ASwitchTrigger();
 
-    UFUNCTION(BlueprintCallable, Category = "ProceduralGeneration")
-    void GenerateNextActor();
+UFUNCTION(BlueprintCallable, Category = "ProceduralGeneration")
+void GenerateNextActor();
 
 protected:
-    virtual void BeginPlay() override;
+virtual void BeginPlay() override;
 
-    //アクターリスト（建物、UIアクターなど何でも登録可能）
-    UPROPERTY(EditAnywhere, Category = "ProceduralGeneration")
-    TArray<TSoftClassPtr<AActor>> ActorCandidates;
+/// <summary>
+/// アクターリスト（建物、UIアクターなど何でも登録可能）
+/// </summary>
+UPROPERTY(EditAnywhere, Category = "ProceduralGeneration")
+TArray<TSoftClassPtr<AActor>> ActorCandidates;
 
-    //次のアクターを生成する位置と回転
-    FVector NextSpawnLocation;
-    FRotator NextSpawnRotation;
+/// <summary>
+/// 次のアクターを生成する位置と回転
+/// </summary>
+FVector NextSpawnLocation;
+FRotator NextSpawnRotation;
 
 private:
-    TSoftClassPtr<AActor> CurrentSelectedActor;
-    void OnActorAssetLoaded();
+TSoftClassPtr<AActor> CurrentSelectedActor;
+void OnActorAssetLoaded();
 };

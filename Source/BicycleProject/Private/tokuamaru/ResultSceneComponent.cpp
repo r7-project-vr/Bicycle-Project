@@ -37,15 +37,6 @@ void UResultSceneComponent::BeginPlay()
 	this->autoplay = false;
 
 
-	owner = GetOwner();
-	if (!owner) {
-		UE_LOG(LogTemp, Error, TEXT("owner null"));
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("owner true"));
-	}
-
-
 
 	gamemode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!gamemode) {
@@ -55,10 +46,12 @@ void UResultSceneComponent::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("gamemode true!  ResultActor"));
 	}
 
-
+	TArray<USceneComponent*> Children;
 	GetChildrenComponents(true, Children);
 	for (USceneComponent* Child : Children)
 	{
+		if (!IsValid(Child)) continue;
+
 		widgetComp = Cast<UWidgetComponent>(Child);
 		if (widgetComp)
 		{
@@ -107,39 +100,30 @@ void UResultSceneComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//if (gamemode) {
-	////UE_LOG(LogTemp, Error, TEXT("SetAC"));
-	//answerTrue = gamemode->GetCurrectNumber();
-	//answerFalse = gamemode->GetWrongNumber();
- //   }
+	if (gamemode) {
+	//UE_LOG(LogTemp, Error, TEXT("SetAC"));
+	answerTrue = gamemode->GetCurrectNumber();
+	answerFalse = gamemode->GetWrongNumber();
+    }
 
-	if (answerTrue >= 0.1f) {
-		answerTrue -= 0.001f;
-	}
-
-	if (answerFalse <= 0.9f) {
-		answerFalse += 0.001f;
+	if (bikeComponent) {
+		this->autoplay = bikeComponent->GetIsAutoPlay();
 	}
 
 	if (resultWidget) {
 		//UE_LOG(LogTemp, Error, TEXT("SetRotation"));
 		resultWidget->SetRotation(answerTrue);
 		resultWidget->SetRotationF(answerFalse);
-		float answerPercent = answerTrue / (answerTrue + answerFalse) * 100;
+		float answerPercent = ((answerTrue + answerFalse) > 0.0f) ? answerTrue / (answerTrue + answerFalse) * 100 : 0.0f;
 		resultWidget->SetPercent(answerPercent);
-	}
-
-	if (bikeComponent) {
-		this->autoplay = bikeComponent->GetIsAutoPlay();
-	}
-
-	if (autoplay) {
-		resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
-		/*UE_LOG(LogTemp, Error, TEXT("auto"));*/
-	}
-	else {
-		resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
-		//UE_LOG(LogTemp, Error, TEXT("false"));
+		if (autoplay) {
+			resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
+			/*UE_LOG(LogTemp, Error, TEXT("auto"));*/
+		}
+		else {
+			resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
+			//UE_LOG(LogTemp, Error, TEXT("false"));
+		}
 	}
 	// ...
 }

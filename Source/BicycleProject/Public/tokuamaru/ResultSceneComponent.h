@@ -34,19 +34,31 @@ public:
 	float answerFalse;
 
 
+	UPROPERTY()
 	UWidgetComponent* widgetComp;
+
+
+	UPROPERTY()
 	UUserWidget* widget;
+
+
+	UPROPERTY()
 	UResultWidget* resultWidget;
-	TArray<USceneComponent*> Children;
 
 
+	//UPROPERTY()
+	//TArray<USceneComponent*> Children;
+
+
+	UPROPERTY()
 	AQuestionGameMode* gamemode;
 
 
+	UPROPERTY()
 	UBikeComponent* bikeComponent;
-	bool autoplay;
 
-	AActor* owner;
+
+	bool autoplay;
 
 	//	
 };

@@ -154,6 +154,8 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		
 		DisableCollision();
 	}
+
+
 }
 
 void AQuestionUIActor::SetTarget(UBikeComponent* target)

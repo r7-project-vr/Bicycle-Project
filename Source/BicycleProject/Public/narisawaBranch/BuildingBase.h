@@ -1,14 +1,13 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "narisawaBranch/BuildingSnapInterface.h"
 #include "BuildingBase.generated.h"
 
 
 UCLASS()
-class BICYCLEPROJECT_API ABuildingBase : public AActor
+class BICYCLEPROJECT_API ABuildingBase : public AActor, public IBuildingSnapInterface
 {
     GENERATED_BODY()
 

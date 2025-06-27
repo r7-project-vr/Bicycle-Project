@@ -6,10 +6,12 @@
 #include <WuBranch/MyGameInstance.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <Components/CapsuleComponent.h>
-#include "IXRTrackingSystem.h"
-#include "HeadMountedDisplay.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <WuBranch/Bike/BikeCharacter.h>
+#include "WuBranch/UI/QuestionUIActor.h"
+#include <Kismet/GameplayStatics.h>
+#include <WuBranch/QuestionGameMode.h>
+#include "UntakuBranch/Question.h"
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -20,11 +22,8 @@ UBikeComponent::UBikeComponent()
 
 	// ...
 	_speed = 50.0f;
-	_isForcedControl = false;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
-	_isRotate = false;
-	_targetRotator = FRotator::ZeroRotator;
 }
 
 
@@ -34,6 +33,8 @@ void UBikeComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+
+	_isAutoPlay = false;
 }
 
 // Called every frame
@@ -43,27 +44,61 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// ...
 
-	HandleInertia(DeltaTime);
-
-	RotateBike();
+	if (_isAutoPlay)
+	{
+		FVector deltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+		GetOwner()->SetActorLocation(deltaPos);
+	}
+	else
+	{
+		HandleInertia(DeltaTime);
+	}
 
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
-void UBikeComponent::OpenForcedControl()
-{
-	_isForcedControl = true;
-}
-
-void UBikeComponent::CloseForcedControl()
-{
-	_isForcedControl = false;
-}
-
 void UBikeComponent::ReduceVelocityTo0()
 {
 	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+	// 慣性の力も0にする
+	_inertiaVelocity = FVector::ZeroVector;
+}
+
+void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
+{
+	_isAutoPlay = true;
+	_questionActor = actor;
+}
+
+void UBikeComponent::DisableAutoPlay()
+{
+	_isAutoPlay = false;
+	_questionActor = nullptr;
+}
+
+bool UBikeComponent::GetIsAutoPlay() const
+{
+	return _isAutoPlay;
+}
+
+void UBikeComponent::SetSynchPos(FVector pos)
+{
+	_synchronizePos = pos;
+}
+
+void UBikeComponent::HandleSelectAnswer(FRotator dir)
+{
+	// 曲がる
+	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
+	// 二回目以降選ばせない
+	DisableSelectAnswerAction();
+	// UI補助線を表示しない
+	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
+	if (character)
+	{
+		character->DisableHintLine();
+	}
 }
 
 void UBikeComponent::HandleInertia(float DeltaTime)
@@ -83,20 +118,22 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 void UBikeComponent::OnMove(FVector2D direction)
 {
 	//UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
-	if (_isForcedControl)
-		return;
 
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
 	FVector dir = FVector::ZeroVector;
-	dir = actorForward * direction.X + actorRight * direction.Y;
+	// バックさせない
+	FVector2D bikeDir = direction;
+	if (bikeDir.X < 0)
+		bikeDir.X = 0;
+	dir = actorForward * bikeDir.X + actorRight * bikeDir.Y;
 
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
 	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	character->AddMovementInput(actorForward, direction.X);
-	character->AddMovementInput(actorRight, direction.Y);
+	character->AddMovementInput(actorForward, bikeDir.X);
+	character->AddMovementInput(actorRight, bikeDir.Y);
 
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * _speed;
@@ -104,54 +141,42 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 void UBikeComponent::OnSelectLeftAnswer()
 {
+	FQuestion* question = _questionActor->GetNowQuestion();
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectLeftAnswer"));
+	SelectLeftAnswer(question->ID, 0);
+}
+
+void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
+{
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
+	//出口まで誘導
+	_questionActor->UseLeftExit();
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	gameMode->CheckAnswer(questionID, answer);
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectRightAnswer"));
+	FQuestion* question = _questionActor->GetNowQuestion();
+	SelectRightAnswer(question->ID, 1);
+}
+
+void UBikeComponent::SelectRightAnswer(int questionID, int answer)
+{
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
+	//出口まで誘導
+	_questionActor->UseRightExit();
+	//答え合わせ
+	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	gameMode->CheckAnswer(questionID, answer);
 }
 
-void UBikeComponent::HandleSelectAnswer(FRotator dir)
-{
-	// 曲がる
-	_targetRotator = GetOwner()->GetActorRotation() + dir;
-	_isRotate = true;
-	// 二回目以降選ばせない
-	DisableSelectAnswer();
-}
-
-void UBikeComponent::RotateBike()
-{
-	if (!_isRotate)
-		return;
-
-	FRotator current = GetOwner()->GetActorRotation();
-	// 曲がった
-	if (current.Equals(_targetRotator, 0.5f))
-	{
-		// 0.5度未満は同じと見なすため、強制的に角度を最終角度に設定します
-		GetOwner()->SetActorRelativeRotation(_targetRotator);
-		_isRotate = false;
-		// 強制コントロール解除
-		CloseForcedControl();
-		return;
-	}
-
-	float deltaTime = GetOwner()->GetWorld()->GetDeltaSeconds();
-	FRotator angle = FMath::RInterpTo(current, _targetRotator, deltaTime, _rotateSpeed);
-	GetOwner()->SetActorRelativeRotation(angle);
-}
-
-void UBikeComponent::DisableSelectAnswer()
+void UBikeComponent::DisableSelectAnswerAction()
 {
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
 	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 	deviceManager->DisableSelectAnswerActions();
-}
-
-bool UBikeComponent::IsVRConnect() const
-{
-	return GEngine->XRSystem.IsValid() && GEngine->XRSystem->GetHMDDevice() && GEngine->XRSystem->GetHMDDevice()->IsHMDConnected();
 }
 

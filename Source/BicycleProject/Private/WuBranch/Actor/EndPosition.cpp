@@ -6,9 +6,8 @@
 #include "Components/BoxComponent.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
-#include <WuBranch/Bike/BikeComponent.h>
-#include <NiagaraFunctionLibrary.h>
-#include <NiagaraComponent.h>
+#include "WuBranch/QuestionGameMode.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AEndPosition::AEndPosition()
@@ -25,7 +24,7 @@ AEndPosition::AEndPosition()
 	_mesh->SetupAttachment(RootComponent);
 	AddInstanceComponent(_mesh);
 
-	_isReadyToChangeLevel = false;
+	CreateFirework();
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +32,7 @@ void AEndPosition::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	_gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 }
 
 // Called every frame
@@ -44,32 +44,78 @@ void AEndPosition::Tick(float DeltaTime)
 
 void AEndPosition::OnOverlapBeginFinishLine(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag("Player") && !_isReadyToChangeLevel)
+	if (OtherActor->ActorHasTag("Player"))
 	{
 		// 再びトリガーしないように
-		_isReadyToChangeLevel = true;
+		_finishLineCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-		// 自転車の制御を強制的にオフにする 
-		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		bike->OpenForcedControl();
+		//エフェクト
+		Fire();
 
-		// エフェクト
-		if (_fireworkEffectLeft)
+		if (_gameMode)
 		{
-			FVector offset = FVector(200.0f, 0.0f, 0.0f);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectLeft, GetActorLocation() - offset);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _fireworkEffectRight, GetActorLocation() + offset);
+			_gameMode->PassTheGoal(OtherActor);
 		}
-
-		//5秒後にレベルを再読み込み
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEndPosition::RestartLevel, 5.f, false);
 	}
 }
 
-void AEndPosition::RestartLevel()
+void AEndPosition::CreateFirework()
 {
-	FString map = UGameplayStatics::GetCurrentLevelName(GetWorld());
-	UGameplayStatics::OpenLevel(GetWorld(), FName(map));
+	_fireworkEffect1 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect1"));
+	_fireworkEffect1->SetupAttachment(RootComponent);
+	_fireworkEffect1->bAutoActivate = false;
+
+	_fireworkEffect2 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect2"));
+	_fireworkEffect2->SetupAttachment(RootComponent);
+	_fireworkEffect2->bAutoActivate = false;
+
+	_fireworkEffect3 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect3"));
+	_fireworkEffect3->SetupAttachment(RootComponent);
+	_fireworkEffect3->bAutoActivate = false;
+
+	_fireworkEffect4 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect4"));
+	_fireworkEffect4->SetupAttachment(RootComponent);
+	_fireworkEffect4->bAutoActivate = false;
+
+	_fireworkEffect5 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect5"));
+	_fireworkEffect5->SetupAttachment(RootComponent);
+	_fireworkEffect5->bAutoActivate = false;
+
+	_fireworkEffect6 = CreateDefaultSubobject<UNiagaraComponent>(FName("Firework Effect6"));
+	_fireworkEffect6->SetupAttachment(RootComponent);
+	_fireworkEffect6->bAutoActivate = false;
+}
+
+void AEndPosition::Fire()
+{
+	if (!_fireworkEffect1->IsActive())
+	{
+		_fireworkEffect1->Activate(true);
+	}
+
+	if (!_fireworkEffect2->IsActive())
+	{
+		_fireworkEffect2->Activate(true);
+	}
+
+	if (!_fireworkEffect3->IsActive())
+	{
+		_fireworkEffect3->Activate(true);
+	}
+
+	if (!_fireworkEffect4->IsActive())
+	{
+		_fireworkEffect4->Activate(true);
+	}
+
+	if (!_fireworkEffect5->IsActive())
+	{
+		_fireworkEffect5->Activate(true);
+	}
+
+	if (!_fireworkEffect6->IsActive())
+	{
+		_fireworkEffect6->Activate(true);
+	}
 }
 

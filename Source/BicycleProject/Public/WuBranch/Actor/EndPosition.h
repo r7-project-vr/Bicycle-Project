@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "EndPosition.generated.h"
 
+class UNiagaraComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API AEndPosition : public AActor
 {
@@ -31,9 +33,14 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
-	/// 今の世界を再読み込み
+	/// 花火の初期化
 	/// </summary>
-	void RestartLevel();
+	void CreateFirework();
+
+	/// <summary>
+	/// 花火発射
+	/// </summary>
+	void Fire();
 
 	/// <summary>
 	/// ゴールのメッシュ
@@ -47,11 +54,30 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* _finishLineCollision;
 
+	/// <summary>
+	/// ゲームモード
+	/// </summary>
+	class AQuestionGameMode* _gameMode;
+
+	/// <summary>
+	/// 花火
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectLeft;
+	UNiagaraComponent* _fireworkEffect1;
 
 	UPROPERTY(EditAnywhere, Category = "Effect")
-	class UNiagaraSystem* _fireworkEffectRight;
+	UNiagaraComponent* _fireworkEffect2;
 
-	bool _isReadyToChangeLevel;
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect3;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect4;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect5;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UNiagaraComponent* _fireworkEffect6;
+
 };

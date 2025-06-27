@@ -7,16 +7,17 @@
 UINTERFACE(MinimalAPI)
 class UBuildingSnapInterface : public UInterface
 {
-    GENERATED_BODY()
+GENERATED_BODY()
 };
 
 class IBuildingSnapInterface
 {
-    GENERATED_BODY()
-public:
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Snap")
-    FVector GetSnapLocation() const;
+GENERATED_BODY()
 
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Snap")
-    FRotator GetSnapRotation() const;
+public:
+UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Snap")
+FVector GetSnapLocation() const;
+
+UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Snap")
+FRotator GetSnapRotation() const;
 };

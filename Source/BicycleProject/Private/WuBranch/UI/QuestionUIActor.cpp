@@ -154,6 +154,8 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		
 		DisableCollision();
 	}
+
+
 }
 
 void AQuestionUIActor::SetTarget(UBikeComponent* target)
@@ -200,4 +202,31 @@ void AQuestionUIActor::DisableCollision()
 {
 	// エリアのコリジョン
 	_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+}
+
+FVector AQuestionUIActor::GetSnapLocation_Implementation() const
+{
+	// 右出口スプラインがあり、ポイントが1つ以上存在するなら
+	if (_exitRight && _exitRight->GetNumberOfSplinePoints() > 0)
+	{
+		// スプラインの終点のワールド位置を返す
+		const int32 LastPointIndex = _exitRight->GetNumberOfSplinePoints() - 1;
+		return _exitRight->GetLocationAtSplinePoint(LastPointIndex, ESplineCoordinateSpace::World);
+	}
+
+	// もしスプラインがなければ、アクター自身の位置を返す
+	return GetActorLocation();
+}
+
+FRotator AQuestionUIActor::GetSnapRotation_Implementation() const
+{
+	if (_exitRight && _exitRight->GetNumberOfSplinePoints() > 0)
+	{
+		// スプラインの終点のワールドでの向きを返す
+		const int32 LastPointIndex = _exitRight->GetNumberOfSplinePoints() - 1;
+		return _exitRight->GetRotationAtSplinePoint(LastPointIndex, ESplineCoordinateSpace::World);
+	}
+
+	// アクター自身の向きを返す
+	return GetActorRotation();
 }

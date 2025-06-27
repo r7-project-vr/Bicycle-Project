@@ -44,20 +44,29 @@ void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComp
 {
 	// ゲーム終了した場合何もしない
 	AQuestionGameMode* questionGameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
-	if (questionGameMode->IsGameFailed() || questionGameMode->IsGameClear())
-		return;
+	// 2025.6.27 start tokumaru questionGameModeのnull参照対策
+	if (questionGameMode) {
+	
+		if (questionGameMode->IsGameFailed() || questionGameMode->IsGameClear())
+			return;
+	}
+	// 2025.6.27 end 
 
 	// 前に隠しているウィジェットがあれば、表示させる
 	if(WidgetComponent)
 	{
 		//未回答の問題だけ表示する
 		AQuestionUIActor* question = Cast<AQuestionUIActor>(WidgetComponent->GetOwner());
-		if (!question->GetAnsweredStatus())
-		{
-			UUserWidget* Widget = WidgetComponent->GetWidget();
-			Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			EnableHintLine();
+		// 2025.6.27 start tokumaru questionGameModeのnull参照対策
+		if (question) {
+			if (!question->GetAnsweredStatus())
+			{
+				UUserWidget* Widget = WidgetComponent->GetWidget();
+				Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				EnableHintLine();
+			}
 		}
+		// 2025.6.27 end 
 	}
 }
 

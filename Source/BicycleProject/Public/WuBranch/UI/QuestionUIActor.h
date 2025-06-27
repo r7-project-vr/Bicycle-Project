@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/UI/BaseUIActor.h"
+#include "narisawaBranch/BuildingSnapInterface.h"
 #include "QuestionUIActor.generated.h"
 
 class UBikeComponent;
@@ -13,7 +14,7 @@ class USplineComponent;
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor
+class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor , public IBuildingSnapInterface
 {
 	GENERATED_BODY()
 	
@@ -64,6 +65,9 @@ public:
 	bool GetExitLocationAndForward(FVector& oLocation, FVector& oForward);
 
 	struct FQuestion* GetNowQuestion();
+
+	virtual FVector GetSnapLocation_Implementation() const override;
+	virtual FRotator GetSnapRotation_Implementation() const override;
 
 private:
 

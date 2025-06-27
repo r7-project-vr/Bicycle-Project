@@ -3,6 +3,7 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
+#include <WuBranch/Device/CustomDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 
 void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device)
@@ -46,6 +47,7 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
+		CreateQuestControllerDevice();
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -102,5 +104,6 @@ void UDeviceManager::CreateKeyBoardDevice()
 
 void UDeviceManager::CreateQuestControllerDevice()
 {
-	
+	_device = NewObject<UCustomDevice>(this);
+	_device->Init();
 }

@@ -62,10 +62,15 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	else
 	{
 		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+#if PLATFORM_WINDOWS
 		deviceManager->ChangeDevice(EDeviceType::UESupportDevice);
 		deviceManager->BindMoveEvent(_bike, "OnMove");
 		deviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
 		deviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
+#elif PLATFORM_ANDROID || PLATFORM_IOS
+		// 今のところ、一つのデバイスと繋ぐという設計です
+		deviceManager->ChangeDevice(EDeviceType::CustomDevice);
+#endif
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "BleUtils.h"
 #include "Interface/BleManagerInterface.h"
 #include "Interface/BleDeviceInterface.h"
+#include "AndroidPermissionFunctionLibrary.h"
 
 UCustomDevice::UCustomDevice()
 	: DefaultActionSwitch(false)
@@ -26,6 +27,8 @@ void UCustomDevice::Init()
 	if (!CheckBluetooth())
 		return;
 
+	// この以降はデバイスのbluetoothがオンの状態かつBluetooth Low Energy(BLE)がサポートしている状態
+	
 	// サービスからデバイスを見つける
 	DecideTargetServices();
 	FindDeviceByServices();
@@ -55,10 +58,9 @@ void UCustomDevice::DisableSelectAnswerActions_Implementation()
 
 void UCustomDevice::Connect_Implementation()
 {
-	
 	FBleDelegate SuccFunction;
 	FBleErrorDelegate ErrFunction;
-	DeviceInterface->Connect(SuccFunction, ErrFunction);
+	//DeviceInterface->Connect(SuccFunction, ErrFunction);
 }
 
 bool UCustomDevice::CheckBluetooth()
@@ -85,6 +87,16 @@ bool UCustomDevice::CheckBluetooth()
 		}
 	}
 	return false;
+}
+
+void UCustomDevice::RequestAndroidPermission()
+{
+#if PLATFORM_ANDROID
+	if (!UAndroidPermissionFunctionLibrary::CheckPermission(ANDROID_FILE_LOCATION_PERMISSION))
+	{
+
+	}
+#endif
 }
 
 void UCustomDevice::DecideTargetServices()

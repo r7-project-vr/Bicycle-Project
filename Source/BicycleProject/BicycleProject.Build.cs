@@ -9,7 +9,7 @@ public class BicycleProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "BleGoodies" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "BleGoodies", "AndroidPermission" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

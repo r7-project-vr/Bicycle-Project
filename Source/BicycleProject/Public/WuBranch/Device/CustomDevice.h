@@ -12,6 +12,11 @@
 //Service UUID
 #define IO_SERVICE_UUID "3c3e3e6a-8916-4f28-95c1-09e5ef9c8e4b"
 
+//
+#define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FILE_LOCATION"
+#define ANDROID_BLUETOOTH_CONNECT_PERMISSION "android.permission.BLUETOOTH_CONNECT"
+#define ANDROID_BLUETOOTH_SCAN_PERMISSION "android.permission.BLUETOOTH_SCAN"
+
 /**
  * 
  */
@@ -43,6 +48,11 @@ private:
 	/// </summary>
 	/// <returns></returns>
 	bool CheckBluetooth();
+
+	/// <summary>
+	/// アンドロイドのbluetoothの権限を要求する
+	/// </summary>
+	void RequestAndroidPermission();
 
 	/// <summary>
 	/// 目標のサービスを決める
@@ -104,4 +114,6 @@ private:
 	/// 答えを選択するアクションのスイッチ
 	/// </summary>
 	bool SelectAnswerSwitch;
+
+	FTimerHandle GetDataHandler;
 };

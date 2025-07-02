@@ -47,7 +47,9 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
-		CreateQuestControllerDevice();
+#if PLATFORM_ANDROID || PLATFORM_IOS
+		CreateCustomDevice();
+#endif
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -102,7 +104,7 @@ void UDeviceManager::CreateKeyBoardDevice()
 	_device->Init();
 }
 
-void UDeviceManager::CreateQuestControllerDevice()
+void UDeviceManager::CreateCustomDevice()
 {
 	_device = NewObject<UCustomDevice>(this);
 	_device->Init();

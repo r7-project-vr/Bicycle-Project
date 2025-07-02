@@ -107,14 +107,14 @@ public:
 private:
 
 	/// <summary>
-	/// キーボードデバイスを作る
+	/// unrealがサポートしているデバイスを作る
 	/// </summary>
 	void CreateKeyBoardDevice();
 
 	/// <summary>
-	/// Meta Questのデバイスを作る
+	/// 自作デバイスを作る
 	/// </summary>
-	void CreateQuestControllerDevice();
+	void CreateCustomDevice();
 
 	/// <summary>
 	/// 装置(複数の場合)

@@ -55,6 +55,11 @@ private:
 	void RequestAndroidPermission();
 
 	/// <summary>
+	/// 権限の要求結果
+	/// </summary>
+	void OnPermissionResult(const TArray<FString>& Permissions, );
+
+	/// <summary>
 	/// 目標のサービスを決める
 	/// </summary>
 	void DecideTargetServices();
@@ -93,7 +98,7 @@ private:
 	/// <summary>
 	/// BLEマネジャー
 	/// </summary>
-	IBleManagerInterface* BleManager;
+	class IBleManagerInterface* BleManager;
 
 	/// <summary>
 	/// 目標のサービス

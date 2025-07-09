@@ -3,9 +3,13 @@
 
 #include "WuBranch/Device/CustomDevice.h"
 #include "BleUtils.h"
+//#if PLATFORM_ANDROID
 #include "Interface/BleManagerInterface.h"
 #include "Interface/BleDeviceInterface.h"
-#include "AndroidPermissionFunctionLibrary.h"
+//#include "AndroidPermissionFunctionLibrary.h"
+//#include "AndroidPermissionCallbackProxy.h"
+#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
+//#endif
 
 UCustomDevice::UCustomDevice()
 	: DefaultActionSwitch(false)
@@ -22,6 +26,7 @@ void UCustomDevice::Init()
 	return;
 #endif
 
+//#if PLATFORM_ANDROID
 	BleManager = Cast<IBleManagerInterface>(UBleUtils::CreateBleManager().GetObject());
 
 	if (!CheckBluetooth())
@@ -31,9 +36,12 @@ void UCustomDevice::Init()
 	
 	// サービスからデバイスを見つける
 	DecideTargetServices();
+	// 権限を要求する
+	RequestAndroidPermission();
 	FindDeviceByServices();
 
 	EnableDefaultActions_Implementation();
+//#endif
 }
 
 void UCustomDevice::EnableDefaultActions_Implementation()
@@ -58,13 +66,16 @@ void UCustomDevice::DisableSelectAnswerActions_Implementation()
 
 void UCustomDevice::Connect_Implementation()
 {
+//#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
 	FBleErrorDelegate ErrFunction;
 	//DeviceInterface->Connect(SuccFunction, ErrFunction);
+//#endif
 }
 
 bool UCustomDevice::CheckBluetooth()
 {
+//#if PLATFORM_ANDROID
 	if (BleManager)
 	{
 		if (!BleManager->IsBleSupported())
@@ -76,27 +87,28 @@ bool UCustomDevice::CheckBluetooth()
 		if (!BleManager->IsBluetoothEnabled())
 		{
 			UE_LOG(LogTemplateDevice, Warning, TEXT("This device did not open bluetooth"));
-#if PLATFORM_ANDROID
 			UE_LOG(LogTemplateDevice, Warning, TEXT("Open bluetooth"));
 			BleManager->SetBluetoothState(true);
 			return true;
-#else 
-			UE_LOG(LogTemplateDevice, Error, TEXT("This device did not open bluetooth"));
-			return false;
-#endif
 		}
 	}
+//#endif
 	return false;
 }
 
 void UCustomDevice::RequestAndroidPermission()
 {
-#if PLATFORM_ANDROID
+//#if PLATFORM_ANDROID
 	if (!UAndroidPermissionFunctionLibrary::CheckPermission(ANDROID_FILE_LOCATION_PERMISSION))
 	{
-
+		TArray<FString> Permissions;
+		Permissions.Add(ANDROID_FILE_LOCATION_PERMISSION);
+		Permissions.Add(ANDROID_BLUETOOTH_CONNECT_PERMISSION);
+		Permissions.Add(ANDROID_BLUETOOTH_SCAN_PERMISSION);
+		UAndroidPermissionCallbackProxy* Callback = UAndroidPermissionFunctionLibrary::AcquirePermissions(Permissions);
+		Callback->OnPermissionsGrantedDynamicDelegate.AddDynamic(this, );
 	}
-#endif
+//#endif
 }
 
 void UCustomDevice::DecideTargetServices()
@@ -111,18 +123,21 @@ void UCustomDevice::DecideTargetServices()
 
 void UCustomDevice::FindDeviceByServices()
 {
+//#if PLATFORM_ANDROID
 	if (BleManager)
 	{
 		FBleOnDeviceFoundDelegate Function;
 		Function.BindUFunction(this, FName("OnDeviceFound"));
 		FString JoinedString = FString::Join(Services, TEXT(","));
-		UE_LOG(LogTemplateDevice, Display, TEXT("Scan for devices: %s"), JoinedString);
+		UE_LOG(LogTemplateDevice, Display, TEXT("Scan for devices: %s"), *JoinedString);
 		BleManager->ScanForDevices(Services, Function);
 	}
+//#endif
 }
 
 void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 {
+//#if PLATFORM_ANDROID
 	if (IBleDeviceInterface* DeviceInterface = Cast<IBleDeviceInterface>(Device.GetObject()))
 	{
 		// 元々ない場合
@@ -142,6 +157,7 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 			
 		}
 	}
+//#endif
 }
 
 void UCustomDevice::OnMove()

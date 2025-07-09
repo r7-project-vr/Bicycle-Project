@@ -19,6 +19,10 @@ AQuestionUIActor::AQuestionUIActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
+	SnapPoint->SetupAttachment(RootComponent);
+	RootComponent = SnapPoint;
+
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
 	_temporaryParkingArea->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
@@ -42,6 +46,18 @@ AQuestionUIActor::AQuestionUIActor()
 	_exitRight->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
 	
 	_autoPlayMoveSpeed = 10.0f;
+
+	
+}
+
+FVector AQuestionUIActor::GetSnapLocation() const
+{
+	return SnapPoint->GetComponentLocation();
+}
+
+FRotator AQuestionUIActor::GetSnapRotation() const
+{
+	return SnapPoint->GetComponentRotation();
 }
 
 void AQuestionUIActor::BeginPlay()

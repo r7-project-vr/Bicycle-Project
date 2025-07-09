@@ -64,7 +64,16 @@ public:
 	/// <returns>true: 成功, false: 失敗</returns>
 	bool GetExitLocationAndForward(FVector& oLocation, FVector& oForward);
 
+	/// <summary>
+	/// スナップポイントの可視化
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Snap")
+	USceneComponent* SnapPoint;
+
 	struct FQuestion* GetNowQuestion();
+
+	FVector GetSnapLocation() const;
+	FRotator GetSnapRotation() const;
 
 	virtual FVector GetSnapLocation_Implementation() const override;
 	virtual FRotator GetSnapRotation_Implementation() const override;

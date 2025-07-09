@@ -28,7 +28,8 @@ void ATileManager::BeginPlay()
 		VisitedTiles.Add(StartingTile);
 		StartingTile->SetManager(this);
 		//Create Left Right tiles
-		SpawnChildren(StartingTile);
+		const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+		SpawnTileAtSocket(StartingTile, DirSocket);
 	}
 	
 }
@@ -40,9 +41,9 @@ void ATileManager::OnPlayerSteppedOnTile(ATile* NewTile)
 	VisitedTiles.Add(NewTile);
 	NewTile->SetManager(this);
 
-	SpawnChildren(NewTile);
+	const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+	SpawnTileAtSocket(NewTile, DirSocket);
 
-	//Delete 2 Steps pre tile
 	if (VisitedTiles.Num() >= 3)
 	{
 		ATile* ToDelete = VisitedTiles[VisitedTiles.Num() - 3];

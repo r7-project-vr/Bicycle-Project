@@ -11,6 +11,7 @@
 //===================================================
 //Service UUID
 #define IO_SERVICE_UUID "3c3e3e6a-8916-4f28-95c1-09e5ef9c8e4b"
+#define IO_SERVICE_UUID2 "00001818-0000-1000-8000-00805f9b34fb"
 
 //
 #define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FILE_LOCATION"
@@ -41,6 +42,8 @@ public:
 
 	void Connect_Implementation() override;
 
+	void Disconnect_Implementation() override;
+
 private:
 
 	/// <summary>
@@ -57,7 +60,9 @@ private:
 	/// <summary>
 	/// 権限の要求結果
 	/// </summary>
-	void OnPermissionResult(const TArray<FString>& Permissions, );
+	/// <param name="Permissions"></param>
+	/// <param name="GrantResults"></param>
+	void OnPermissionResult(const TArray<FString>& Permissions, const TArray<bool>& GrantResults);
 
 	/// <summary>
 	/// 目標のサービスを決める
@@ -75,7 +80,27 @@ private:
 	/// <param name="Device">デバイス</param>
 	void OnDeviceFound(TScriptInterface<class IBleDeviceInterface> Device);
 
+	/// <summary>
+	/// コネクションが成功した時
+	/// </summary>
 	void OnConnectSucc();
+
+	/// <summary>
+	/// コネクションが失敗した時
+	/// </summary>
+	/// <param name="ErrorMessage">エラーメッセージ</param>
+	void OnConnectError(FString ErrorMessage);
+
+	/// <summary>
+	/// 切断成功した時
+	/// </summary>
+	void OnDisconnectSucc();
+
+	/// <summary>
+	/// 切断失敗した時
+	/// </summary>
+	/// <param name="ErrorMessage">エラーメッセージ</param>
+	void OnDisconnectError(FString ErrorMessage);
 
 	/// <summary>
 	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ

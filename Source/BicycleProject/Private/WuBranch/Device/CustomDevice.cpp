@@ -3,12 +3,13 @@
 
 #include "WuBranch/Device/CustomDevice.h"
 #include "BleUtils.h"
+#include <WuBranch/Device/DeviceType.h>
 //#if PLATFORM_ANDROID
 #include "Interface/BleManagerInterface.h"
 #include "Interface/BleDeviceInterface.h"
-//#include "AndroidPermissionFunctionLibrary.h"
-//#include "AndroidPermissionCallbackProxy.h"
-#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
+#include "AndroidPermissionFunctionLibrary.h"
+#include "AndroidPermissionCallbackProxy.h"
+//#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
 //#endif
 
 UCustomDevice::UCustomDevice()
@@ -68,8 +69,23 @@ void UCustomDevice::Connect_Implementation()
 {
 //#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
+	SuccFunction.BindUFunction(this, FName("OnConnectSucc"));
 	FBleErrorDelegate ErrFunction;
-	//DeviceInterface->Connect(SuccFunction, ErrFunction);
+	ErrFunction.BindUFunction(this, FName("OnConnectError"));
+	MyDevice->Connect(SuccFunction, ErrFunction);
+	_state = EDeviceConnectType::Connecting;
+//#endif
+}
+
+void UCustomDevice::Disconnect_Implementation()
+{
+//#if PLATFORM_ANDROID
+	FBleDelegate SuccFunction;
+	SuccFunction.BindUFunction(this, FName("OnDisconnectSucc"));
+	FBleErrorDelegate ErrFunction;
+	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
+	MyDevice->Disconnect(SuccFunction, ErrFunction);
+	_state = EDeviceConnectType::Disconnecting;
 //#endif
 }
 
@@ -106,8 +122,15 @@ void UCustomDevice::RequestAndroidPermission()
 		Permissions.Add(ANDROID_BLUETOOTH_CONNECT_PERMISSION);
 		Permissions.Add(ANDROID_BLUETOOTH_SCAN_PERMISSION);
 		UAndroidPermissionCallbackProxy* Callback = UAndroidPermissionFunctionLibrary::AcquirePermissions(Permissions);
-		Callback->OnPermissionsGrantedDynamicDelegate.AddDynamic(this, );
+		Callback->OnPermissionsGrantedDynamicDelegate.AddDynamic(this, &UCustomDevice::OnPermissionResult);
 	}
+//#endif
+}
+
+void UCustomDevice::OnPermissionResult(const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
+{
+//#if PLATFORM_ANDROID
+	
 //#endif
 }
 
@@ -140,24 +163,54 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 //#if PLATFORM_ANDROID
 	if (IBleDeviceInterface* DeviceInterface = Cast<IBleDeviceInterface>(Device.GetObject()))
 	{
-		// 元々ない場合
-		if (!MyDevice)
-			MyDevice = DeviceInterface;
-		// 二つ以上見つかった場合
-		else if (MyDevice != DeviceInterface) {
-
-		}
-
-		// 繋いでない場合
-		if (!DeviceInterface->IsConnected())
+		// 新しく見つけたデバイスを使用する
+		// 既に接続した場合は切断する
+		if (_state == EDeviceConnectType::Connected)
 		{
-			
+			Disconnect_Implementation();
 		}
-		else {
+		else if (_state == EDeviceConnectType::Connecting || _state == EDeviceConnectType::Disconnecting)
+		{
+			// 接続しているか切断しているか
+			// 何もしない、やっていることが終了するまで待つ
+		}
+		else
+		{
+			MyDevice = DeviceInterface;
 			
+			// 接続する
+			Connect_Implementation();
 		}
 	}
 //#endif
+}
+
+void UCustomDevice::OnConnectSucc()
+{
+	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
+	_name = MyDevice->GetDeviceName();
+	_uuid = MyDevice->GetDeviceId();
+	_state = EDeviceConnectType::Connected;
+}
+
+void UCustomDevice::OnConnectError(FString ErrorMessage)
+{
+	UE_LOG(LogTemplateDevice, Error, TEXT("Connect to device failed: %s"), *ErrorMessage);
+	_state = EDeviceConnectType::Disconnected;
+}
+
+void UCustomDevice::OnDisconnectSucc()
+{
+	UE_LOG(LogTemplateDevice, Display, TEXT("Disconnect to device successfully"));
+	_name.Empty();
+	_uuid.Empty();
+	_state = EDeviceConnectType::Disconnected;
+}
+
+void UCustomDevice::OnDisconnectError(FString ErrorMessage)
+{
+	UE_LOG(LogTemplateDevice, Error, TEXT("Disconnect to device failed: %s"), *ErrorMessage);
+	_state = EDeviceConnectType::Connected;
 }
 
 void UCustomDevice::OnMove()

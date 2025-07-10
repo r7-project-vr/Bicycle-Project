@@ -5,65 +5,89 @@
 
 AProceduralRoadGenerator::AProceduralRoadGenerator()
 {
-    PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AProceduralRoadGenerator::GenerateBuildingsAlongPath(USplineComponent* Path)
 {
-    if (!Path || BuildingCandidates.Num() == 0)
-    {
-        return; // スプラインが無い、または建物候補がなければ何もしない
-    }
+	if (!Path || BuildingCandidates.Num() == 0)
+	{
+		return;
+	}
 
-    const float PathLength = Path->GetSplineLength();
+	const float PathLength = Path->GetSplineLength();
 
-    // 指定した間隔でスプラインに沿ってループ
-    for (float Distance = 0.0f; Distance < PathLength; Distance += SpawnInterval)
-    {
-        // 現在の距離におけるスプライン上の位置、回転、右方向ベクトルを取得
-        const FVector Location = Path->GetLocationAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
-        const FRotator Rotation = Path->GetRotationAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
-        const FVector RightVector = Path->GetRightVectorAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
+	for (float Distance = 0.0f; Distance < PathLength; Distance += SpawnInterval)
+	{
+		const FVector LocationOnSpline = Path->GetLocationAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
+		const FVector ForwardVector = Path->GetDirectionAtDistanceAlongSpline(Distance, ESplineCoordinateSpace::World);
+		const FVector RightVector = FVector::CrossProduct(ForwardVector, FVector::UpVector).GetSafeNormal();
 
-        // --- 左右の建物の位置と回転を計算 ---
-        const FVector LeftSpawnLocation = Location - (RightVector * SideOffset);
-        const FVector RightSpawnLocation = Location + (RightVector * SideOffset);
+		auto TraceAndAdjustHeight = [&](FVector& Location)
+			{
+				FHitResult HitResult;
+				FVector TraceStart = Location + FVector(0, 0, 1000.0f);
+				FVector TraceEnd = Location - FVector(0, 0, 2000.0f);
+				if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility))
+				{
+					Location.Z = HitResult.ImpactPoint.Z + ZOffset;
+				}
+			};
 
-        // 道に沿うような回転を計算（右側は逆向きにする）
-        const FRotator LeftSpawnRotation = Rotation;
-        const FRotator RightSpawnRotation = Rotation + FRotator(0.0f, 180.0f, 0.0f);
+		const FRotator BackBuildingRotation = ForwardVector.Rotation();
+		const FRotator FrontBuildingRotation = BackBuildingRotation + FRotator(0.0f, 180.0f, 0.0f);
 
-        // --- 左右に建物をスポーン ---
-        // 候補からランダムな建物を選択
-        const int32 RandomIndex = FMath::RandRange(0, BuildingCandidates.Num() - 1);
-        TSoftClassPtr<AActor> SelectedBuilding = BuildingCandidates[RandomIndex];
+		// --- ?【最重要修正点】位置計算のロジックを分離・明確化 ---
 
-        // 非同期でスポーン
-        SpawnBuilding(SelectedBuilding, FTransform(LeftSpawnRotation, LeftSpawnLocation));
-        SpawnBuilding(SelectedBuilding, FTransform(RightSpawnRotation, RightSpawnLocation));
-    }
+		// ステップA: 前後方向の基点を決定
+		const FVector FrontBase = LocationOnSpline + (ForwardVector * DistanceOffset);
+		const FVector BackBase = LocationOnSpline - (ForwardVector * DistanceOffset);
+
+		// ステップB: 横方向のシフト量を決定
+		const FVector LateralShift = RightVector * LateralOffset;
+
+		// ステップC: 前後と横のオフセットを合成して、クラスターの最終的な基点を計算
+		const FVector FrontClusterBaseLocation = FrontBase + LateralShift;
+		const FVector BackClusterBaseLocation = BackBase + LateralShift;
+
+
+		for (int32 i = 0; i < NumBuildingsInCluster; ++i)
+		{
+			const FVector ClusterOffset = RightVector * (i * BuildingSpacing);
+
+			FVector FrontSpawnLocation = FrontClusterBaseLocation + ClusterOffset;
+			TraceAndAdjustHeight(FrontSpawnLocation);
+			const int32 RandomIndexFront = FMath::RandRange(0, BuildingCandidates.Num() - 1);
+			SpawnBuilding(BuildingCandidates[RandomIndexFront], FTransform(FrontBuildingRotation, FrontSpawnLocation));
+
+			FVector BackSpawnLocation = BackClusterBaseLocation + ClusterOffset;
+			TraceAndAdjustHeight(BackSpawnLocation);
+			const int32 RandomIndexBack = FMath::RandRange(0, BuildingCandidates.Num() - 1);
+			SpawnBuilding(BuildingCandidates[RandomIndexBack], FTransform(BackBuildingRotation, BackSpawnLocation));
+		}
+	}
 }
+
+
 
 void AProceduralRoadGenerator::SpawnBuilding(TSoftClassPtr<AActor> BuildingClass, const FTransform& SpawnTransform)
 {
-    if (BuildingClass.IsPending())
-    {
-        // 非同期ロードが必要な場合
-        FStreamableManager& Streamable = UAssetManager::Get().GetStreamableManager();
-        Streamable.RequestAsyncLoad(BuildingClass.ToSoftObjectPath(), [this, BuildingClass, SpawnTransform]()
-            {
-                if (UClass* LoadedClass = BuildingClass.Get())
-                {
-                    GetWorld()->SpawnActor<AActor>(LoadedClass, SpawnTransform);
-                }
-            });
-    }
-    else
-    {
-        // ロード済みの場合
-        if (UClass* LoadedClass = BuildingClass.Get())
-        {
-            GetWorld()->SpawnActor<AActor>(LoadedClass, SpawnTransform);
-        }
-    }
+	if (BuildingClass.IsPending())
+	{
+		FStreamableManager& Streamable = UAssetManager::Get().GetStreamableManager();
+		Streamable.RequestAsyncLoad(BuildingClass.ToSoftObjectPath(), [this, BuildingClass, SpawnTransform]()
+			{
+				if (UClass* LoadedClass = BuildingClass.Get())
+				{
+					GetWorld()->SpawnActor<AActor>(LoadedClass, SpawnTransform);
+				}
+			});
+	}
+	else
+	{
+		if (UClass* LoadedClass = BuildingClass.Get())
+		{
+			GetWorld()->SpawnActor<AActor>(LoadedClass, SpawnTransform);
+		}
+	}
 }

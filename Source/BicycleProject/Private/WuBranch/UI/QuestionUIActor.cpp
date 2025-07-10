@@ -12,6 +12,9 @@
 #include <Components/WidgetComponent.h>
 #include <ShiiBranch/OptionUIWidget.h>
 #include "UntakuBranch/Question.h"
+#include "Kismet/GameplayStatics.h" 
+#include "narisawaBranch/ProceduralRoadGenerator.h" 
+
 
 
 AQuestionUIActor::AQuestionUIActor()
@@ -88,6 +91,15 @@ void AQuestionUIActor::UseLeftExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitLeft;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 左の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitLeft);
+	}
+
 	UpdateStatus();
 }
 
@@ -95,6 +107,15 @@ void AQuestionUIActor::UseRightExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitRight;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 右の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitRight);
+	}
+
 	UpdateStatus();
 }
 

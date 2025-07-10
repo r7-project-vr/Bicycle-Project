@@ -30,7 +30,7 @@ public:
 
 	FString GetUUID_Implementation() const override;
 
-	EDeviceConnectType GetConnectState_Implementation() override;
+	EDeviceConnectType GetConnectState_Implementation() const override;
 
 	void BindMoveEvent_Implementation(UObject* object, FName functionName) override;
 

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "WuBranch/Device/Device.h"
@@ -17,7 +17,7 @@ FString UDevice::GetUUID_Implementation() const
 	return _uuid;
 }
 
-EDeviceConnectType UDevice::GetConnectState_Implementation()
+EDeviceConnectType UDevice::GetConnectState_Implementation() const
 {
 	return _state;
 }

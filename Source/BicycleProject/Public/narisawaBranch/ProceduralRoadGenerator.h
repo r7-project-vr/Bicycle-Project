@@ -14,29 +14,37 @@ class BICYCLEPROJECT_API AProceduralRoadGenerator : public AActor
 public:
     AProceduralRoadGenerator();
 
-    /**
-     * @brief 指定されたスプラインに沿って、道の両脇に建物を生成します。
-     * @param Path スプラインコンポーネントのパス
-     */
     UFUNCTION(BlueprintCallable, Category = "Procedural Generation")
     void GenerateBuildingsAlongPath(USplineComponent* Path);
 
 protected:
-    /** @brief 生成する建物の候補リスト */
     UPROPERTY(EditAnywhere, Category = "Procedural Generation")
     TArray<TSoftClassPtr<AActor>> BuildingCandidates;
 
-    /** @brief 建物を配置する間隔（Unrealユニット） */
     UPROPERTY(EditAnywhere, Category = "Procedural Generation", meta = (ClampMin = "100.0"))
     float SpawnInterval = 2000.0f;
 
-    /** @brief 道の中心から左右にどれだけ離して建物を配置するか */
-    UPROPERTY(EditAnywhere, Category = "Procedural Generation", meta = (ClampMin = "100.0"))
-    float SideOffset = 1500.0f;
+    /** @brief 道路の中心から「前方」にどれだけ離すか (X軸オフセット) */
+    UPROPERTY(EditAnywhere, Category = "Procedural Generation")
+    float DistanceOffset = 1500.0f;
+
+    /** @brief 道路の中心から「横方向」にどれだけ離すか (Y軸オフセット) */
+    UPROPERTY(EditAnywhere, Category = "Procedural Generation")
+    float LateralOffset = 0.0f;
+
+
+    /** @brief 地面の高さに対する建物のZ軸オフセット */
+    UPROPERTY(EditAnywhere, Category = "Procedural Generation")
+    float ZOffset = 0.0f;
+
+    /** @brief 一度に生成する建物の数（クラスター数） */
+    UPROPERTY(EditAnywhere, Category = "Procedural Generation", meta = (ClampMin = "1"))
+    int32 NumBuildingsInCluster = 3;
+
+    /** @brief クラスター内の建物同士の間隔 */
+    UPROPERTY(EditAnywhere, Category = "Procedural Generation", meta = (ClampMin = "0.0"))
+    float BuildingSpacing = 2500.0f;
 
 private:
-    /**
-     * @brief 指定したトランスフォームで建物を非同期にスポーンさせる内部関数
-     */
     void SpawnBuilding(TSoftClassPtr<AActor> BuildingClass, const FTransform& SpawnTransform);
 };

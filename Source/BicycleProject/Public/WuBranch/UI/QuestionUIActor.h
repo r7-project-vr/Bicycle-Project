@@ -14,10 +14,10 @@ class USplineComponent;
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor , public IBuildingSnapInterface
+class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor, public IBuildingSnapInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this actor's properties
 	AQuestionUIActor();

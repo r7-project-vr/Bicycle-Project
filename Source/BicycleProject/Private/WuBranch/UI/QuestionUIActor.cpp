@@ -12,12 +12,19 @@
 #include <Components/WidgetComponent.h>
 #include <ShiiBranch/OptionUIWidget.h>
 #include "UntakuBranch/Question.h"
+#include "Kismet/GameplayStatics.h" 
+#include "narisawaBranch/ProceduralRoadGenerator.h" 
+
 
 
 AQuestionUIActor::AQuestionUIActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
+	SnapPoint->SetupAttachment(RootComponent);
+	RootComponent = SnapPoint;
 
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
@@ -42,6 +49,18 @@ AQuestionUIActor::AQuestionUIActor()
 	_exitRight->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
 	
 	_autoPlayMoveSpeed = 10.0f;
+
+	
+}
+
+FVector AQuestionUIActor::GetSnapLocation() const
+{
+	return SnapPoint->GetComponentLocation();
+}
+
+FRotator AQuestionUIActor::GetSnapRotation() const
+{
+	return SnapPoint->GetComponentRotation();
 }
 
 void AQuestionUIActor::BeginPlay()
@@ -72,6 +91,15 @@ void AQuestionUIActor::UseLeftExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitLeft;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 左の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitLeft);
+	}
+
 	UpdateStatus();
 }
 
@@ -79,6 +107,15 @@ void AQuestionUIActor::UseRightExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitRight;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 右の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitRight);
+	}
+
 	UpdateStatus();
 }
 
@@ -156,6 +193,8 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		
 		DisableCollision();
 	}
+
+
 }
 
 void AQuestionUIActor::SetTarget(UBikeComponent* target)
@@ -202,4 +241,31 @@ void AQuestionUIActor::DisableCollision()
 {
 	// エリアのコリジョン
 	_temporaryParkingArea->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+}
+
+FVector AQuestionUIActor::GetSnapLocation_Implementation() const
+{
+	// 右出口スプラインがあり、ポイントが1つ以上存在するなら
+	if (_exitRight && _exitRight->GetNumberOfSplinePoints() > 0)
+	{
+		// スプラインの終点のワールド位置を返す
+		const int32 LastPointIndex = _exitRight->GetNumberOfSplinePoints() - 1;
+		return _exitRight->GetLocationAtSplinePoint(LastPointIndex, ESplineCoordinateSpace::World);
+	}
+
+	// もしスプラインがなければ、アクター自身の位置を返す
+	return GetActorLocation();
+}
+
+FRotator AQuestionUIActor::GetSnapRotation_Implementation() const
+{
+	if (_exitRight && _exitRight->GetNumberOfSplinePoints() > 0)
+	{
+		// スプラインの終点のワールドでの向きを返す
+		const int32 LastPointIndex = _exitRight->GetNumberOfSplinePoints() - 1;
+		return _exitRight->GetRotationAtSplinePoint(LastPointIndex, ESplineCoordinateSpace::World);
+	}
+
+	// アクター自身の向きを返す
+	return GetActorRotation();
 }

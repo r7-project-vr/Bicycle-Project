@@ -47,10 +47,10 @@ AQuestionUIActor::AQuestionUIActor()
 	_exitRight->SetupAttachment(RootComponent);
 	_exitRight->SetRelativeLocation(FVector(600.0f, 0.0f, 90.0f));
 	_exitRight->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
-	
+
 	_autoPlayMoveSpeed = 10.0f;
 
-	
+
 }
 
 FVector AQuestionUIActor::GetSnapLocation() const
@@ -175,7 +175,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
-		
+
 		// 問題内容をゲット
 		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 		FQuestion* question = gameMode->GetQuestion();
@@ -190,7 +190,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(bike);
 		HandlePlayerEnterArea(bike);
-		
+
 		DisableCollision();
 	}
 
@@ -209,7 +209,7 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 		// spline pointが一つ以下の時無視、出口設置していないので
 		if (_exitTarget->GetNumberOfSplinePoints() <= 1)
 			return;
-		
+
 		float deltaDis = DeltaTime * _autoPlayMoveSpeed;
 		_movedDistance += deltaDis;
 		//FTransform pos = _exitTarget->GetTransformAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);

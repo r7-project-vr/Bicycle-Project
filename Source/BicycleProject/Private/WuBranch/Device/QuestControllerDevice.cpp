@@ -7,14 +7,17 @@
 #include <EnhancedInputSubsystems.h>
 #include "InputActionValue.h"
 #include <Kismet/KismetSystemLibrary.h>
+//#include "Android/"
 
 UQuestControllerDevice::UQuestControllerDevice()
 {
-	FString path = "/Game/WuBranch/Input/QuestControllerInputMap";
-	_mappingContext = LoadObject<UInputMappingContext>(nullptr, *path);
+	FString Path = "/Game/WuBranch/Input/QuestControllerInputMap";
+	_mappingContext = LoadObject<UInputMappingContext>(nullptr, *Path);
 
-	path = "/Game/WuBranch/Input/Action/MoveAction";
-	_moveAction = LoadObject<UInputAction>(nullptr, *path);
+	Path = "/Game/WuBranch/Input/Action/MoveAction";
+	_moveAction = LoadObject<UInputAction>(nullptr, *Path);
+
+	JNIEnv* env = FAndroidApplication::GetJavaEnv();
 }
 
 void UQuestControllerDevice::Init()
@@ -24,8 +27,8 @@ void UQuestControllerDevice::Init()
 
 void UQuestControllerDevice::SetupKey()
 {
-	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
-	if (!playerController)
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!PlayerController)
 	{
 		UKismetSystemLibrary::PrintString(this, "player controller is null", true, false, FColor::Red, 10.f);
 		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null!"));
@@ -33,16 +36,16 @@ void UQuestControllerDevice::SetupKey()
 	}
 
 	// Add Input Mapping Context
-	if (playerController)
+	if (PlayerController)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(_mappingContext, 0);
 		}
 	}
 
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(playerController->InputComponent))
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 	{
 		// 移動
 		EnhancedInputComponent->BindAction(_moveAction, ETriggerEvent::Triggered, this, &UQuestControllerDevice::OnMove);
@@ -55,13 +58,13 @@ void UQuestControllerDevice::SetupKey()
 
 void UQuestControllerDevice::OnMove(const FInputActionValue& Value)
 {
-	FVector2D inputVector = Value.Get<FVector2D>();
+	FVector2D InputVector = Value.Get<FVector2D>();
 
-	FVector2D moveVector(inputVector.Y, inputVector.X);
-	UKismetSystemLibrary::PrintString(this, "quest controller input vector:" + moveVector.ToString(), true, false, FColor::Green, 10.f);
+	FVector2D MoveVector(InputVector.Y, InputVector.X);
+	UKismetSystemLibrary::PrintString(this, "quest controller input vector:" + MoveVector.ToString(), true, false, FColor::Green, 10.f);
 	//UE_LOG(LogTemplateDevice, Log, TEXT("Move Value: %f, %f"), moveValue.X, moveValue.Y);
 
 	// notify
 	if (_onMoveEvent.IsBound())
-		_onMoveEvent.Broadcast(moveVector);
+		_onMoveEvent.Broadcast(MoveVector);
 }

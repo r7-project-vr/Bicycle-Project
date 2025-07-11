@@ -14,10 +14,10 @@ class USplineComponent;
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor , public IBuildingSnapInterface
+class BICYCLEPROJECT_API AQuestionUIActor : public ABaseUIActor, public IBuildingSnapInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this actor's properties
 	AQuestionUIActor();
@@ -64,7 +64,16 @@ public:
 	/// <returns>true: 成功, false: 失敗</returns>
 	bool GetExitLocationAndForward(FVector& oLocation, FVector& oForward);
 
+	/// <summary>
+	/// スナップポイントの可視化
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Snap")
+	USceneComponent* SnapPoint;
+
 	struct FQuestion* GetNowQuestion();
+
+	FVector GetSnapLocation() const;
+	FRotator GetSnapRotation() const;
 
 	virtual FVector GetSnapLocation_Implementation() const override;
 	virtual FRotator GetSnapRotation_Implementation() const override;

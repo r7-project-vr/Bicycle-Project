@@ -12,12 +12,19 @@
 #include <Components/WidgetComponent.h>
 #include <ShiiBranch/OptionUIWidget.h>
 #include "UntakuBranch/Question.h"
+#include "Kismet/GameplayStatics.h" 
+#include "narisawaBranch/ProceduralRoadGenerator.h" 
+
 
 
 AQuestionUIActor::AQuestionUIActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
+	SnapPoint->SetupAttachment(RootComponent);
+	RootComponent = SnapPoint;
 
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
@@ -40,8 +47,20 @@ AQuestionUIActor::AQuestionUIActor()
 	_exitRight->SetupAttachment(RootComponent);
 	_exitRight->SetRelativeLocation(FVector(600.0f, 0.0f, 90.0f));
 	_exitRight->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
-	
+
 	_autoPlayMoveSpeed = 10.0f;
+
+
+}
+
+FVector AQuestionUIActor::GetSnapLocation() const
+{
+	return SnapPoint->GetComponentLocation();
+}
+
+FRotator AQuestionUIActor::GetSnapRotation() const
+{
+	return SnapPoint->GetComponentRotation();
 }
 
 void AQuestionUIActor::BeginPlay()
@@ -72,6 +91,15 @@ void AQuestionUIActor::UseLeftExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitLeft;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 左の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitLeft);
+	}
+
 	UpdateStatus();
 }
 
@@ -79,6 +107,15 @@ void AQuestionUIActor::UseRightExit()
 {
 	_isAnswered = true;
 	_exitTarget = _exitRight;
+
+	// レベル内に配置された AProceduralRoadGenerator を探す
+	AProceduralRoadGenerator* Generator = Cast<AProceduralRoadGenerator>(UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRoadGenerator::StaticClass()));
+	if (Generator)
+	{
+		// 右の出口スプラインを渡して、建物生成を依頼する
+		Generator->GenerateBuildingsAlongPath(_exitRight);
+	}
+
 	UpdateStatus();
 }
 
@@ -99,6 +136,8 @@ void AQuestionUIActor::DisableFeature()
 bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oForward)
 {
 	//出口がある
+	if (!_exitTarget)
+		return false;
 	int exitNum = _exitTarget->GetNumberOfSplinePoints();
 	if (exitNum > 1)
 	{
@@ -136,7 +175,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
 	{
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
-		
+
 		// 問題内容をゲット
 		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 		FQuestion* question = gameMode->GetQuestion();
@@ -151,7 +190,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(bike);
 		HandlePlayerEnterArea(bike);
-		
+
 		DisableCollision();
 	}
 
@@ -170,7 +209,7 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 		// spline pointが一つ以下の時無視、出口設置していないので
 		if (_exitTarget->GetNumberOfSplinePoints() <= 1)
 			return;
-		
+
 		float deltaDis = DeltaTime * _autoPlayMoveSpeed;
 		_movedDistance += deltaDis;
 		//FTransform pos = _exitTarget->GetTransformAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);

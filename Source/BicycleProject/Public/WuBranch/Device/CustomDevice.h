@@ -9,9 +9,12 @@
 //===================================================
 // BLE IO_SERVICE
 //===================================================
-//Service UUID
+// Service UUID
 #define IO_SERVICE_UUID "3c3e3e6a-8916-4f28-95c1-09e5ef9c8e4b"
-#define IO_SERVICE_UUID2 "00001818-0000-1000-8000-00805f9b34fb"
+// Write Characteristic UUID
+#define IO_WRITE_CHARACTERISTIC_UUID "72063c8c-a816-4e9a-8627-e9a689952370"
+// Read Characteristic UUID
+#define IO_READ_CHARACTERISTIC_UUID "770cd59f-4735-455d-a42a-acd1ac31e3dd"
 
 //
 #define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FILE_LOCATION"

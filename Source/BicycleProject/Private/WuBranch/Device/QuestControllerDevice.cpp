@@ -16,8 +16,6 @@ UQuestControllerDevice::UQuestControllerDevice()
 
 	Path = "/Game/WuBranch/Input/Action/MoveAction";
 	_moveAction = LoadObject<UInputAction>(nullptr, *Path);
-
-	JNIEnv* env = FAndroidApplication::GetJavaEnv();
 }
 
 void UQuestControllerDevice::Init()

@@ -69,16 +69,34 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);
 	Temp->Destroy();
 
-	const FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
+	FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
 
+	{
+		const float AngleDeg = (DirSocket == TEXT("Socket_LEft"))? -90.0f : +90.0f;
+		const FQuat DeltaQ = FQuat(FVector::UpVector, FMath::DegreesToRadians(AngleDeg));
+
+		const FVector Pivot = BaseSocketWT.GetLocation();
+
+		const FVector OldLoc = SpawnXF.GetLocation();
+		const FQuat OldRot = SpawnXF.GetRotation();
+
+		const FVector NewLoc = Pivot + DeltaQ.RotateVector(OldLoc - Pivot);
+		const FQuat NewRot = DeltaQ * OldRot;
+
+		SpawnXF.SetLocation(NewLoc);
+		SpawnXF.SetRotation(NewRot);
+	}
+	
 	ATile* NewTile = W->SpawnActor<ATile>(TileClass, SpawnXF, Params);
 	if (NewTile)
 	{
 		NewTile->SetManager(this);
 		UE_LOG(LogTemp, Warning,
-			TEXT("[TileManager] SpawnTileAtSocket: Base=%s Using Socket=%s -> New=%s Position=%s"),
+			TEXT("[TileManager] SpawnTileAtSocket: Base=%s Using Socket=%s -> New=%s Loc=%s Rot=%s"),
 			*BaseTile->GetName(), *DirSocket.ToString(),
-			*NewTile->GetName(), *NewTile->GetActorLocation().ToString());
+			*NewTile->GetName(),
+			*NewTile->GetActorLocation().ToString(),
+			*NewTile->GetActorRotation().ToCompactString());
 	}
 	
 }

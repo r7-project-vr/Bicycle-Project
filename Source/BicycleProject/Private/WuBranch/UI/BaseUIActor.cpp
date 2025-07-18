@@ -3,6 +3,7 @@
 
 #include "WuBranch/UI/BaseUIActor.h"
 #include <Components/WidgetComponent.h>
+#include <tokuamaru/QuestionWidget.h>
 
 // Sets default values
 ABaseUIActor::ABaseUIActor()
@@ -23,7 +24,6 @@ ABaseUIActor::ABaseUIActor()
 void ABaseUIActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

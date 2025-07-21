@@ -14,10 +14,6 @@ ABaseUIActor::ABaseUIActor()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 	AddInstanceComponent(RootComponent);
 
-	_widget = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
-	_widget->SetupAttachment(RootComponent);
-	AddInstanceComponent(_widget);
-
 }
 
 // Called when the game starts or when spawned

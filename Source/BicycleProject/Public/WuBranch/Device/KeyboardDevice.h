@@ -25,6 +25,10 @@ public:
 
 	virtual void Init() override;
 
+	virtual bool Connect() override;
+
+	virtual bool Disconnect() override;
+
 	void EnableMoveAction_Implementation() override;
 
 	void DisableMoveAction_Implementation() override;

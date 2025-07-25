@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "WuBranch/Device/Device.h"
@@ -9,11 +9,13 @@ UDevice::UDevice()
 
 bool UDevice::Connect()
 {
+	UE_LOG(LogTemplateDevice, Error, TEXT("The Connect function has not been implemented yet!"));
 	return false;
 }
 
-bool UDevice::DisConnect()
+bool UDevice::Disconnect()
 {
+	UE_LOG(LogTemplateDevice, Error, TEXT("The Disconnect function has not been implemented yet.!"));
 	return false;
 }
 

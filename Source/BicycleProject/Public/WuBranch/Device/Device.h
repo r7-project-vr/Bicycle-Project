@@ -39,12 +39,24 @@ public:
 	/// デバイスとのリンクを外す
 	/// </summary>
 	/// <returns>true: 成功 / false: 失敗</returns>
-	virtual bool DisConnect();
+	virtual bool Disconnect();
 
+	/// <summary>
+	/// 名前をゲット
+	/// </summary>
+	/// <returns>デバイス名</returns>
 	FString GetName() const;
 
+	/// <summary>
+	/// デバイスのUUIDをゲット
+	/// </summary>
+	/// <returns>UUID</returns>
 	FString GetUUID() const;
 
+	/// <summary>
+	/// 接続状態をゲット
+	/// </summary>
+	/// <returns>接続状態</returns>
 	EDeviceConnectType GetConnectState();
 
 	void BindMoveEvent_Implementation(UObject* Object, FName FunctionName) override;
@@ -53,7 +65,7 @@ public:
 
 	void BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName) override;
 
-private:
+protected:
 
 	/// <summary>
 	/// 移動イベント

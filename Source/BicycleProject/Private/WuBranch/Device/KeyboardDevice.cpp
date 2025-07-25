@@ -12,6 +12,7 @@
 DEFINE_LOG_CATEGORY(LogTemplateDevice);
 
 UKeyboardDevice::UKeyboardDevice()
+	: Controller(nullptr)
 {
 	DefualtMap = nullptr;
 	FString Path = "/Game/WuBranch/Input/KeyboardInputMap";
@@ -41,6 +42,32 @@ void UKeyboardDevice::Init()
 	SetupAction();
 }
 
+bool UKeyboardDevice::Connect()
+{
+	// デフォルトとして使う、つまりunrealのEnhancedInputを使う
+	State = EDeviceConnectType::Connected;
+	return true;
+}
+
+bool UKeyboardDevice::Disconnect()
+{
+	// 実際キーボードやゲームパッドなど線を繋がっているままゲーム内でリンクを断つ方法はわからないので(ケーブルを抜くとかしか)
+	// とりあえず、マッピングしているMappingContextを全部クリアする
+	if (!Controller)
+	{
+		UKismetSystemLibrary::PrintString(this, "player controller is null when enable the action of selecting answer", true, false, FColor::Red, 10.f);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null when enable default action!"));
+		return false;
+	}
+
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
+	{
+		Subsystem->ClearAllMappings();
+	}
+	State = EDeviceConnectType::UnConnected;
+	return true;
+}
+
 void UKeyboardDevice::EnableMoveAction_Implementation()
 {
 	if (!Controller)
@@ -63,7 +90,7 @@ void UKeyboardDevice::EnableMoveAction_Implementation()
 		{
 			Subsystem->AddMappingContext(DefualtMap, 0);
 		}
-	}	
+	}
 }
 
 void UKeyboardDevice::DisableMoveAction_Implementation()
@@ -91,7 +118,7 @@ void UKeyboardDevice::DisableMoveAction_Implementation()
 	}
 }
 
-void UKeyboardDevice::EnableSelectAnswerActions_Implementation()
+void UKeyboardDevice::EnableSelectAnswerAction_Implementation()
 {
 	if (!Controller)
 	{
@@ -116,7 +143,7 @@ void UKeyboardDevice::EnableSelectAnswerActions_Implementation()
 	}
 }
 
-void UKeyboardDevice::DisableSelectAnswerActions_Implementation()
+void UKeyboardDevice::DisableSelectAnswerAction_Implementation()
 {
 	if (!Controller)
 	{

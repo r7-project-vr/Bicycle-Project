@@ -7,47 +7,57 @@ UDevice::UDevice()
 {
 }
 
-FString UDevice::GetName_Implementation() const
+bool UDevice::Connect()
 {
-	return _name;
+	return false;
 }
 
-FString UDevice::GetUUID_Implementation() const
+bool UDevice::DisConnect()
 {
-	return _uuid;
+	return false;
 }
 
-EDeviceConnectType UDevice::GetConnectState_Implementation()
+FString UDevice::GetName() const
 {
-	return _state;
+	return Name;
 }
 
-void UDevice::BindMoveEvent_Implementation(UObject* object, FName functionName)
+FString UDevice::GetUUID() const
 {
-	if (object)
+	return UUID;
+}
+
+EDeviceConnectType UDevice::GetConnectState()
+{
+	return State;
+}
+
+void UDevice::BindMoveEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
 	{
-		FScriptDelegate delegate;
-		delegate.BindUFunction(object, functionName);
-		_onMoveEvent.Add(delegate);
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnMoveEvent.Add(Delegate);
 	}
 }
 
-void UDevice::BindSelectLeftEvent_Implementation(UObject* object, FName functionName)
+void UDevice::BindSelectLeftEvent_Implementation(UObject* Object, FName FunctionName)
 {
-	if (object)
+	if (Object)
 	{
-		FScriptDelegate delegate;
-		delegate.BindUFunction(object, functionName);
-		_onSelectLeftEvent.Add(delegate);
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnSelectLeftEvent.Add(Delegate);
 	}
 }
 
-void UDevice::BindSelectRightEvent_Implementation(UObject* object, FName functionName)
+void UDevice::BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName)
 {
-	if (object)
+	if (Object)
 	{
-		FScriptDelegate delegate;
-		delegate.BindUFunction(object, functionName);
-		_onSelectRightEvent.Add(delegate);
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnSelectRightEvent.Add(Delegate);
 	}
 }

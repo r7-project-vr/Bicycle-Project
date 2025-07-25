@@ -119,12 +119,12 @@ private:
 	/// <summary>
 	/// 装置(複数の場合)
 	/// </summary>
-	TMap<EDevicePart, TScriptInterface<IDeviceInterface>> _devices;
+	TMap<EDevicePart, TScriptInterface<IDeviceInterface>> Devices;
 
 	/// <summary>
 	/// 装置(一つの場合)
 	/// </summary>
 	/// ここで必ずUPROPERTYをつける、そうでないとUObjectがUnrealのガベージコレクションに回収される
 	UPROPERTY()
-	UDevice* _device;
+	UDevice* Device;
 };

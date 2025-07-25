@@ -3,14 +3,13 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
-#include <WuBranch/Device/QuestControllerDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 
 void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device)
 {
-	if (!_devices.Contains(part))
+	if (!Devices.Contains(part))
 	{
-		_devices.Add(part, device);
+		Devices.Add(part, device);
 	}
 	else
 	{
@@ -20,19 +19,19 @@ void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterfa
 
 void UDeviceManager::DeleteDevice(EDevicePart part)
 {
-	if (!_devices.Contains(part))
+	if (!Devices.Contains(part))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("This device cannot be found, so this operation will be ignored."));
 	}
 	else
 	{
-		_devices.Remove(part);
+		Devices.Remove(part);
 	}
 }
 
 IDeviceInterface* UDeviceManager::GetDevice(EDevicePart part)
 {
-	TScriptInterface<IDeviceInterface>* device = _devices.Find(part);
+	TScriptInterface<IDeviceInterface>* device = Devices.Find(part);
 	if (device)
 		return device->GetInterface();
 	else
@@ -57,52 +56,50 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 
 void UDeviceManager::EnableDefaultActions()
 {
-	IDeviceInterface::Execute_EnableDefaultActions(_device);
+	IDeviceInterface::Execute_EnableDefaultActions(Device);
 }
 
 void UDeviceManager::DisableDefaultActions()
 {
-	IDeviceInterface::Execute_DisableDefaultActions(_device);
+	IDeviceInterface::Execute_DisableDefaultActions(Device);
 }
 
 void UDeviceManager::EnableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_EnableSelectAnswerActions(_device);
+	IDeviceInterface::Execute_EnableSelectAnswerActions(Device);
 }
 
 void UDeviceManager::DisableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_DisableSelectAnswerActions(_device);
+	IDeviceInterface::Execute_DisableSelectAnswerActions(Device);
 }
 
 void UDeviceManager::BindMoveEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindMoveEvent(_device, object, functionName);
+	IDeviceInterface::Execute_BindMoveEvent(Device, object, functionName);
 }
 
 void UDeviceManager::BindSelectLeftEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectLeftEvent(_device, object, functionName);
+	IDeviceInterface::Execute_BindSelectLeftEvent(Device, object, functionName);
 }
 
 void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectRightEvent(_device, object, functionName);
+	IDeviceInterface::Execute_BindSelectRightEvent(Device, object, functionName);
 }
 
 UDevice* UDeviceManager::GetDevice()
 {
-	return _device;
+	return Device;
 }
 
 void UDeviceManager::CreateKeyBoardDevice()
 {
-	_device = NewObject<UKeyboardDevice>(this);
-	_device->Init();
+	Device = NewObject<UKeyboardDevice>(this);
+	Device->Init();
 }
 
 void UDeviceManager::CreateQuestControllerDevice()
 {
-	_device = NewObject<UQuestControllerDevice>(this);
-	_device->Init();
 }

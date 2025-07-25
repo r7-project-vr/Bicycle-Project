@@ -37,11 +37,11 @@ public:
 	/// 起動する
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Move Provider")
-	void EnableMove();
+	void EnableMoveAction();
 
 	/// <summary>
 	/// 停止する
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Move Provider")
-	void DisableMove();
+	void DisableMoveAction();
 };

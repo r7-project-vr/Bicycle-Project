@@ -7,6 +7,7 @@
 #include "Tile.generated.h"
 
 class ATileManager;
+class UBoxComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ATile : public AActor
@@ -23,7 +24,7 @@ public:
 
 	//Step In Trigger
 	UPROPERTY(VisibleAnywhere, Category = "Tile")
-	class UBoxComponent* TriggerVolume;
+	UBoxComponent* TriggerVolume;
 
 	//Set Pointer by TileManager
 	void SetManager(class ATileManager* Manager){ TileManager = Manager; }

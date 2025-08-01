@@ -42,7 +42,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
 	
-	//CreateQuestionUI();
+	CreateQuestionUI();
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,

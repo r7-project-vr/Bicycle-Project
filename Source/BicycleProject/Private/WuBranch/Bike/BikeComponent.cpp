@@ -12,6 +12,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <WuBranch/QuestionGameMode.h>
 #include "UntakuBranch/Question.h"
+#include <UntakuBranch/Tile.h>
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
@@ -142,7 +143,6 @@ void UBikeComponent::OnMove(FVector2D direction)
 void UBikeComponent::OnSelectLeftAnswer()
 {
 	FQuestion* question = _questionActor->GetNowQuestion();
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectLeftAnswer"));
 	SelectLeftAnswer(question->ID, 0);
 }
 
@@ -154,23 +154,27 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	//答え合わせ
 	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	gameMode->CheckAnswer(questionID, answer);
+	// マップの生成
+	SpawnMap(true);
 }
 
 void UBikeComponent::OnSelectRightAnswer()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OnSelectRightAnswer"));
 	FQuestion* question = _questionActor->GetNowQuestion();
 	SelectRightAnswer(question->ID, 1);
 }
 
 void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 {
+	
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
 	_questionActor->UseRightExit();
 	//答え合わせ
 	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	gameMode->CheckAnswer(questionID, answer);
+	// マップの生成
+	SpawnMap(false);
 }
 
 void UBikeComponent::DisableSelectAnswerAction()
@@ -178,5 +182,35 @@ void UBikeComponent::DisableSelectAnswerAction()
 	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
 	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 	deviceManager->DisableSelectAnswerActions();
+}
+
+void UBikeComponent::SpawnMap(bool IsLeft)
+{
+	ATile* CurrentTile = FindCurrentTile();
+	
+	if (CurrentTile)
+	{
+		CurrentTile->SpawnMap(IsLeft);
+	}
+}
+
+ATile* UBikeComponent::FindCurrentTile()
+{
+	FVector Start = GetOwner()->GetActorLocation();
+	FVector End = GetOwner()->GetActorLocation() + FVector::DownVector * 300;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(GetOwner());
+
+	FHitResult HitRes;
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitRes, Start, End, ECC_WorldDynamic, Params);
+	if (IsHit)
+	{
+		if (ATile* Target = Cast<ATile>(HitRes.GetActor()))
+		{
+			return Target;
+		}
+	}
+	UE_LOG(LogTemp, Error, TEXT("did not find Tile"));
+	return nullptr;
 }
 

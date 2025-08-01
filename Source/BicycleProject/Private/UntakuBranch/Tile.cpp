@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/Tile.h"
@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "UntakuBranch/TileManager.h"
 #include "GameFramework/Character.h"
+#include <WuBranch/Bike/BikeComponent.h>
 
 // Sets default values
 ATile::ATile()
@@ -25,6 +26,13 @@ ATile::ATile()
 	
 
 }
+
+// 2025.08.01 ウー start
+void ATile::SpawnMap(bool IsLeft)
+{
+	TileManager->SpawnNextMap(this, IsLeft);
+}
+// 2025.08.01 ウー end
 
 // Called when the game starts or when spawned
 void ATile::BeginPlay()

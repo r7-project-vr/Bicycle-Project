@@ -52,4 +52,23 @@ private:
 	UPROPERTY()
 	ATileManager* TileManager = nullptr;
 
+	// 2025.08.01 ウー start
+	/// <summary>
+	/// 問題UIを作る
+	/// </summary>
+	void CreateQuestionUI();
+
+	/// <summary>
+	/// 問題UIの位置
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* QuestionSpawnLocation;
+
+	/// <summary>
+	/// 問題UIのアクター
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AQuestionUIActor> QuestionActor;
+	// 2025.08.01 ウー end
+
 };

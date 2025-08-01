@@ -8,6 +8,7 @@
 
 
 class AQuestionUIActor;
+class ATile;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
@@ -109,6 +110,17 @@ private:
 	void DisableSelectAnswerAction();
 
 	/// <summary>
+	/// マップを生成
+	/// </summary>
+	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
+	void SpawnMap(bool IsLeft);
+
+	/// <summary>
+	/// 今踏んでいるマップを探す
+	/// </summary>
+	ATile* FindCurrentTile();
+
+	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
@@ -140,5 +152,8 @@ private:
 	/// </summary>
 	FVector _synchronizePos;
 
+	/// <summary>
+	/// 問題アクター
+	/// </summary>
 	AQuestionUIActor* _questionActor;
 };

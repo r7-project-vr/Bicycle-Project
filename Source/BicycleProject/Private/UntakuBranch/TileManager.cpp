@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/TileManager.h"
@@ -19,8 +19,6 @@ void ATileManager::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("[TileManager] BeginPlay"));
-		
-	
 	
 	if (StartingTile && TileClass)
 	{
@@ -28,8 +26,8 @@ void ATileManager::BeginPlay()
 		VisitedTiles.Add(StartingTile);
 		StartingTile->SetManager(this);
 		//Create Left Right tiles
-		const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
-		SpawnTileAtSocket(StartingTile, DirSocket);
+		//const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+		//SpawnTileAtSocket(StartingTile, DirSocket);
 	}
 	
 }
@@ -38,11 +36,13 @@ void ATileManager::OnPlayerSteppedOnTile(ATile* NewTile)
 {
 	if (VisitedTiles.Contains(NewTile)) return;
 
+	// 2025.08.01 ウー start
 	VisitedTiles.Add(NewTile);
-	NewTile->SetManager(this);
+	//NewTile->SetManager(this);
 
-	const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
-	SpawnTileAtSocket(NewTile, DirSocket);
+	//const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+	//SpawnTileAtSocket(NewTile, DirSocket);
+	// 2025.08.01 ウー end
 
 	if (VisitedTiles.Num() >= 3)
 	{
@@ -50,6 +50,14 @@ void ATileManager::OnPlayerSteppedOnTile(ATile* NewTile)
 		if (ToDelete) ToDelete->Destroy();
 	}
 }
+
+// 2025.08.01 ウー start
+void ATileManager::SpawnNextMap(ATile* BaseTile, bool IsLeft)
+{
+	const FName DirSocket = (IsLeft ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+	SpawnTileAtSocket(BaseTile, DirSocket);
+}
+// 2025.08.01 ウー end
 
 void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 {

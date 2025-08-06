@@ -34,6 +34,12 @@ void ATile::SpawnMap(bool IsLeft)
 {
 	TileManager->SpawnNextMap(this, IsLeft);
 }
+
+void ATile::AdjustUI(FVector DeltaLocation, FRotator DeltaRotation)
+{
+	QuestionUI->AddActorLocalOffset(DeltaLocation);
+	QuestionUI->AddActorLocalRotation(DeltaRotation);
+}
 // 2025.08.01 ウー end
 
 // Called when the game starts or when spawned
@@ -68,7 +74,7 @@ void ATile::CreateQuestionUI()
 		
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AQuestionUIActor* QuestionUI = GetWorld()->SpawnActor<AQuestionUIActor>(QuestionActor, QuestionSpawnLocation->GetComponentTransform(), Params);
+	QuestionUI = GetWorld()->SpawnActor<AQuestionUIActor>(QuestionActor, QuestionSpawnLocation->GetComponentTransform(), Params);
 
 }
 // 2025.08.01 ウー end

@@ -35,6 +35,18 @@ public:
 	/// </summary>
 	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
 	void SpawnMap(bool IsLeft);
+
+	/// <summary>
+	/// UIの位置、角度を調整
+	/// </summary>
+	/// <param name="DeltaLocation">移動量</param>
+	/// <param name="DeltaRotation">回転量</param>
+	void AdjustUI(FVector DeltaLocation = FVector::ZeroVector, FRotator DeltaRotation = FRotator::ZeroRotator);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void DestroyAll();
 	// 2025.08.01 ウー end
 
 protected:
@@ -70,6 +82,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AQuestionUIActor> QuestionActor;
+
+	/// <summary>
+	/// 生成した問題UI
+	/// </summary>
+	AQuestionUIActor* QuestionUI;
 	// 2025.08.01 ウー end
 
 };

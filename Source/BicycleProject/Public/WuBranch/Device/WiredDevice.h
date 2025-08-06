@@ -6,6 +6,8 @@
 #include "WuBranch/Device/Device.h"
 #include "WiredDevice.generated.h"
 
+class UASerialLibControllerWin;
+
 /**
  * 
  */
@@ -18,7 +20,7 @@ public:
 
 	UWiredDevice();
 
-	virtual void Init() override;
+	void Init(int DeviceID, int DeviceVer);
 
 	virtual bool Connect() override;
 
@@ -32,12 +34,15 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
+	void GetData();
+
 private:
 
 	/// <summary>
-	/// デバイスを探す
+	/// デバイスは既に初期化したか
 	/// </summary>
-	void FindDevice();
+	/// <returns>true: はい, false: いいえ</returns>
+	bool CheckDevice();
 
 	/// <summary>
 	/// 移動機能のスイッチ
@@ -48,4 +53,10 @@ private:
 	/// 選ぶ機能のスイッチ
 	/// </summary>
 	bool SelectSwitch;
+
+	/// <summary>
+	/// 実際使う装置
+	/// </summary>
+	UPROPERTY()
+	UASerialLibControllerWin* Device;
 };

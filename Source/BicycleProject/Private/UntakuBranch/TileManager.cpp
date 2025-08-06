@@ -70,17 +70,27 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	ATile* Temp = W->SpawnActor<ATile>(TileClass, FTransform::Identity, Params);
-	if (!Temp) return;
 
-	const FTransform BottomLocal = Temp->TileMesh
-	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);
-	Temp->Destroy();
+	// 2025.08.04 ウー start
+	// BaseSocketWTのLocationやRotationは世界位置と世界角度
+	FTransform Transform;
+	Transform.SetLocation(BaseSocketWT.GetLocation() + BaseSocketWT.GetRotation().GetForwardVector() * 15000);
+	Transform.SetRotation(BaseSocketWT.GetRotation());
+	Transform.SetScale3D(FVector(1.f, 1.f, 1.f));
+	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Green, FString::Printf(TEXT("BaseSocketWT: %s"), *BaseSocketWT.ToString()));
 
-	FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
+	ATile* NewTile = W->SpawnActor<ATile>(TileClass, Transform, Params);
+	if (!NewTile) return;
+	NewTile->SetManager(this);
+
+	/*const FTransform BottomLocal = Temp->TileMesh
+	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);*/
+	//Temp->Destroy();
+
+	/*FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
 
 	{
-		const float AngleDeg = (DirSocket == TEXT("Socket_LEft"))? -90.0f : +90.0f;
+		const float AngleDeg = (DirSocket == TEXT("Socket_LEft")) ? -90.0f : +90.0f;
 		const FQuat DeltaQ = FQuat(FVector::UpVector, FMath::DegreesToRadians(AngleDeg));
 
 		const FVector Pivot = BaseSocketWT.GetLocation();
@@ -105,8 +115,8 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 			*NewTile->GetName(),
 			*NewTile->GetActorLocation().ToString(),
 			*NewTile->GetActorRotation().ToCompactString());
-	}
-	
+	}*/
+	// 2025.08.04 ウー end
 }
 
 

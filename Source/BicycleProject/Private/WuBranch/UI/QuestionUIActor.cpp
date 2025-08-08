@@ -23,7 +23,7 @@ AQuestionUIActor::AQuestionUIActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
-	SnapPoint->SetupAttachment(RootComponent);
+	//SnapPoint->SetupAttachment(RootComponent);
 	RootComponent = SnapPoint;
 
 	_widget = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
@@ -54,7 +54,7 @@ AQuestionUIActor::AQuestionUIActor()
 
 	_autoPlayMoveSpeed = 10.0f;
 
-
+	Widget->SetupAttachment(RootComponent);
 }
 
 FVector AQuestionUIActor::GetSnapLocation() const
@@ -157,21 +157,21 @@ FQuestion* AQuestionUIActor::GetNowQuestion()
 	return _questionTmp;
 }
 
-void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
+void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
 {
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// デフォルトアクションを機能させない
-	gameInstance->GetDeviceManager()->DisableDefaultActions();
+	GameInstance->GetDeviceManager()->DisableDefaultActions();
 	// プレイヤーに答えを選べるようにする
-	gameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+	GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
 
 	// 自転車のスピードを強制的に0まで下げる
-	bike->ReduceVelocityTo0();
+	Bike->ReduceVelocityTo0();
 
 	// オートプレイのスタート地点へ誘導
-	bike->EnableAutoPlay(this);
-	FVector pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
-	bike->SetSynchPos(pos);
+	Bike->EnableAutoPlay(this);
+	FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
+	Bike->SetSynchPos(Pos);
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -181,19 +181,19 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 
 		// 問題内容をゲット
-		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
-		FQuestion* question = gameMode->GetQuestion();
-		_questionTmp = question;
+		AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
+		FQuestion* Question = GameMode->GetQuestion();
+		_questionTmp = Question;
 		// 問題UIにデータを渡す
-		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(_widget->GetWidget()))
+		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
 		{
-			UI->SetQuestionAndAnswer(*question);
+			UI->SetQuestionAndAnswer(*Question);
 		}
 
 		// オートプレイ対象の設置
-		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		SetTarget(bike);
-		HandlePlayerEnterArea(bike);
+		UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
+		SetTarget(Bike);
+		HandlePlayerEnterArea(Bike);
 
 		DisableCollision();
 	}
@@ -201,9 +201,9 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 
 }
 
-void AQuestionUIActor::SetTarget(UBikeComponent* target)
+void AQuestionUIActor::SetTarget(UBikeComponent* Target)
 {
-	_autoPlayTarget = target;
+	_autoPlayTarget = Target;
 }
 
 void AQuestionUIActor::LeadToExit(float DeltaTime)

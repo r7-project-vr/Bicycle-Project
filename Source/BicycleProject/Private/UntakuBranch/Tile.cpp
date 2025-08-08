@@ -1,11 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/Tile.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "Components/BoxComponent.h"
 #include "UntakuBranch/TileManager.h"
 #include "GameFramework/Character.h"
+#include <WuBranch/Bike/BikeComponent.h>
+#include <WuBranch/UI/QuestionUIActor.h>
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ATile::ATile()
@@ -23,8 +27,22 @@ ATile::ATile()
 	//Turn on the Overlap event
 	TriggerVolume->SetGenerateOverlapEvents(true);
 	
-
+	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
+	QuestionSpawnLocation->SetupAttachment(RootComponent);
 }
+
+// 2025.08.01 ウー start
+void ATile::SpawnMap(bool IsLeft)
+{
+	TileManager->SpawnNextMap(this, IsLeft);
+}
+
+void ATile::AdjustUI(FVector DeltaLocation, FRotator DeltaRotation)
+{
+	QuestionUI->AddActorLocalOffset(DeltaLocation);
+	QuestionUI->AddActorLocalRotation(DeltaRotation);
+}
+// 2025.08.01 ウー end
 
 // Called when the game starts or when spawned
 void ATile::BeginPlay()
@@ -32,7 +50,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
 	
-	
+	CreateQuestionUI();
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
@@ -46,3 +64,47 @@ void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
 		TileManager->OnPlayerSteppedOnTile(this);
 	}
 }
+
+// 2025.08.01 ウー start
+void ATile::CreateQuestionUI()
+{
+	if (!QuestionActor)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Question Actor did not set!"));
+		return;
+	}
+		
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	QuestionUI = GetWorld()->SpawnActor<AQuestionUIActor>(QuestionActor, QuestionSpawnLocation->GetComponentTransform(), Params);
+
+}
+
+void ATile::DestroyAll()
+{
+	FVector MyLocation = GetActorLocation();
+	const float MaxDistance = 15000.0f;
+	TArray<AActor*> Actors;
+
+	// 自身の上にある環境物を見つける
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStaticMeshActor::StaticClass(), Actors);
+	Actors.RemoveAll([&](AActor* Actor) {
+		if (!Actor)
+			return true;
+
+		// 範囲内
+		FVector ObjectLocation = Actor->GetActorLocation();
+		bool IsInRangeX = FMath::Abs(ObjectLocation.X - MyLocation.X) <= MaxDistance;
+		bool IsInRangeY = FMath::Abs(ObjectLocation.Y - MyLocation.Y) <= MaxDistance;
+		return !(IsInRangeX && IsInRangeY);
+	});
+	
+	// 対象環境物を削除
+	for (AActor* Actor : Actors)
+	{
+		Actor->Destroy();
+	}
+	// 自分も削除
+	Destroy();
+}
+// 2025.08.01 ウー end

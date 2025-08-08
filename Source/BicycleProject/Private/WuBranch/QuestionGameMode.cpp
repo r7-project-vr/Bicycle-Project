@@ -191,11 +191,16 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	TArray<AActor*> goals;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), goals);
 	if (goals.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Did not find Goal!!"));
 		return;
+	}
+		
 
 	AActor* goal = goals[0];
 	// 問題を特定
 	AQuestionUIActor* target = nullptr;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
 	for (AActor* actor : _questionActors)
 	{
 		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))

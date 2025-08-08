@@ -44,7 +44,7 @@ public:
 	void AdjustUI(FVector DeltaLocation = FVector::ZeroVector, FRotator DeltaRotation = FRotator::ZeroRotator);
 
 	/// <summary>
-	/// 
+	/// すべてを削除
 	/// </summary>
 	void DestroyAll();
 	// 2025.08.01 ウー end

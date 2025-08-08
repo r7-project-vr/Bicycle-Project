@@ -82,7 +82,7 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 
 	// UI更新
 	UpdateAnswerUI();
-	UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
+	//UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
 
 	// ゲームオーバー
 	if (IsGameFailed())

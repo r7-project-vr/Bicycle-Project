@@ -82,7 +82,7 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 
 	// UI更新
 	UpdateAnswerUI();
-	UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
+	//UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
 
 	// ゲームオーバー
 	if (IsGameFailed())
@@ -191,11 +191,16 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	TArray<AActor*> goals;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), goals);
 	if (goals.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Did not find Goal!!"));
 		return;
+	}
+		
 
 	AActor* goal = goals[0];
 	// 問題を特定
 	AQuestionUIActor* target = nullptr;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
 	for (AActor* actor : _questionActors)
 	{
 		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))

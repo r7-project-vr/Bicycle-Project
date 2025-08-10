@@ -47,7 +47,10 @@ void ATileManager::OnPlayerSteppedOnTile(ATile* NewTile)
 	if (VisitedTiles.Num() >= 3)
 	{
 		ATile* ToDelete = VisitedTiles[VisitedTiles.Num() - 3];
-		if (ToDelete) ToDelete->Destroy();
+		// 2025.08.07 ウー start
+		//if (ToDelete) ToDelete->Destroy();
+		if (ToDelete) ToDelete->DestroyAll();
+		// 2025.08.07 ウー end
 	}
 }
 

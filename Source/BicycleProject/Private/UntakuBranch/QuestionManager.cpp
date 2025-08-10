@@ -71,18 +71,18 @@ void AQuestionManager::TestRandomQuestions()
 
 	for (const FQuestion& Q : RandomQuestions)
 	{
-		GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
-			FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
+		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
+		//	FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
 
 		for (int32 i = 0; i < Q.AnswerContents.Num(); ++i)
 		{
 			TCHAR OptionChar = 'A' + i;
-			FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
-			GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
+			//FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
+			//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
 		}
 
-		GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
-			FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
+		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
+		//	FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
 	}
 
 	

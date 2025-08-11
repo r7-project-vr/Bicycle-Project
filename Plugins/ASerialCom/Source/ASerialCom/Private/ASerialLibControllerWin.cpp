@@ -48,6 +48,8 @@ ConnectResult UASerialLibControllerWin::ConnectDevice(int COM_num)
         return ConnectResult::Fail;
     }
 
+    m_inteface->clear(); //接続したときにバッファをクリア
+
     st = WriteData(RESERVED_COMMAND_GET_INFO);
 
     ASerialDataStruct::ASerialData data_buf;

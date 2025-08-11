@@ -112,9 +112,9 @@ private:
 	void CreateKeyBoardDevice();
 
 	/// <summary>
-	/// Meta Questのデバイスを作る
+	/// 有線デバイスを作る
 	/// </summary>
-	void CreateQuestControllerDevice();
+	void CreateWiredDevice();
 
 	/// <summary>
 	/// 装置(複数の場合)

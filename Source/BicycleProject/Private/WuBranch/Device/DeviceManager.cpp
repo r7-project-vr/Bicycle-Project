@@ -4,6 +4,7 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include <WuBranch/Device/WiredDevice.h>
 
 void UDeviceManager::AddDevice(EDevicePart part, UDevice* device)
 {
@@ -46,6 +47,7 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
+		CreateWiredDevice();
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -100,6 +102,16 @@ void UDeviceManager::CreateKeyBoardDevice()
 	Device->Init();
 }
 
-void UDeviceManager::CreateQuestControllerDevice()
+void UDeviceManager::CreateWiredDevice()
 {
+	Device = NewObject<UWiredDevice>(this);
+	int DeviceID = 0x03; // Example Device ID
+	int DeviceVer = 0x01; // Example Device Version
+	Device->Init(DeviceID, DeviceVer);
+	bool Result = Device->Connect();
+	if (Result)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Wired Device Connect Success"));
+		EnableDefaultActions();
+	}
 }

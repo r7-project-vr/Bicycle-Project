@@ -30,6 +30,13 @@ public:
 	virtual void Init() {};
 
 	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="ID">デバイスID</param>
+	/// <param name="Ver">デバイスヴァージョン</param>
+	virtual void Init(int ID, int Ver) {};
+
+	/// <summary>
 	/// デバイスとリンクする
 	/// </summary>
 	/// <returns>true: 成功 / false: 失敗</returns>

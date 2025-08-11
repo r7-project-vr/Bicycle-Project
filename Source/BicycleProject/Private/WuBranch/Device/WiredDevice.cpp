@@ -16,7 +16,6 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	Device = NewObject<UASerialLibControllerWin>();
 	Device->Initialize(DeviceID, DeviceVer);
 	Device->SetInterfacePt(new WindowsSerial());
-	EnableMoveAction_Implementation();
 }
 
 bool UWiredDevice::Connect()

@@ -18,6 +18,24 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	Device->SetInterfacePt(new WindowsSerial());
 }
 
+void UWiredDevice::Tick(float DeltaTime)
+{
+	if (State == EDeviceConnectType::Connected)
+	{
+		GetDataFromDevice();
+	}
+}
+
+TStatId UWiredDevice::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UWiredDevice, STATGROUP_Tickables);
+}
+
+bool UWiredDevice::IsTickableInEditor() const
+{
+	return false;
+}
+
 bool UWiredDevice::Connect()
 {
 	if (!CheckDevice())
@@ -33,7 +51,7 @@ bool UWiredDevice::Connect()
 		UE_LOG(LogTemplateDevice, Error, TEXT("Please Waiting"));
 		return false;
 	}
-
+	
 	State = EDeviceConnectType::Connecting;
 
 	ConnectResult Result = Device->AutoConnectDevice();
@@ -90,15 +108,6 @@ void UWiredDevice::DisableSelectAnswerAction_Implementation()
 	SelectSwitch = false;
 }
 
-void UWiredDevice::GetData()
-{
-	if (State != EDeviceConnectType::Connected)
-	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("Device is nullptr!"));
-		return;
-	}
-}
-
 bool UWiredDevice::CheckDevice()
 {
 	if (!Device)
@@ -107,4 +116,39 @@ bool UWiredDevice::CheckDevice()
 		return false;
 	}
 	return true;
+}
+
+void UWiredDevice::GetDataFromDevice()
+{
+	if (State != EDeviceConnectType::Connected)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Device State is not Connected, is $d"), (int)State);
+		return;
+	}
+
+	// 先にデバイスにデータをもらうためのコマンドを送る
+	int WriteResult = Device->WriteData(0x20);
+	if (WriteResult != 0)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to write data to device, result: %d"), WriteResult);
+		return;
+	}
+
+	// デバイスからデータを読み取る
+	ASerialDataStruct::ASerialData ReadData;
+	int Result = Device->ReadDataProcess(&ReadData);
+
+	if (Result <= 0)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to read data from device, result: %d"), Result);
+		return;
+	}
+
+	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
+	UE_LOG(LogTemplateDevice, Display, TEXT("Get Data: cmd: %d, Num: %d"), ReadData.command, ReadData.data_num);
+	for (uint8_t d : ReadData.data)
+	{
+		UE_LOG(LogTemplateDevice, Display, TEXT("Get Data: %d"), d);
+	}
+	UE_LOG(LogTemplateDevice, Display, TEXT("Get Data Finish"));
 }

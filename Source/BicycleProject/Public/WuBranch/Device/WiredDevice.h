@@ -12,7 +12,7 @@ class UASerialLibControllerWin;
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API UWiredDevice : public UDevice
+class BICYCLEPROJECT_API UWiredDevice : public UDevice, public FTickableGameObject
 {
 	GENERATED_BODY()
 	
@@ -20,7 +20,14 @@ public:
 
 	UWiredDevice();
 
-	void Init(int DeviceID, int DeviceVer);
+	void Init(int DeviceID, int DeviceVer) override;
+
+	/// <summary>
+	virtual void Tick(float DeltaTime) override;
+
+	virtual TStatId GetStatId() const override;
+
+	virtual bool IsTickableInEditor() const override;
 
 	virtual bool Connect() override;
 
@@ -34,8 +41,6 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
-	void GetData();
-
 private:
 
 	/// <summary>
@@ -44,6 +49,13 @@ private:
 	/// <returns>true: はい, false: いいえ</returns>
 	bool CheckDevice();
 
+public:
+	/// <summary>
+	/// デバイスからデータを取得する
+	/// </summary>
+	void GetDataFromDevice();
+
+private:
 	/// <summary>
 	/// 移動機能のスイッチ
 	/// </summary>

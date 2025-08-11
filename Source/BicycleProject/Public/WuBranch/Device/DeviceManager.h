@@ -28,7 +28,7 @@ public:
 	/// </summary>
 	/// <param name="part">デバイスをつける部位</param>
 	/// <param name="device">デバイス本体</param>
-	void AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device);
+	void AddDevice(EDevicePart part, UDevice* device);
 
 	/// <summary>
 	/// リストからデバイスを削除
@@ -41,7 +41,7 @@ public:
 	/// </summary>
 	/// <param name="part">取得したいデバイスのタイプ</param>
 	/// <returns>デバイス</returns>
-	IDeviceInterface* GetDevice(EDevicePart part);
+	UDevice* GetDevice(EDevicePart part);
 
 //-----------------------------------------------------------------------------
 
@@ -119,7 +119,7 @@ private:
 	/// <summary>
 	/// 装置(複数の場合)
 	/// </summary>
-	TMap<EDevicePart, TScriptInterface<IDeviceInterface>> Devices;
+	TMap<EDevicePart, UDevice*> Devices;
 
 	/// <summary>
 	/// 装置(一つの場合)

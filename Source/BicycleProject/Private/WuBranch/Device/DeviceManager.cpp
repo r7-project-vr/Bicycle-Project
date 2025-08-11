@@ -5,7 +5,7 @@
 #include <WuBranch/Device/KeyboardDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 
-void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device)
+void UDeviceManager::AddDevice(EDevicePart part, UDevice* device)
 {
 	if (!Devices.Contains(part))
 	{
@@ -29,11 +29,11 @@ void UDeviceManager::DeleteDevice(EDevicePart part)
 	}
 }
 
-IDeviceInterface* UDeviceManager::GetDevice(EDevicePart part)
+UDevice* UDeviceManager::GetDevice(EDevicePart part)
 {
-	TScriptInterface<IDeviceInterface>* device = Devices.Find(part);
+	UDevice* device = *Devices.Find(part);
 	if (device)
-		return device->GetInterface();
+		return device;
 	else
 		return nullptr;
 }
@@ -56,37 +56,37 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 
 void UDeviceManager::EnableDefaultActions()
 {
-	IDeviceInterface::Execute_EnableDefaultActions(Device);
+	IMoveProvider::Execute_EnableMoveAction(Device);
 }
 
 void UDeviceManager::DisableDefaultActions()
 {
-	IDeviceInterface::Execute_DisableDefaultActions(Device);
+	IMoveProvider::Execute_DisableMoveAction(Device);
 }
 
 void UDeviceManager::EnableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_EnableSelectAnswerActions(Device);
+	IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
 }
 
 void UDeviceManager::DisableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_DisableSelectAnswerActions(Device);
+	IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
 }
 
 void UDeviceManager::BindMoveEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindMoveEvent(Device, object, functionName);
+	IMoveProvider::Execute_BindMoveEvent(Device, object, functionName);
 }
 
 void UDeviceManager::BindSelectLeftEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectLeftEvent(Device, object, functionName);
+	IChoiceProvider::Execute_BindSelectLeftEvent(Device, object, functionName);
 }
 
 void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectRightEvent(Device, object, functionName);
+	IChoiceProvider::Execute_BindSelectRightEvent(Device, object, functionName);
 }
 
 UDevice* UDeviceManager::GetDevice()

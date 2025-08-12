@@ -22,7 +22,7 @@ void UWiredDevice::Tick(float DeltaTime)
 {
 	if (State == EDeviceConnectType::Connected)
 	{
-		GetDataFromDevice();
+		GetMoveDataFromDevice();
 	}
 }
 
@@ -118,7 +118,7 @@ bool UWiredDevice::CheckDevice()
 	return true;
 }
 
-void UWiredDevice::GetDataFromDevice()
+void UWiredDevice::GetMoveDataFromDevice()
 {
 	if (State != EDeviceConnectType::Connected)
 	{
@@ -127,7 +127,8 @@ void UWiredDevice::GetDataFromDevice()
 	}
 
 	// 先にデバイスにデータをもらうためのコマンドを送る
-	int WriteResult = Device->WriteData(0x20);
+	uint8_t Command = 0x21; // RPMのコマンド
+	int WriteResult = Device->WriteData(Command);
 	if (WriteResult != 0)
 	{
 		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to write data to device, result: %d"), WriteResult);
@@ -135,20 +136,43 @@ void UWiredDevice::GetDataFromDevice()
 	}
 
 	// デバイスからデータを読み取る
+	int ReadResult;
 	ASerialDataStruct::ASerialData ReadData;
-	int Result = Device->ReadDataProcess(&ReadData);
+	do {
+		ReadResult = Device->ReadDataProcess(&ReadData);
+	} while (ReadResult == 0);
 
-	if (Result <= 0)
+	// データの読み取りに失敗した場合はエラーログを出力
+	if (ReadResult < 0)
 	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to read data from device, result: %d"), Result);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to read data from device"));
 		return;
 	}
 
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
-	UE_LOG(LogTemplateDevice, Display, TEXT("Get Data: cmd: %d, Num: %d"), ReadData.command, ReadData.data_num);
-	for (uint8_t d : ReadData.data)
+	int RPM = TransformDataToInt(ReadData.data, ReadData.data_num);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("RPM: %d"), RPM));
+	FVector2D MoveVector(RPM, 0);
+	NotifyMoveEvent(MoveVector);
+}
+
+int UWiredDevice::TransformDataToInt(const uint8_t* Data, int Size) const
+{
+	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
+	int Result = 0;
+	for (int i = 0; i < Size; ++i)
 	{
-		UE_LOG(LogTemplateDevice, Display, TEXT("Get Data: %d"), d);
+		Result |= (Data[i] << (8 * (Size - 1 - i)));
 	}
-	UE_LOG(LogTemplateDevice, Display, TEXT("Get Data Finish"));
+	return Result;
+}
+
+void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveEvent.IsBound())
+		OnMoveEvent.Broadcast(MoveData);
 }

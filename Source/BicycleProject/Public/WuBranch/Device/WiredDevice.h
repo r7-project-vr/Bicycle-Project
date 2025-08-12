@@ -49,13 +49,25 @@ private:
 	/// <returns>true: はい, false: いいえ</returns>
 	bool CheckDevice();
 
-public:
 	/// <summary>
-	/// デバイスからデータを取得する
+	/// デバイスから移動のデータを取得する
 	/// </summary>
-	void GetDataFromDevice();
+	void GetMoveDataFromDevice();
 
-private:
+	/// <summary>
+	/// 貰ったデータから必要な数値に変換
+	/// </summary>
+	/// <param name="Data">データ</param>
+	/// <param name="Size">データサイズ</param>
+	/// <returns>数値</returns>
+	int TransformDataToInt(const uint8_t* Data, int Size) const;
+
+	/// <summary>
+	/// 移動イベントを通知
+	/// </summary>
+	/// <param name="MoveData">移動量</param>
+	void NotifyMoveEvent(FVector2D MoveData);
+
 	/// <summary>
 	/// 移動機能のスイッチ
 	/// </summary>
@@ -71,4 +83,5 @@ private:
 	/// </summary>
 	UPROPERTY()
 	UASerialLibControllerWin* Device;
+
 };

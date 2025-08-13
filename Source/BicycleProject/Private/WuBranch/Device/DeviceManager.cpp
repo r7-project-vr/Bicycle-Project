@@ -3,14 +3,44 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
-#include <WuBranch/Device/QuestControllerDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include <WuBranch/Device/WiredDevice.h>
 
-void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device)
+UDeviceManager::UDeviceManager()
 {
-	if (!_devices.Contains(part))
+	Devices.Empty();
+	SingleDevice = nullptr;
+}
+
+void UDeviceManager::CreateAllDevices()
+{
+	// 手の部位
+	// 今は自作デバイスが対応してないため、キーボードデバイスを使う
+	UDevice* HandDevice = NewObject<UKeyboardDevice>(this);
+	HandDevice->Init();
+	AddDevice(EDevicePart::Hand, HandDevice);
+
+	// 足の部位
+	// 優先順位: 無線デバイス > 有線デバイス > キーボードデバイス
+	// 今無線の部分はまだできていない
+	if (UDevice* WiredDevice = CreateWiredDevice())
 	{
-		_devices.Add(part, device);
+		AddDevice(EDevicePart::Foot, WiredDevice);
+		EnableDefaultActions();
+	}
+	else
+	{
+		// 有線デバイスが繋がらなかったら、キーボードデバイスを使う
+		UDevice* KeyboardDevice = CreateKeyBoardDevice();
+		AddDevice(EDevicePart::Foot, KeyboardDevice);
+	}
+}
+
+void UDeviceManager::AddDevice(EDevicePart Part, UDevice* device)
+{
+	if (!Devices.Contains(Part))
+	{
+		Devices.Add(Part, device);
 	}
 	else
 	{
@@ -18,25 +48,28 @@ void UDeviceManager::AddDevice(EDevicePart part, TScriptInterface<IDeviceInterfa
 	}
 }
 
-void UDeviceManager::DeleteDevice(EDevicePart part)
+void UDeviceManager::DeleteDevice(EDevicePart Part)
 {
-	if (!_devices.Contains(part))
+	if (!Devices.Contains(Part))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("This device cannot be found, so this operation will be ignored."));
 	}
 	else
 	{
-		_devices.Remove(part);
+		Devices.Remove(Part);
 	}
 }
 
-IDeviceInterface* UDeviceManager::GetDevice(EDevicePart part)
+UDevice* UDeviceManager::GetDevice(EDevicePart Part)
 {
-	TScriptInterface<IDeviceInterface>* device = _devices.Find(part);
-	if (device)
-		return device->GetInterface();
+	UDevice* Device = *Devices.Find(Part);
+	if (Device)
+		return Device;
 	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Device not found!"));
 		return nullptr;
+	}
 }
 
 void UDeviceManager::ChangeDevice(EDeviceType type)
@@ -44,9 +77,10 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 	switch (type)
 	{
 	case EDeviceType::UESupportDevice:
-		CreateKeyBoardDevice();
+		SingleDevice = CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
+		SingleDevice = CreateWiredDevice();
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -55,54 +89,110 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 	}
 }
 
+UDevice* UDeviceManager::GetDevice()
+{
+	return SingleDevice;
+}
+
 void UDeviceManager::EnableDefaultActions()
 {
-	IDeviceInterface::Execute_EnableDefaultActions(_device);
+	// 一つの装置のみの場合
+	//IMoveProvider::Execute_EnableMoveAction(Device);
+
+	// 複数の装置の場合
+	UDevice* D = GetDevice(EDevicePart::Foot);
+	if(D)
+		IMoveProvider::Execute_EnableMoveAction(D);
 }
 
 void UDeviceManager::DisableDefaultActions()
 {
-	IDeviceInterface::Execute_DisableDefaultActions(_device);
+	// 一つの装置のみの場合
+	//IMoveProvider::Execute_DisableMoveAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Foot);
+	if (Device)
+		IMoveProvider::Execute_DisableMoveAction(Device);
 }
 
 void UDeviceManager::EnableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_EnableSelectAnswerActions(_device);
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
+		IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
 }
 
 void UDeviceManager::DisableSelectAnswerActions()
 {
-	IDeviceInterface::Execute_DisableSelectAnswerActions(_device);
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
+		IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
 }
 
 void UDeviceManager::BindMoveEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindMoveEvent(_device, object, functionName);
+	// 一つの装置のみの場合
+	//IMoveProvider::Execute_BindMoveEvent(Device, object, functionName);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Foot);
+	if (Device)
+	{
+		IMoveProvider::Execute_BindMoveEvent(Device, object, functionName);
+	}
 }
 
 void UDeviceManager::BindSelectLeftEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectLeftEvent(_device, object, functionName);
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_BindSelectLeftEvent(Device, object, functionName);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
+	{
+		IChoiceProvider::Execute_BindSelectLeftEvent(Device, object, functionName);
+	}
 }
 
 void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
 {
-	IDeviceInterface::Execute_BindSelectRightEvent(_device, object, functionName);
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_BindSelectRightEvent(Device, object, functionName);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
+	{
+		IChoiceProvider::Execute_BindSelectRightEvent(Device, object, functionName);
+	}
 }
 
-UDevice* UDeviceManager::GetDevice()
+UDevice* UDeviceManager::CreateKeyBoardDevice()
 {
-	return _device;
+	UDevice* Device = NewObject<UKeyboardDevice>(this);
+	Device->Init();
+	return Device;
 }
 
-void UDeviceManager::CreateKeyBoardDevice()
+UDevice* UDeviceManager::CreateWiredDevice()
 {
-	_device = NewObject<UKeyboardDevice>(this);
-	_device->Init();
-}
-
-void UDeviceManager::CreateQuestControllerDevice()
-{
-	_device = NewObject<UQuestControllerDevice>(this);
-	_device->Init();
+	UDevice * Device = NewObject<UWiredDevice>(this);
+	Device->Init(WiredDeviceID, WiredDeviceVer);
+	bool Result = Device->Connect();
+	if (Result)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Wired Device Connect Success"));
+		return Device;
+	}
+	return nullptr;
 }

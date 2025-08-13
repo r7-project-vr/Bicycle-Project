@@ -20,28 +20,36 @@ class BICYCLEPROJECT_API UDeviceManager : public UObject
 	GENERATED_BODY()
 	
 public:
+	UDeviceManager();
 
 //--------------複数の装置と繋いで全部の信号を処理する場合------------------------
 
 	/// <summary>
+	/// すべての部位のデバイスを作る
+	/// </summary>
+	void CreateAllDevices();
+
+	/// <summary>
 	/// リストにデバイスを追加
 	/// </summary>
-	/// <param name="part">デバイスをつける部位</param>
-	/// <param name="device">デバイス本体</param>
-	void AddDevice(EDevicePart part, TScriptInterface<IDeviceInterface> device);
+	/// <param name="Part">デバイスをつける部位</param>
+	/// <param name="Device">デバイス本体</param>
+	void AddDevice(EDevicePart Part, UDevice* device);
 
 	/// <summary>
 	/// リストからデバイスを削除
 	/// </summary>
-	/// <param name="part">削除したいデバイスの</param>
-	void DeleteDevice(EDevicePart part);
+	/// <param name="Part">削除したいデバイスの</param>
+	void DeleteDevice(EDevicePart Part);
 
 	/// <summary>
 	/// デバイスを取得
 	/// </summary>
-	/// <param name="part">取得したいデバイスのタイプ</param>
+	/// <param name="Part">取得したいデバイスのタイプ</param>
 	/// <returns>デバイス</returns>
-	IDeviceInterface* GetDevice(EDevicePart part);
+	UDevice* GetDevice(EDevicePart Part);
+
+
 
 //-----------------------------------------------------------------------------
 
@@ -52,6 +60,14 @@ public:
 	/// </summary>
 	/// <param name="type">変更先のデバイスタイプ</param>
 	void ChangeDevice(EDeviceType type);
+
+	/// <summary>
+	/// デバイスを取得
+	/// </summary>
+	/// <returns>デバイス</returns>
+	UDevice* GetDevice();
+
+//-----------------------------------------------------------------------------
 
 	/// <summary>
 	/// デフォルトアクションを機能させる
@@ -97,34 +113,38 @@ public:
 	UFUNCTION()
 	void BindSelectRightEvent(UObject* object, FName functionName);
 
-	/// <summary>
-	/// デバイスを取得
-	/// </summary>
-	/// <returns>デバイス</returns>
-	UDevice* GetDevice();
-
-//-----------------------------------------------------------------------------
 private:
 
 	/// <summary>
 	/// キーボードデバイスを作る
 	/// </summary>
-	void CreateKeyBoardDevice();
+	UDevice* CreateKeyBoardDevice();
 
 	/// <summary>
-	/// Meta Questのデバイスを作る
+	/// 有線デバイスを作る
 	/// </summary>
-	void CreateQuestControllerDevice();
+	UDevice* CreateWiredDevice();
 
 	/// <summary>
 	/// 装置(複数の場合)
 	/// </summary>
-	TMap<EDevicePart, TScriptInterface<IDeviceInterface>> _devices;
+	UPROPERTY()
+	TMap<EDevicePart, UDevice*> Devices;
 
 	/// <summary>
 	/// 装置(一つの場合)
 	/// </summary>
 	/// ここで必ずUPROPERTYをつける、そうでないとUObjectがUnrealのガベージコレクションに回収される
 	UPROPERTY()
-	UDevice* _device;
+	UDevice* SingleDevice;
+
+	/// <summary>
+	/// 有線デバイスのID
+	/// </summary>
+	int WiredDeviceID = 0x03;
+
+	/// <summary>
+	/// 有線デバイスのバージョン
+	/// </summary>
+	int WiredDeviceVer = 0x01;
 };

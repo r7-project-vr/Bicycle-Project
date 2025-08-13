@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "DeviceInterface.h"
+#include "WuBranch/Interface/MoveProvider.h"
+#include "WuBranch/Interface/ChoiceProvider.h"
+#include "DeviceType.h"
 #include "Device.generated.h"
+
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevice, Log, All);
 
@@ -13,7 +16,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevice, Log, All);
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API UDevice : public UObject, public IDeviceInterface
+class BICYCLEPROJECT_API UDevice : public UObject, public IMoveProvider, public IChoiceProvider
 {
 	GENERATED_BODY()
 
@@ -26,41 +29,81 @@ public:
 	/// </summary>
 	virtual void Init() {};
 
-	FString GetName_Implementation() const override;
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="ID">デバイスID</param>
+	/// <param name="Ver">デバイスヴァージョン</param>
+	virtual void Init(int ID, int Ver) {};
 
-	FString GetUUID_Implementation() const override;
+	/// <summary>
+	/// デバイスとリンクする
+	/// </summary>
+	/// <returns>true: 成功 / false: 失敗</returns>
+	virtual bool Connect();
 
-	EDeviceConnectType GetConnectState_Implementation() override;
+	/// <summary>
+	/// デバイスとのリンクを外す
+	/// </summary>
+	/// <returns>true: 成功 / false: 失敗</returns>
+	virtual bool Disconnect();
 
-	void BindMoveEvent_Implementation(UObject* object, FName functionName) override;
+	/// <summary>
+	/// 名前をゲット
+	/// </summary>
+	/// <returns>デバイス名</returns>
+	FString GetName() const;
 
-	void BindSelectLeftEvent_Implementation(UObject* object, FName functionName) override;
+	/// <summary>
+	/// デバイスのUUIDをゲット
+	/// </summary>
+	/// <returns>UUID</returns>
+	FString GetUUID() const;
 
-	void BindSelectRightEvent_Implementation(UObject* object, FName functionName) override;
+	/// <summary>
+	/// 接続状態をゲット
+	/// </summary>
+	/// <returns>接続状態</returns>
+	EDeviceConnectType GetConnectState();
 
+	void BindMoveEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void BindSelectLeftEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+protected:
+
+	/// <summary>
+	/// 移動イベント
+	/// </summary>
 	UPROPERTY(BlueprintAssignable)
-	FMoveDelegate _onMoveEvent;
+	FMoveV2Delegate OnMoveEvent;
 
+	/// <summary>
+	/// 左を選ぶイベント
+	/// </summary>
 	UPROPERTY(BlueprintAssignable)
-	FSelectAnswerDelegate _onSelectLeftEvent;
+	FSelectV2Delegate OnSelectLeftEvent;
 
+	/// <summary>
+	/// 右を選ぶイベント
+	/// </summary>
 	UPROPERTY(BlueprintAssignable)
-	FSelectAnswerDelegate _onSelectRightEvent;
-
-private:
+	FSelectV2Delegate OnSelectRightEvent;
 
 	/// <summary>
 	/// デバイスの名前
 	/// </summary>
-	FString _name;
+	FString Name;
 
 	/// <summary>
 	/// デバイスのUUID
 	/// </summary>
-	FString _uuid;
+	FString UUID;
 
 	/// <summary>
 	/// 接続状態
 	/// </summary>
-	EDeviceConnectType _state;
+	EDeviceConnectType State;
 };

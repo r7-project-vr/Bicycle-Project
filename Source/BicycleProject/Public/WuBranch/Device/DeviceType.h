@@ -21,10 +21,8 @@ enum class EDeviceType: uint8
 UENUM(BlueprintType)
 enum class EDevicePart : uint8
 {
-	RightHand,
-	LeftHand,
-	RightLeg,
-	LeftLeg
+	Hand,
+	Foot
 };
 
 /*

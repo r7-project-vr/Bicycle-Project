@@ -54,7 +54,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (!gameInstance)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
@@ -62,7 +62,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	else
 	{
 		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-		deviceManager->ChangeDevice(EDeviceType::UESupportDevice);
+		deviceManager->CreateAllDevices();
 		deviceManager->BindMoveEvent(_bike, "OnMove");
 		deviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
 		deviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");

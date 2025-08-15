@@ -4,30 +4,35 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
+#include "ASerialLibControllerWin.h"
+#include "Containers/Queue.h"
 #include "WiredDevice.generated.h"
 
 class UASerialLibControllerWin;
+class DeviceCmdSender;
 
 /**
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API UWiredDevice : public UDevice, public FTickableGameObject
+class BICYCLEPROJECT_API UWiredDevice : public UDevice , public FTickableGameObject
 {
 	GENERATED_BODY()
 	
 public:
 
 	UWiredDevice();
+	virtual ~UWiredDevice() override;
 
 	void Init(int DeviceID, int DeviceVer) override;
 
-	/// <summary>
+#pragma region TickableGameObject
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override;
 
 	virtual bool IsTickableInEditor() const override;
+#pragma endregion
 
 	virtual bool Connect() override;
 
@@ -49,10 +54,19 @@ private:
 	/// <returns>true: はい, false: いいえ</returns>
 	bool CheckDevice();
 
+public:
 	/// <summary>
 	/// デバイスから移動のデータを取得する
 	/// </summary>
 	void GetMoveDataFromDevice();
+
+private:
+	
+	/// <summary>
+	/// RPMデータを受け取った時の処理
+	/// </summary>
+	/// <param name="RPMData">RPMデータ</param>
+	void HandleRPMData(const ASerialDataStruct::ASerialData& RPMData);
 
 	/// <summary>
 	/// 貰ったデータから必要な数値に変換
@@ -74,14 +88,24 @@ private:
 	bool MoveSwitch;
 
 	/// <summary>
-	/// 選ぶ機能のスイッチ
-	/// </summary>
-	bool SelectSwitch;
-
-	/// <summary>
 	/// 実際使う装置
 	/// </summary>
 	UPROPERTY()
 	UASerialLibControllerWin* Device;
 
+	/// <summary>
+	/// デバイスのコマンドを送るもの
+	/// </summary>
+	DeviceCmdSender* CmdSender;
+
+	/// <summary>
+	/// 実行待ちコマンドのキュー
+	/// </summary>
+	TQueue<uint8_t, EQueueMode::Mpsc> CommandQueue;
+
+	/// <summary>
+	/// 貰ったデータのキュー
+	/// </summary>
+	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Mpsc> DataQueue;
+	
 };

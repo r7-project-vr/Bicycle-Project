@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
-#include "ASerialLibControllerWin.h"
-#include "Containers/Queue.h"
+#include <ASerialCore/ASerialPacket.h>
 #include "WiredDevice.generated.h"
 
 class UASerialLibControllerWin;
@@ -101,11 +100,11 @@ private:
 	/// <summary>
 	/// 実行待ちコマンドのキュー
 	/// </summary>
-	TQueue<uint8_t, EQueueMode::Mpsc> CommandQueue;
+	TQueue<uint8_t, EQueueMode::Spsc> CommandQueue;
 
 	/// <summary>
 	/// 貰ったデータのキュー
 	/// </summary>
-	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Mpsc> DataQueue;
+	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc> DataQueue;
 	
 };

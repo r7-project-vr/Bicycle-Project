@@ -14,7 +14,7 @@
 class BICYCLEPROJECT_API DeviceCmdSender : public FRunnable
 {
 public:
-	DeviceCmdSender(UASerialLibControllerWin* InDevice, TQueue<uint8_t, EQueueMode::Mpsc>* InCommandQueue, TQueue<ASerialDataStruct::ASerialData, EQueueMode::Mpsc>* InDataQueue);
+	DeviceCmdSender(UASerialLibControllerWin* InDevice, TQueue<uint8_t, EQueueMode::Spsc>* InCommandQueue, TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc>* InDataQueue);
 	~DeviceCmdSender();
 
 	virtual bool Init() override;
@@ -46,6 +46,23 @@ private:
 	bool DoCommand(uint8_t Command);
 
 	/// <summary>
+	/// コマンドをデバイスに送信する
+	/// </summary>
+	/// <param name="Device">デバイス</param>
+	/// <param name="Command">コマンド</param>
+	/// <returns>true: 成功, false: 失敗</returns>
+	bool SendCommand(UASerialLibControllerWin* Device, uint8_t Command);
+
+	/// <summary>
+	/// デバイスからの応答を待つ
+	/// </summary>
+	/// <param name="Device">デバイス</param>
+	/// <param name="Data">データ</param>
+	/// <param name="flag">フラッグ</param>
+	/// <returns>true: 成功, false: 失敗</returns>
+	bool WaitForDeviceResponse(UASerialLibControllerWin* Device, ASerialDataStruct::ASerialData& oData, bool* flag = nullptr);
+
+	/// <summary>
 	/// 今のスレッドを管理する
 	/// </summary>
 	FRunnableThread* Thread;
@@ -58,12 +75,12 @@ private:
 	/// <summary>
 	/// 指令を受けるキュー
 	/// </summary>
-	TQueue<uint8_t, EQueueMode::Mpsc>* CommandQueue;
+	TQueue<uint8_t, EQueueMode::Spsc>* CommandQueue;
 
 	/// <summary>
 	/// データをメインスレッドに送るキュー
 	/// </summary>
-	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Mpsc>* DataQueue;
+	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc>* DataQueue;
 
 	/// <summary>
 	/// 一時停止フラグ
@@ -84,4 +101,9 @@ private:
 	/// RPMコマンドを送ったか
 	/// </summary>
 	bool HasSendRPMCmd = false;
+
+	/// <summary>
+	/// 確認のコマンドを送ったか
+	/// </summary>
+	bool HasSendCheckCmd = false;
 };

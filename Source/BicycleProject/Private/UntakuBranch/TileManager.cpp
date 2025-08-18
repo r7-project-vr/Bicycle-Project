@@ -8,6 +8,7 @@
 
 // Sets default values
 ATileManager::ATileManager()
+	: TileCount(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -80,11 +81,17 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 	Transform.SetLocation(BaseSocketWT.GetLocation() + BaseSocketWT.GetRotation().GetForwardVector() * 15000);
 	Transform.SetRotation(BaseSocketWT.GetRotation());
 	Transform.SetScale3D(FVector(1.f, 1.f, 1.f));
-	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Green, FString::Printf(TEXT("BaseSocketWT: %s"), *BaseSocketWT.ToString()));
+	
+	// Tileの数をカウント
+	TileCount++;
 
 	ATile* NewTile = W->SpawnActor<ATile>(TileClass, Transform, Params);
-	if (!NewTile) return;
+
+	if (!NewTile) 
+		return;
+
 	NewTile->SetManager(this);
+	NewTile->SetFoliageSeed(TileCount);
 
 	/*const FTransform BottomLocal = Temp->TileMesh
 	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);*/

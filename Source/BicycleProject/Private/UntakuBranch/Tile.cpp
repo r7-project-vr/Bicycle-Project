@@ -10,6 +10,7 @@
 #include <WuBranch/Bike/BikeComponent.h>
 #include <WuBranch/UI/QuestionUIActor.h>
 #include <Kismet/GameplayStatics.h>
+#include "WuBranch/Actor/Component/RandomFoliageSpawner.h"
 
 // Sets default values
 ATile::ATile()
@@ -29,6 +30,11 @@ ATile::ATile()
 	
 	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
 	QuestionSpawnLocation->SetupAttachment(RootComponent);
+
+	// 2025.08.18 ウー start
+	FoliageSpawner = CreateDefaultSubobject<URandomFoliageSpawner>("Foliage Spawner");
+	FoliageSpawner->SetupAttachment(RootComponent);
+	// 2025.08.18 ウー end
 }
 
 // 2025.08.01 ウー start
@@ -44,6 +50,13 @@ void ATile::AdjustUI(FVector DeltaLocation, FRotator DeltaRotation)
 }
 // 2025.08.01 ウー end
 
+// 2025.08.18 ウー start
+void ATile::SetFoliageSeed(int Seed)
+{
+	FoliageSpawner->SetSeed(Seed);
+}
+// 2025.08.18 ウー end
+
 // Called when the game starts or when spawned
 void ATile::BeginPlay()
 {
@@ -51,6 +64,7 @@ void ATile::BeginPlay()
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
 	
 	CreateQuestionUI();
+	FoliageSpawner->StartSpawnFoliage();
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,

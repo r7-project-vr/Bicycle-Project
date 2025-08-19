@@ -119,24 +119,37 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 {
 	int MaxStep = RandomStream.RandRange(1, FoliageType->NumSteps);
 	int MaxSeed = RandomStream.RandRange(1, FoliageType->SeedsPerStep);
+	
 	FVector ClusterBase = ClusterLocation;
+	FVector RandomUnitVector;
 	for (int Step = 0; Step < MaxStep; Step++)
 	{
-		ClusterBase += RandomStream.GetUnitVector() * FoliageType->AverageSpreadDistance;
+		// 決められた位置でさらにランダムな方向に移動
+		RandomUnitVector = GetRandomUnitVector();
+		ClusterBase += RandomUnitVector * FoliageType->AverageSpreadDistance;
 
 		int InstancesPerStep = 0;
 
 		for (int SeedIndex = 0; SeedIndex < MaxSeed; SeedIndex++)
 		{
-			FVector InstanceLocation = ClusterBase + RandomStream.GetUnitVector() * FoliageType->SpreadVariance;
+			// 木の密度分散するために、木ごとにランダムな位置を決める
+			RandomUnitVector = GetRandomUnitVector();
+			FVector InstanceLocation = ClusterBase + RandomUnitVector * FoliageType->SpreadVariance;
 			
+			// 位置の最終確認
+			if (!IsInZone2D(InstanceLocation, Zone))
+				continue;
+
+			// アクターの所在地が変わるのでインスタンスの位置をワールド座標に変換
+			FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(InstanceLocation);
+
 			FHitResult HitResult;
 			FCollisionQueryParams CollisionParams;
 
 			bool Hit = GetWorld()->LineTraceSingleByChannel(
 				HitResult,
-				InstanceLocation + FVector(0, 0, 2000),
-				InstanceLocation + FVector(0, 0, -2000),
+				WorldLocation + FVector(0, 0, 2000),
+				WorldLocation + FVector(0, 0, -2000),
 				ECC_Visibility,
 				CollisionParams
 			);
@@ -146,26 +159,20 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 
 			// 地面の確認
 			if (!HitResult.GetActor()->ActorHasTag("Tile"))
-				continue;	
+				continue;
 
 			// 地面の角度を確認
 			float DotProduct = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
 			float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
 			if (SlopeAngle < FoliageType->GroundSlopeAngle.Min || SlopeAngle > FoliageType->GroundSlopeAngle.Max)
 				continue;
-
-			// 位置の最終確認
-			if (!IsInZone2D(HitResult.Location, Zone))
-				continue;
 			
-			// ヒット位置 + Zオフセット
+			// 高さの調整
 			FVector AdjustedLocation = HitResult.Location + FVector(0, 0, RandomStream.FRandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max));
-			// インスタンスの位置をワールド座標に変換
-			FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(AdjustedLocation);
 
 			// トランスフォームを用意
 			FTransform InstanceTransform = FTransform();
-			InstanceTransform.SetLocation(WorldLocation);
+			InstanceTransform.SetLocation(AdjustedLocation);
 			InstanceTransform.SetScale3D(FVector::One() * RandomStream.FRandRange(FoliageType->ProceduralScale.Min, FoliageType->ProceduralScale.Max));
 
 			if (FoliageType->RandomYaw)
@@ -181,6 +188,15 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 		if (InstancesPerStep == 0)
 			return;
 	}
+}
+
+FVector URandomFoliageSpawner::GetRandomUnitVector()
+{
+	FVector RandomUnitVector = RandomStream.GetUnitVector();
+	// Z軸の影響を排除
+	RandomUnitVector.Z = 0; 
+	RandomUnitVector.Normalize();
+	return RandomUnitVector;
 }
 
 bool URandomFoliageSpawner::IsInZone2D(const FVector& Location, const FBox& Zone)

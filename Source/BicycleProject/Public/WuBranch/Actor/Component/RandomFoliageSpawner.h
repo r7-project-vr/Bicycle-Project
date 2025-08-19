@@ -69,6 +69,12 @@ private:
 	void SpawnFoliageCluster(UFoliageType_InstancedStaticMesh* FoliageType, UInstancedStaticMeshComponent* FoliageIsmComponent, const FVector& ClusterLocation, const FBox& Zone);
 
 	/// <summary>
+	/// ランダムの単位ベクトルを取得する(Z軸は含まない)
+	/// </summary>
+	/// <returns>単位ベクトル</returns>
+	FVector GetRandomUnitVector();
+
+	/// <summary>
 	/// 指定範囲内にいるですか？
 	/// </summary>
 	/// <param name="Location">今の位置</param>

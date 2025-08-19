@@ -26,8 +26,6 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-
 	_questionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
 
 	_correctNum = 0;
@@ -176,6 +174,7 @@ void AQuestionGameMode::ChangeLevel(FString levelName)
 
 void AQuestionGameMode::DisableAllQuestions()
 {
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
 	for (AActor* actor : _questionActors)
 	{
 		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))

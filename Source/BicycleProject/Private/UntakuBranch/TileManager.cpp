@@ -20,12 +20,13 @@ void ATileManager::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("[TileManager] BeginPlay"));
-	
+	TileCount = 0;
 	if (StartingTile && TileClass)
 	{
 		// Pin the Start tile
 		VisitedTiles.Add(StartingTile);
 		StartingTile->SetManager(this);
+		StartingTile->SpawnEnvironmentals(TileCount);
 		//Create Left Right tiles
 		//const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
 		//SpawnTileAtSocket(StartingTile, DirSocket);
@@ -91,7 +92,7 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 		return;
 
 	NewTile->SetManager(this);
-	NewTile->SetFoliageSeed(TileCount);
+	NewTile->SpawnEnvironmentals(TileCount);
 
 	/*const FTransform BottomLocal = Temp->TileMesh
 	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);*/

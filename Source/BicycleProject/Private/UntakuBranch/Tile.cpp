@@ -11,6 +11,7 @@
 #include <WuBranch/UI/QuestionUIActor.h>
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Actor/Component/RandomFoliageSpawner.h"
+#include "WuBranch/Actor/Component/EnvironmentalObjectComponent.h"
 
 // Sets default values
 ATile::ATile()
@@ -31,6 +32,13 @@ ATile::ATile()
 	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
 	QuestionSpawnLocation->SetupAttachment(RootComponent);
 
+	for (int Index = 0; Index < 28; Index++)
+	{
+		UEnvironmentalObjectComponent* Building = CreateDefaultSubobject<UEnvironmentalObjectComponent>(FName("Building_" + FString::FromInt(Index)));
+		Building->SetupAttachment(RootComponent);
+		Buildings.Add(Building);
+	}
+
 	// 2025.08.18 ウー start
 	FoliageSpawner = CreateDefaultSubobject<URandomFoliageSpawner>("Foliage Spawner");
 	FoliageSpawner->SetupAttachment(RootComponent);
@@ -50,21 +58,27 @@ void ATile::AdjustUI(FVector DeltaLocation, FRotator DeltaRotation)
 }
 // 2025.08.01 ウー end
 
-// 2025.08.18 ウー start
-void ATile::SetFoliageSeed(int Seed)
+// 2025.08.19 ウー start
+void ATile::SpawnEnvironmentals(int Seed)
 {
+	// クイズUI
+	CreateQuestionUI();
+	// 建物
+	for (UEnvironmentalObjectComponent* Building : Buildings)
+	{
+		Building->StartSpawnEnvironmentalObject();
+	}
+	// フォリッジ
 	FoliageSpawner->SetSeed(Seed);
+	FoliageSpawner->StartSpawnFoliage();
 }
-// 2025.08.18 ウー end
+// 2025.08.19 ウー end
 
 // Called when the game starts or when spawned
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
-	
-	CreateQuestionUI();
-	FoliageSpawner->StartSpawnFoliage();
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
@@ -91,11 +105,25 @@ void ATile::CreateQuestionUI()
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	QuestionUI = GetWorld()->SpawnActor<AQuestionUIActor>(QuestionActor, QuestionSpawnLocation->GetComponentTransform(), Params);
-
 }
 
 void ATile::DestroyAll()
 {
+	// 2025.08.19 ウー start
+	// 問題UIを削除
+	if(QuestionUI)
+	{
+		QuestionUI->Destroy();
+	}
+
+	// フォリッジを削除
+	if (FoliageSpawner)
+	{
+		FoliageSpawner->RemoveFoliageInstances();
+	}
+	// 2025.08.19 ウー end
+
+	// 建物を削除
 	FVector MyLocation = GetActorLocation();
 	const float MaxDistance = 15000.0f;
 	TArray<AActor*> Actors;

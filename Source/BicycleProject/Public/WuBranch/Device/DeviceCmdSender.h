@@ -46,6 +46,11 @@ private:
 	bool DoCommand(uint8_t Command);
 
 	/// <summary>
+	/// RPMデータを取得する
+	/// </summary>
+	void GetRPMData();
+
+	/// <summary>
 	/// コマンドをデバイスに送信する
 	/// </summary>
 	/// <param name="Device">デバイス</param>
@@ -93,9 +98,24 @@ private:
 	bool IsRunning = false;
 
 	/// <summary>
+	/// 頻度
+	/// </summary>
+	float Frequency = 60.0f;
+
+	/// <summary>
+	/// チェックのコマンド
+	/// </summary>
+	uint8_t CheckCmd = 0x20;
+
+	/// <summary>
 	/// RPMのコマンド
 	/// </summary>
-	uint8_t RPMCommand = 0x21;
+	uint8_t RPMCmd = 0x21;
+
+	/// <summary>
+	/// RPSコマンド
+	/// </summary>
+	uint8_t RPSCmd = 0x22;
 
 	/// <summary>
 	/// RPMコマンドを送ったか
@@ -106,4 +126,9 @@ private:
 	/// 確認のコマンドを送ったか
 	/// </summary>
 	bool HasSendCheckCmd = false;
+
+	/// <summary>
+	/// チェックを実行するか
+	/// </summary>
+	bool NeedCheck = true;
 };

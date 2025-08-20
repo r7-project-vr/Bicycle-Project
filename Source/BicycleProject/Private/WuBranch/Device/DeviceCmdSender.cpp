@@ -35,18 +35,23 @@ uint32 DeviceCmdSender::Run()
 	// キューの中にコマンドがあるか強制終了されてない限りループ
 	while (IsRunning)
 	{
-		// 一時停止フラグが立っているか、コマンドキューが空ならばスキップ
-		if (IsPause || CommandQueue->IsEmpty())
+		// 一時停止ならばスキップ
+		if (IsPause)
 			continue;
 
-		uint8_t Command;
+		/*uint8_t Command;
 		if (CommandQueue->Dequeue(Command))
 		{
 			if (!DoCommand(Command))
 			{
 				UE_LOG(LogTemp, Error, TEXT("Do command %d fail"), Command);
 			}
-		}
+		}*/
+
+		GetRPMData();
+
+		// 頻度に応じてスリープ
+		FPlatformProcess::Sleep(1.f / Frequency);
 	}
 	return 0;
 }
@@ -87,27 +92,7 @@ bool DeviceCmdSender::DoCommand(uint8_t Command)
 	if (!Device)
 		return false;
 
-	if (Command == 0x20)
-	{
-		// チェックコマンドを送信する前に、チェックコマンドが既に送信されているか確認
-		if(HasSendCheckCmd)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Check command is already sent, skipping this command"));
-			return false;
-		}
-		// チェックコマンドを送信
-		if (!SendCommand(Device, Command))
-			return false;
-		HasSendCheckCmd = true;
-
-		// デバイスからの応答を待つ
-		ASerialDataStruct::ASerialData FlagData;
-		if (!WaitForDeviceResponse(Device, FlagData, &HasSendCheckCmd))
-			return false;
-
-		DataQueue->Enqueue(FlagData);
-	}
-	else if(Command == 0x21)
+	if(Command == RPMCmd)
 	{
 		// RPMのコマンドを送信する前に、RPMコマンドが既に送信されているか確認
 		if (HasSendRPMCmd)
@@ -118,15 +103,58 @@ bool DeviceCmdSender::DoCommand(uint8_t Command)
 		// RPMコマンドを送信
 		if (!SendCommand(Device, Command))
 			return false;
+		UE_LOG(LogTemp, Log, TEXT("Send RPM command"));
 		HasSendRPMCmd = true;
-		
+
+		// チェックする
+		//CheckRPMState(Device);
+
+		UE_LOG(LogTemp, Log, TEXT("RPM Data start"));
 		ASerialDataStruct::ASerialData RPMData;
 		if (!WaitForDeviceResponse(Device, RPMData, &HasSendRPMCmd))
 			return false;
 	
+		UE_LOG(LogTemp, Log, TEXT("RPM Data complete"));
 		DataQueue->Enqueue(RPMData);
 	}
 	return true;
+}
+
+void DeviceCmdSender::GetRPMData()
+{
+	UASerialLibControllerWin* Device = DeviceWP.Get();
+	if (!Device)
+		return;
+
+	ASerialDataStruct::ASerialData Data;
+	if (NeedCheck)
+	{
+		// チェックコマンドを送信
+		if (!SendCommand(Device, CheckCmd))
+			return;
+
+		if (!WaitForDeviceResponse(Device, Data))
+			return;
+		
+		// データが正常に取得できた場合
+		if (Data.data[0] == 1)
+		{
+			NeedCheck = false;
+		}
+	}
+	else
+	{
+		// RPMコマンドを送信
+		if (!SendCommand(Device, RPMCmd))
+			return;
+
+		if (!WaitForDeviceResponse(Device, Data))
+			return;
+
+		// データが正常に取得できた場合、キューに追加
+		DataQueue->Enqueue(Data);
+		NeedCheck = true;
+	}
 }
 
 bool DeviceCmdSender::SendCommand(UASerialLibControllerWin* Device, uint8_t Command)
@@ -137,24 +165,28 @@ bool DeviceCmdSender::SendCommand(UASerialLibControllerWin* Device, uint8_t Comm
 		UE_LOG(LogTemp, Error, TEXT("Failed to write %d command to device, result: %d"), Command, WriteResult);
 		return false;
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Orange, TEXT("Send command Success"));
 	return true;
 }
 
 bool DeviceCmdSender::WaitForDeviceResponse(UASerialLibControllerWin* Device, ASerialDataStruct::ASerialData& oData, bool* flag)
 {
 	int ReadResult;
-	do {
-		ReadResult = Device->ReadDataProcess(&oData);
-	} while (ReadResult == 0);
-
+	//do {
+		ReadResult = Device->ReadData(&oData);
+	//} while (ReadResult == 0);
+	
 	if (flag)
 	{
 		*flag = false;
 	}
-	if (ReadResult < 0)
+	if (ReadResult == -1)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to read data from device"));
+		return false;
+	}
+	else if (ReadResult == -2) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("Read Timeout"));
 		return false;
 	}
 	return true;

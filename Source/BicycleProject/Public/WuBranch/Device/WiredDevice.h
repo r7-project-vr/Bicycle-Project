@@ -68,12 +68,19 @@ private:
 	void HandleRPMData(const ASerialDataStruct::ASerialData& RPMData);
 
 	/// <summary>
+	/// RPSデータを受け取った時の処理
+	/// </summary>
+	/// <param name="RPSData">RPSデータ</param>
+	void HandleRPSData(const ASerialDataStruct::ASerialData& RPSData);
+
+	/// <summary>
 	/// 貰ったデータから必要な数値に変換
 	/// </summary>
 	/// <param name="Data">データ</param>
 	/// <param name="Size">データサイズ</param>
 	/// <returns>数値</returns>
-	int TransformDataToInt(const uint8_t* Data, int Size) const;
+	template<typename T>
+	T TransformDataToInt(const uint8_t* Data, int Size) const;
 
 	/// <summary>
 	/// 移動イベントを通知

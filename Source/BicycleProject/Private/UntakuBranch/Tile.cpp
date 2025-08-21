@@ -32,7 +32,7 @@ ATile::ATile()
 	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
 	QuestionSpawnLocation->SetupAttachment(RootComponent);
 
-	for (int Index = 0; Index < 28; Index++)
+	for (int Index = 0; Index < 34; Index++)
 	{
 		UEnvironmentalObjectComponent* Building = CreateDefaultSubobject<UEnvironmentalObjectComponent>(FName("Building_" + FString::FromInt(Index)));
 		Building->SetupAttachment(RootComponent);

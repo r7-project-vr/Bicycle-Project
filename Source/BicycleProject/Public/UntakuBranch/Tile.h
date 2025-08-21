@@ -109,5 +109,4 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<UEnvironmentalObjectComponent*> Buildings;
 	// 2025.08.18 ウー end
-
 };

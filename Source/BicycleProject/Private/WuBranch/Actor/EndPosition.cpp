@@ -16,7 +16,6 @@ AEndPosition::AEndPosition()
 	PrimaryActorTick.bCanEverTick = true;
 
 	_finishLineCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("EndLineCollision"));
-	_finishLineCollision->OnComponentBeginOverlap.AddDynamic(this, &AEndPosition::OnOverlapBeginFinishLine);
 	AddInstanceComponent(_finishLineCollision);
 	RootComponent = _finishLineCollision;
 
@@ -33,6 +32,7 @@ void AEndPosition::BeginPlay()
 	Super::BeginPlay();
 	
 	_gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	_finishLineCollision->OnComponentBeginOverlap.AddDynamic(this, &AEndPosition::OnOverlapBeginFinishLine);
 }
 
 // Called every frame

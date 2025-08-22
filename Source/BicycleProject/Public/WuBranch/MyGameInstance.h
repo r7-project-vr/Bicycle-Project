@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -22,11 +22,43 @@ public:
 
 	virtual void Init() override;
 
+	/// <summary>
+	/// デバイスマネージャーを取得
+	/// </summary>
+	/// <returns></returns>
 	UFUNCTION(BlueprintCallable, Category = "Device")
 	UDeviceManager* GetDeviceManager() const;
 
+	/// <summary>
+	/// コインを取得
+	/// </summary>
+	/// <returns></returns>
+	int GetCoins() const;
+
+	/// <summary>
+	/// コインを追加
+	/// </summary>
+	/// <param name="Amount">追加する量</param>
+	void AddCoins(int Amount);
+
+	/// <summary>
+	/// コインをファイルに保存
+	/// </summary>
+	void SaveCoinsToFile();
+
 private:
 
+	/// <summary>
+	/// 
+	/// </summary>
+	void ReadCoinFromFile();
+
 	UPROPERTY()
-	UDeviceManager* deviceManager;
+	UDeviceManager* DeviceManager;
+
+	/// <summary>
+	/// 持ってるコイン
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int Coins;
 };

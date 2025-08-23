@@ -164,6 +164,8 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	HandleCoin(Result, !Character->HasOverSpeed());
+	// 超速の記録をリセット
+	Character->ResetOverSpeed();
 	// マップの生成
 	SpawnMap(true);
 }
@@ -185,13 +187,15 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	HandleCoin(Result, !Character->HasOverSpeed());
+	// 超速の記録をリセット
+	Character->ResetOverSpeed();
 	// マップの生成
 	SpawnMap(false);
 }
 
 void UBikeComponent::DisableSelectAnswerAction()
 {
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	UMyGameInstance* gameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 	deviceManager->DisableSelectAnswerActions();
 }

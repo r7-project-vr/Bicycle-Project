@@ -65,6 +65,17 @@ public:
 	/// <returns></returns>
 	UBikeComponent* GetBikeComponent();
 
+	/// <summary>
+	/// 超速したか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool HasOverSpeed() const;
+
+	/// <summary>
+	/// 超速の状態をリセット
+	/// </summary>
+	void ResetOverSpeed();
+
 private:
 
 	/// <summary>
@@ -81,6 +92,12 @@ private:
 	/// 自転車の方向を変える
 	/// </summary>
 	void RotateBike(float DeltaTime);
+
+	/// <summary>
+	/// 速すぎたかのチェック
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool CheckOverSpeed() const;
 
 	/// <summary>
 	/// ロード先の自転車メッシュ
@@ -125,4 +142,9 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _handlebarCenteringSpeed;
+
+	/// <summary>
+	/// 超速したか
+	/// </summary>
+	bool IsOverSpeed;
 };

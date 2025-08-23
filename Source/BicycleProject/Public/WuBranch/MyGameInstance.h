@@ -7,6 +7,8 @@
 #include "MyGameInstance.generated.h"
 
 class UDeviceManager;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinDelegate, int, Num);
+
 
 /**
  * 
@@ -46,12 +48,23 @@ public:
 	/// </summary>
 	void SaveCoinsToFile();
 
+	/// <summary>
+	/// コインの更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateCoinDelegate OnUpdateCoin;
+
 private:
 
 	/// <summary>
 	/// 
 	/// </summary>
 	void ReadCoinFromFile();
+
+	/// <summary>
+	/// コインの数を更新
+	/// </summary>
+	void UpdateCoin();
 
 	UPROPERTY()
 	UDeviceManager* DeviceManager;

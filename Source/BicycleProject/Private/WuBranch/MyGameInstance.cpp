@@ -39,6 +39,7 @@ void UMyGameInstance::AddCoins(int Amount)
 	{
 		Coins = 0; // コインがマイナスにならないようにする
 	}
+	UpdateCoin();
 }
 
 void UMyGameInstance::SaveCoinsToFile()
@@ -48,4 +49,12 @@ void UMyGameInstance::SaveCoinsToFile()
 void UMyGameInstance::ReadCoinFromFile()
 {
 	Coins = 0; // 初期化
+}
+
+void UMyGameInstance::UpdateCoin()
+{
+	if (OnUpdateCoin.IsBound())
+	{
+		OnUpdateCoin.Broadcast(Coins);
+	}
 }

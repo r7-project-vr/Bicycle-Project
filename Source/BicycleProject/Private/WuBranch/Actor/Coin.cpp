@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "WuBranch/Bike/BikeCharacter.h"
-#include "WuBranch/MyGameInstance.h"
+#include "WuBranch/Bike/BikeComponent.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -107,6 +107,9 @@ void ACoin::PlayRotateAnimation(float DeltaTime)
 
 void ACoin::AddCoin(AActor* Actor)
 {
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	GI->AddCoins(1);
+	ABikeCharacter* Character = Cast<ABikeCharacter>(Actor);
+	if (UBikeComponent* BikeComp = Character->GetComponentByClass<UBikeComponent>())
+	{
+		BikeComp->AddCoins(1);
+	}
 }

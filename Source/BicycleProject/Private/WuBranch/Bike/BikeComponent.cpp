@@ -16,6 +16,7 @@
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
+	: CoinsOfQuiz(0)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -36,6 +37,7 @@ void UBikeComponent::BeginPlay()
 	// ...
 
 	_isAutoPlay = false;
+	CoinsOfQuiz = 0;
 }
 
 // Called every frame
@@ -90,16 +92,21 @@ void UBikeComponent::SetSynchPos(FVector pos)
 
 void UBikeComponent::HandleSelectAnswer(FRotator dir)
 {
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	// 曲がる
-	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
+	Character->SetTurningAngle(dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswerAction();
 	// UI補助線を表示しない
-	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	if (character)
+	if (Character)
 	{
-		character->DisableHintLine();
+		Character->DisableHintLine();
 	}
+}
+
+void UBikeComponent::AddCoins(int Amount)
+{
+	CoinsOfQuiz += Amount;
 }
 
 void UBikeComponent::HandleInertia(float DeltaTime)
@@ -152,8 +159,11 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	//出口まで誘導
 	_questionActor->UseLeftExit();
 	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(questionID, answer);
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// コインの処理
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+	HandleCoin(Result, !Character->HasOverSpeed());
 	// マップの生成
 	SpawnMap(true);
 }
@@ -166,13 +176,15 @@ void UBikeComponent::OnSelectRightAnswer()
 
 void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 {
-	
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
 	_questionActor->UseRightExit();
 	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(questionID, answer);
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// コインの処理
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+	HandleCoin(Result, !Character->HasOverSpeed());
 	// マップの生成
 	SpawnMap(false);
 }
@@ -214,3 +226,18 @@ ATile* UBikeComponent::FindCurrentTile()
 	return nullptr;
 }
 
+void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
+{
+	// クイズを正解した褒美
+	if (Result)
+		AddCoins(1);
+	// ボーナス
+	if (NeedBonus)
+		AddCoins(BonusCoin);
+	// 保存
+	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+		GameInstance->AddCoins(CoinsOfQuiz);
+	// リセット
+	CoinsOfQuiz = 0;
+}

@@ -58,12 +58,12 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 	}
 }
 
-void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
+bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
-	bool result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
+	bool Result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
 	// 正解と不正解の数を計算
-	if (result)
+	if (Result)
 		_correctNum++;
 	else
 		_wrongNum++;
@@ -111,6 +111,7 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		// ゴールをプレイヤーの進行先に置く
 		PlaceGoal(questionID);
 	}
+	return Result;
 }
 
 int AQuestionGameMode::GetCurrectNumber() const

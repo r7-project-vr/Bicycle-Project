@@ -2,13 +2,27 @@
 
 
 #include "WuBranch/Device/WiredDevice.h"
-#include "ASerialLibControllerWin.h"
+#include "WuBranch/Device/DeviceCmdSender.h"
 
 UWiredDevice::UWiredDevice()
 	: MoveSwitch(false)
-	, SelectSwitch(false)
 	, Device(nullptr)
+	, CmdSender(nullptr)
 {
+}
+
+UWiredDevice::~UWiredDevice()
+{
+	if (CmdSender)
+	{
+		CmdSender->EnsureCompletion();
+		delete CmdSender;
+		CmdSender = nullptr;
+	}
+	if (Device)
+	{
+		Disconnect();
+	}
 }
 
 void UWiredDevice::Init(int DeviceID, int DeviceVer)
@@ -20,9 +34,11 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 
 void UWiredDevice::Tick(float DeltaTime)
 {
-	if (State == EDeviceConnectType::Connected)
+	if (!DataQueue.IsEmpty())
 	{
-		GetMoveDataFromDevice();
+		ASerialDataStruct::ASerialData RPMData;
+		DataQueue.Dequeue(RPMData);
+		HandleRPMData(RPMData);
 	}
 }
 
@@ -59,6 +75,9 @@ bool UWiredDevice::Connect()
 	if (Result == ConnectResult::Succ)
 	{
 		State = EDeviceConnectType::Connected;
+
+		CmdSender = new DeviceCmdSender(Device, &CommandQueue, &DataQueue);
+
 		return true;
 	}
 	else
@@ -91,21 +110,23 @@ bool UWiredDevice::Disconnect()
 void UWiredDevice::EnableMoveAction_Implementation()
 {
 	MoveSwitch = true;
+	CmdSender->ReStart();
 }
 
 void UWiredDevice::DisableMoveAction_Implementation()
 {
 	MoveSwitch = false;
+	CmdSender->Pause();
 }
 
 void UWiredDevice::EnableSelectAnswerAction_Implementation()
 {
-	SelectSwitch = true;
+	
 }
 
 void UWiredDevice::DisableSelectAnswerAction_Implementation()
 {
-	SelectSwitch = false;
+	
 }
 
 bool UWiredDevice::CheckDevice()
@@ -126,40 +147,34 @@ void UWiredDevice::GetMoveDataFromDevice()
 		return;
 	}
 
-	// 先にデバイスにデータをもらうためのコマンドを送る
-	uint8_t Command = 0x21; // RPMのコマンド
-	int WriteResult = Device->WriteData(Command);
-	if (WriteResult != 0)
+	if (MoveSwitch)
 	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to write data to device, result: %d"), WriteResult);
-		return;
+		// RPMコマンドを送信する
+		//CommandQueue.Enqueue(0x21);
 	}
+}
 
-	// デバイスからデータを読み取る
-	int ReadResult;
-	ASerialDataStruct::ASerialData ReadData;
-	do {
-		ReadResult = Device->ReadDataProcess(&ReadData);
-	} while (ReadResult == 0);
-
-	// データの読み取りに失敗した場合はエラーログを出力
-	if (ReadResult < 0)
-	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("Failed to read data from device"));
-		return;
-	}
-
+void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
+{
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
-	int RPM = TransformDataToInt(ReadData.data, ReadData.data_num);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("RPM: %d"), RPM));
+	uint16 RPM = TransformDataToInt<uint16>(RPMData.data, RPMData.data_num);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d"), RPM));
 	FVector2D MoveVector(RPM, 0);
 	NotifyMoveEvent(MoveVector);
 }
 
-int UWiredDevice::TransformDataToInt(const uint8_t* Data, int Size) const
+void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
+{
+	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
+	FVector2D MoveVector((float)RPS / 100.f, 0);
+	NotifyMoveEvent(MoveVector);
+}
+
+template<typename T>
+T UWiredDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 {
 	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
-	int Result = 0;
+	T Result = 0;
 	for (int i = 0; i < Size; ++i)
 	{
 		Result |= (Data[i] << (8 * (Size - 1 - i)));

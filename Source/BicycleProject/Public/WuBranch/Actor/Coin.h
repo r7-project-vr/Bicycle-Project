@@ -29,7 +29,7 @@ public:
 private:
 
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor);
 
 	/// <summary>
 	/// アニメーション
@@ -52,7 +52,8 @@ private:
 	/// <summary>
 	/// コインを追加
 	/// </summary>
-	void AddCoin();
+	/// <param name="Actor">対象</param>
+	void AddCoin(AActor* Actor);
 
 	/// <summary>
 	/// メッシュ

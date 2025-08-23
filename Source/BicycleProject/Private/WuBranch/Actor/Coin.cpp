@@ -32,7 +32,7 @@ void ACoin::BeginPlay()
 	
 	MoveCnt = 0.f;
 	IsRotating = false;
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &ACoin::OnOverlapBegin);
+	OnActorBeginOverlap.AddDynamic(this, &ACoin::OnOverlapBegin);
 	BaseLocation = GetActorLocation();
 	BaseRotation = GetActorRotation();
 }
@@ -45,13 +45,13 @@ void ACoin::Tick(float DeltaTime)
 	PlayAnimation(DeltaTime);
 }
 
-void ACoin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor)
 	{
 		if (OtherActor->IsA(ABikeCharacter::StaticClass()))
 		{
-			AddCoin();
+			AddCoin(OtherActor);
 			
 			// エフェクト
 
@@ -91,7 +91,6 @@ void ACoin::PlayRotateAnimation(float DeltaTime)
 		if (Angle >= 360)
 		{
 			RotateTimeCnt = FMath::RandRange(RotationDelay.X, RotationDelay.Y);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Time: %lf"), RotateTimeCnt));
 			IsRotating = false;
 		}
 	}
@@ -106,7 +105,7 @@ void ACoin::PlayRotateAnimation(float DeltaTime)
 	}
 }
 
-void ACoin::AddCoin()
+void ACoin::AddCoin(AActor* Actor)
 {
 	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
 	GI->AddCoins(1);

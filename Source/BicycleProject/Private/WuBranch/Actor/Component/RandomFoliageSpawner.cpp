@@ -121,6 +121,8 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 	int MaxSeed = RandomStream.RandRange(1, FoliageType->SeedsPerStep);
 	
 	FVector ClusterBase = ClusterLocation;
+	// Z軸を排除
+	ClusterBase.Z = 0;
 	FVector RandomUnitVector;
 	for (int Step = 0; Step < MaxStep; Step++)
 	{
@@ -143,17 +145,16 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 			// アクターの所在地が変わるのでインスタンスの位置をワールド座標に変換
 			FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(InstanceLocation);
 
+			// 木のスケール倍率
+			float ScaleFactor = RandomStream.FRandRange(FoliageType->ProceduralScale.Min, FoliageType->ProceduralScale.Max);
+			// 木の半径
+			float Radius = FoliageType->CollisionRadius;
+
 			FHitResult HitResult;
-			FCollisionQueryParams CollisionParams;
 
-			bool Hit = GetWorld()->LineTraceSingleByChannel(
-				HitResult,
-				WorldLocation + FVector(0, 0, 2000),
-				WorldLocation + FVector(0, 0, -2000),
-				ECC_Visibility,
-				CollisionParams
-			);
-
+			FCollisionShape Sphere = FCollisionShape::MakeSphere(Radius * ScaleFactor);
+			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 1000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_WorldStatic, Sphere);
+			
 			if (!Hit)
 				continue;
 
@@ -168,12 +169,14 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 				continue;
 			
 			// 高さの調整
-			FVector AdjustedLocation = HitResult.Location + FVector(0, 0, RandomStream.FRandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max));
+			FVector OnGroundLocation = HitResult.Location;
+			OnGroundLocation.Z = 0;
+			FVector AdjustedLocation = OnGroundLocation + FVector(0, 0, RandomStream.FRandRange(FoliageType->ZOffset.Min, FoliageType->ZOffset.Max));
 
 			// トランスフォームを用意
 			FTransform InstanceTransform = FTransform();
 			InstanceTransform.SetLocation(AdjustedLocation);
-			InstanceTransform.SetScale3D(FVector::One() * RandomStream.FRandRange(FoliageType->ProceduralScale.Min, FoliageType->ProceduralScale.Max));
+			InstanceTransform.SetScale3D(FVector::One() * ScaleFactor);
 
 			if (FoliageType->RandomYaw)
 			{

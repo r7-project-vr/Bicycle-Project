@@ -8,6 +8,8 @@
 
 class ATileManager;
 class UBoxComponent;
+class URandomFoliageSpawner;
+class UEnvironmentalObjectComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ATile : public AActor
@@ -49,6 +51,14 @@ public:
 	void DestroyAll();
 	// 2025.08.01 ウー end
 
+	// 2025.08.19 ウー start
+	/// <summary>
+	/// 環境物の生成を開始する
+	/// </summary>
+	/// <param name="Seed">フォリッジのランダムシード</param>
+	void SpawnEnvironmentals(int Seed);
+	// 2025.08.19 ウー end
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -89,4 +99,14 @@ private:
 	AQuestionUIActor* QuestionUI;
 	// 2025.08.01 ウー end
 
+	// 2025.08.18 ウー start
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	URandomFoliageSpawner* FoliageSpawner = nullptr;
+
+	/// <summary>
+	/// 建物
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<UEnvironmentalObjectComponent*> Buildings;
+	// 2025.08.18 ウー end
 };

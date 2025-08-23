@@ -26,8 +26,6 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-
 	_questionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
 
 	_correctNum = 0;
@@ -60,12 +58,12 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 	}
 }
 
-void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
+bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
-	bool result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
+	bool Result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
 	// 正解と不正解の数を計算
-	if (result)
+	if (Result)
 		_correctNum++;
 	else
 		_wrongNum++;
@@ -113,6 +111,7 @@ void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		// ゴールをプレイヤーの進行先に置く
 		PlaceGoal(questionID);
 	}
+	return Result;
 }
 
 int AQuestionGameMode::GetCurrectNumber() const
@@ -176,6 +175,7 @@ void AQuestionGameMode::ChangeLevel(FString levelName)
 
 void AQuestionGameMode::DisableAllQuestions()
 {
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
 	for (AActor* actor : _questionActors)
 	{
 		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))

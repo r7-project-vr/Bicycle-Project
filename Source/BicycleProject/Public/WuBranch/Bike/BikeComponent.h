@@ -90,6 +90,12 @@ public:
 	/// <param name="dir">曲がりたい方向</param>
 	void HandleSelectAnswer(FRotator dir);
 
+	/// <summary>
+	/// コインを手に入れた
+	/// </summary>
+	/// <param name="Amount">数</param>
+	void AddCoins(int Amount);
+
 private:
 
 	/// <summary>
@@ -119,6 +125,13 @@ private:
 	/// 今踏んでいるマップを探す
 	/// </summary>
 	ATile* FindCurrentTile();
+
+	/// <summary>
+	/// コインの処理
+	/// </summary>
+	/// <param name="Result">クイズの結果</param>
+	/// <param name="NeedBonus">ボーナスを加算するか</param>
+	void HandleCoin(bool Result, bool NeedBonus);
 
 	/// <summary>
 	/// スピード
@@ -156,4 +169,15 @@ private:
 	/// 問題アクター
 	/// </summary>
 	AQuestionUIActor* _questionActor;
+
+	/// <summary>
+	/// クイズごと手に入れたコイン
+	/// </summary>
+	int CoinsOfQuiz;
+
+	/// <summary>
+	/// ボーナスコイン
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int BonusCoin;
 };

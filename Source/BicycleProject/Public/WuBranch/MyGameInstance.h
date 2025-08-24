@@ -7,8 +7,6 @@
 #include "MyGameInstance.generated.h"
 
 class UDeviceManager;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinDelegate, int, Num);
-
 
 /**
  * 
@@ -47,6 +45,8 @@ public:
 	/// コインをファイルに保存
 	/// </summary>
 	void SaveCoinsToFile();
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinDelegate, int, Num);
 
 	/// <summary>
 	/// コインの更新通知

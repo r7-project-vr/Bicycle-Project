@@ -12,6 +12,7 @@
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
+	: IsOverSpeed(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -39,6 +40,7 @@ void ABikeCharacter::BeginPlay()
 	//_isRotate = false;
 	_targetRotator = FRotator::ZeroRotator;
 	//_handlebarsAngle = 0.0f;
+	IsOverSpeed = false;
 }
 
 // Called every frame
@@ -47,6 +49,11 @@ void ABikeCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	RotateBike(DeltaTime);
+
+	if (CheckOverSpeed())
+	{
+		IsOverSpeed = true;
+	}
 }
 
 // Called to bind functionality to input
@@ -109,6 +116,16 @@ UBikeComponent* ABikeCharacter::GetBikeComponent()
 	return _bike;
 }
 
+bool ABikeCharacter::HasOverSpeed() const
+{
+	return IsOverSpeed;
+}
+
+void ABikeCharacter::ResetOverSpeed()
+{
+	IsOverSpeed = false;
+}
+
 void ABikeCharacter::LoadBikeMesh()
 {	
 	if (_bikeSkeletalNeedLoad)
@@ -159,3 +176,8 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	_handlebarsAngle = FMath::FInterpTo(_handlebarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
 }
 
+bool ABikeCharacter::CheckOverSpeed() const
+{
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
+}

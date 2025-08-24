@@ -20,6 +20,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	UUserWidget* GetHUDWidget() const;
+
 	/// <summary>
 	/// HUDのウィジェットをゲット
 	/// </summary>

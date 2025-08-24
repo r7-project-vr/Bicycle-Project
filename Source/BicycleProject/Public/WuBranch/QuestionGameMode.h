@@ -38,8 +38,9 @@ public:
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">解答</param>
+	/// <returns>true: 正解, false: 不正解</returns>
 	UFUNCTION(BlueprintCallable)
-	void CheckAnswer(int32 questionID, int32 answer);
+	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
 	/// 正解した答えの数をゲット

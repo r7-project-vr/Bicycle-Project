@@ -16,6 +16,11 @@ void AQuestionHUD::BeginPlay()
 	AddWidgetToView();
 }
 
+UUserWidget* AQuestionHUD::GetHUDWidget() const
+{
+	return HUDWidget;
+}
+
 void AQuestionHUD::AddWidgetToView()
 {
 	if (HUDUIClass)

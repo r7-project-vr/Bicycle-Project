@@ -23,12 +23,14 @@ void UDeviceManager::CreateAllDevices()
 	// 足の部位
 	// 優先順位: 無線デバイス > 有線デバイス > キーボードデバイス
 	// 今無線の部分はまだできていない
+#if PLATFORM_WINDOWS
 	if (UDevice* WiredDevice = CreateWiredDevice())
 	{
 		AddDevice(EDevicePart::Foot, WiredDevice);
 		EnableDefaultActions();
 	}
 	else
+#endif
 	{
 		// 有線デバイスが繋がらなかったら、キーボードデバイスを使う
 		UDevice* KeyboardDevice = CreateKeyBoardDevice();
@@ -186,6 +188,7 @@ UDevice* UDeviceManager::CreateKeyBoardDevice()
 
 UDevice* UDeviceManager::CreateWiredDevice()
 {
+#if PLATFORM_WINDOWS
 	UDevice * Device = NewObject<UWiredDevice>(this);
 	Device->Init(WiredDeviceID, WiredDeviceVer);
 	bool Result = Device->Connect();
@@ -194,5 +197,6 @@ UDevice* UDeviceManager::CreateWiredDevice()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Wired Device Connect Success"));
 		return Device;
 	}
+#endif
 	return nullptr;
 }

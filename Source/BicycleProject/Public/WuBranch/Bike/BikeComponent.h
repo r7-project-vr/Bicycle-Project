@@ -78,6 +78,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAutoPlay() const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateAutoPlayDelegate, bool, IsAutoPlay);
+	/// <summary>
+	/// オートプレイ
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateAutoPlayDelegate OnUpdateAutoPlayEvent;
+
 	/// <summary>
 	/// オートプレイする時同期したい座標
 	/// </summary>
@@ -132,6 +139,11 @@ private:
 	/// <param name="Result">クイズの結果</param>
 	/// <param name="NeedBonus">ボーナスを加算するか</param>
 	void HandleCoin(bool Result, bool NeedBonus);
+
+	/// <summary>
+	/// オートプレイの更新を通知
+	/// </summary>
+	void NotifyAutoPlay();
 
 	/// <summary>
 	/// スピード

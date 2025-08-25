@@ -71,7 +71,6 @@ private:
 		int32 OtherBodyIndex, bool bFromSweep,
 		const FHitResult& Sweep);
 
-
 	UPROPERTY()
 	ATileManager* TileManager = nullptr;
 
@@ -100,6 +99,10 @@ private:
 	// 2025.08.01 ウー end
 
 	// 2025.08.18 ウー start
+	
+	/// <summary>
+	/// フォリッジ生成者
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	URandomFoliageSpawner* FoliageSpawner = nullptr;
 

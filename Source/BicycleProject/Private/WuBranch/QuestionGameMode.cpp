@@ -160,7 +160,7 @@ bool AQuestionGameMode::IsGameClear() const
 
 void AQuestionGameMode::UpdateAnswerUI()
 {
-	onUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
+	OnUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
 }
 
 void AQuestionGameMode::ChangeLevel(FString levelName)

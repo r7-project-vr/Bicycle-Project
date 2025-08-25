@@ -37,22 +37,31 @@ private:
 	void CaculateTotalProbility();
 
 	/// <summary>
-	/// メッシュを生成する
+	/// リソースのロード
+	/// </summary>
+	/// <param name="Target">対象物</param>
+	void LoadResource(TSoftObjectPtr<UStaticMesh> Target);
+
+	/// <summary>
+	/// 建物を生成する
 	/// </summary>
 	/// <param name="Target">生成する目標</param>
-	void CreateMesh(UStaticMesh* Target);
+	void CreateBuilding(UStaticMesh* Target);
 
 	/// <summary>
 	/// 実際生成するメッシュを決める
 	/// </summary>
 	/// <returns></returns>
-	UStaticMesh* DecideMesh();
+	TSoftObjectPtr<UStaticMesh> DecideMesh();
 
 	/// <summary>
 	/// 環境物(建物とか)とその確率
 	/// </summary>
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//TMap<UStaticMesh*, int> EnvironmentalList;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TMap<UStaticMesh*, int> EnvironmentalList;
+	TMap<TSoftObjectPtr<UStaticMesh>, int> EnvironmentalList;
 
 	/// <summary>
 	/// 確率の合計

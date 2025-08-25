@@ -71,7 +71,7 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
 	
 	UPROPERTY(BlueprintAssignable)
-	FUpdateAnswerRateUIDelegate onUpdateAnswerUIDelegate;
+	FUpdateAnswerRateUIDelegate OnUpdateAnswerUIDelegate;
 
 protected:
 

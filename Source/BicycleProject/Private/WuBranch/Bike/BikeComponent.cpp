@@ -72,12 +72,14 @@ void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
 	_isAutoPlay = true;
 	_questionActor = actor;
+	NotifyAutoPlay();
 }
 
 void UBikeComponent::DisableAutoPlay()
 {
 	_isAutoPlay = false;
 	_questionActor = nullptr;
+	NotifyAutoPlay();
 }
 
 bool UBikeComponent::GetIsAutoPlay() const
@@ -244,4 +246,9 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 		GameInstance->AddCoins(CoinsOfQuiz);
 	// リセット
 	CoinsOfQuiz = 0;
+}
+
+void UBikeComponent::NotifyAutoPlay()
+{
+	OnUpdateAutoPlayEvent.Broadcast(_isAutoPlay);
 }

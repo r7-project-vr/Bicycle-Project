@@ -3,6 +3,8 @@
 
 #include "WuBranch/Device/DeviceCmdSender.h"
 
+#if PLATFORM_WINDOWS
+
 DeviceCmdSender::DeviceCmdSender(UASerialLibControllerWin* InDevice, TQueue<uint8_t, EQueueMode::Spsc>* InCommandQueue, TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc>* InDataQueue)
 	: Thread(nullptr)
 	, DeviceWP(InDevice)
@@ -191,3 +193,9 @@ bool DeviceCmdSender::WaitForDeviceResponse(UASerialLibControllerWin* Device, AS
 	}
 	return true;
 }
+
+#elif PLATFORM_ANDROID
+
+
+
+#endif

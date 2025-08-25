@@ -4,6 +4,7 @@
 #include "WuBranch/Device/WiredDevice.h"
 #include "WuBranch/Device/DeviceCmdSender.h"
 
+#if PLATFORM_WINDOWS
 UWiredDevice::UWiredDevice()
 	: MoveSwitch(false)
 	, Device(nullptr)
@@ -191,3 +192,81 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
 }
+
+#elif PLATFORM_ANDROID
+
+UWiredDevice::UWiredDevice()
+	: MoveSwitch(false)
+{
+}
+
+UWiredDevice::~UWiredDevice()
+{
+}
+
+void UWiredDevice::Init(int DeviceID, int DeviceVer)
+{
+}
+
+void UWiredDevice::Tick(float DeltaTime)
+{
+}
+
+TStatId UWiredDevice::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UWiredDevice, STATGROUP_Tickables);
+}
+
+bool UWiredDevice::IsTickableInEditor() const
+{
+	return false;
+}
+
+bool UWiredDevice::Connect()
+{
+	return false;
+}
+
+bool UWiredDevice::Disconnect()
+{
+	return false;
+
+}
+
+void UWiredDevice::EnableMoveAction_Implementation()
+{
+}
+
+void UWiredDevice::DisableMoveAction_Implementation()
+{
+}
+
+void UWiredDevice::EnableSelectAnswerAction_Implementation()
+{
+
+}
+
+void UWiredDevice::DisableSelectAnswerAction_Implementation()
+{
+
+}
+
+bool UWiredDevice::CheckDevice()
+{
+	return true;
+}
+
+void UWiredDevice::GetMoveDataFromDevice()
+{
+}
+
+void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveEvent.IsBound())
+		OnMoveEvent.Broadcast(MoveData);
+}
+#endif

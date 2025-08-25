@@ -227,9 +227,9 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 	{
 		// ゴールを進行先に置く
 		float distance = 5000.0f;
-		startLocation.Z = 0.f;
+		startLocation.Z = 100.f;
 		goal->SetActorLocation(startLocation + forward * distance);
-		goal->SetActorRotation(forward.Rotation());
+		goal->SetActorRotation((forward * -1).Rotation());
 	}
 
 }

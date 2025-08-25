@@ -38,6 +38,16 @@ void UDeviceManager::CreateAllDevices()
 	}
 }
 
+void UDeviceManager::DisConnectAllDevices()
+{
+	TArray<UDevice*> AllDevices;
+	Devices.GenerateValueArray(AllDevices);
+	while (Devices.Num() > 0)
+	{
+	}
+
+}
+
 void UDeviceManager::AddDevice(EDevicePart Part, UDevice* device)
 {
 	if (!Devices.Contains(Part))

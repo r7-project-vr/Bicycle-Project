@@ -30,6 +30,11 @@ public:
 	void CreateAllDevices();
 
 	/// <summary>
+	/// すべでのデバイスとのリンクを断つ
+	/// </summary>
+	void DisConnectAllDevices();
+
+	/// <summary>
 	/// リストにデバイスを追加
 	/// </summary>
 	/// <param name="Part">デバイスをつける部位</param>
@@ -144,5 +149,5 @@ private:
 	/// <summary>
 	/// 有線デバイスのバージョン
 	/// </summary>
-	int WiredDeviceVer = 0x01;
+	int WiredDeviceVer = 0x02;
 };

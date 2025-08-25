@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "tokuamaru/ResultSceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/QuestionGameMode.h"
-//ƒAƒNƒ^[‚É’¼ÚƒEƒBƒWƒFƒbƒg‚ð’Ç‰Á‚µ‚Ä‚à‚ç‚Á‚Ä‚»‚ê‚ðŒ©‚Â‚¯‚éŠ´‚¶
+//ã‚¢ã‚¯ã‚¿ãƒ¼ã«ç›´æŽ¥ã‚¦ã‚£ã‚¸ã‚§ãƒƒãƒˆã‚’è¿½åŠ ã—ã¦ã‚‚ã‚‰ã£ã¦ãã‚Œã‚’è¦‹ã¤ã‘ã‚‹æ„Ÿã˜
 
 // Sets default values for this component's properties
 UResultSceneComponent::UResultSceneComponent()
@@ -32,18 +32,23 @@ void UResultSceneComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	answerTrue = 1.0f;
-	answerFalse = 0.0f;
-	this->autoplay = false;
-
+	// 2025.08.25 ã‚¦ãƒ¼ start
+	//answerTrue = 1.0f;
+	//answerFalse = 0.0f;
+	//this->autoplay = false;
+	// 2025.08.25 ã‚¦ãƒ¼ end
 
 
 	gamemode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!gamemode) {
 		UE_LOG(LogTemp, Error, TEXT("gamemode NULLPtr!  ResultActor"));
+		return;
 	}
 	else {
-		UE_LOG(LogTemp, Error, TEXT("gamemode true!  ResultActor"));
+		// 2025.08.25 ã‚¦ãƒ¼ start
+		//UE_LOG(LogTemp, Error, TEXT("gamemode true!  ResultActor"));
+		gamemode->OnUpdateAnswerUIDelegate.AddDynamic(this, &UResultSceneComponent::UpdateAnswer);
+		// 2025.08.25 ã‚¦ãƒ¼ end
 	}
 
 	TArray<USceneComponent*> Children;
@@ -55,18 +60,18 @@ void UResultSceneComponent::BeginPlay()
 		widgetComp = Cast<UWidgetComponent>(Child);
 		if (widgetComp)
 		{
-			UE_LOG(LogTemp, Error, TEXT("widgetComp true!"));
+			//UE_LOG(LogTemp, Error, TEXT("widgetComp true!"));
 			widgetComp->InitWidget();
 			widget = widgetComp->GetUserWidgetObject();
 			if (widget)
 			{
-				UE_LOG(LogTemp, Error, TEXT("widget true!"));
+				//UE_LOG(LogTemp, Error, TEXT("widget true!"));
 				resultWidget= Cast<UResultWidget>(widget);
 				if (resultWidget)
 				{
-					UE_LOG(LogTemp, Error, TEXT("resultWidget true!  ResultActor"));
-					resultWidget->SetRotation(answerTrue);
-					resultWidget->SetRotationF(answerFalse);
+					//UE_LOG(LogTemp, Error, TEXT("resultWidget true!  ResultActor"));
+					resultWidget->SetRotation(gamemode->GetCurrectNumber());
+					resultWidget->SetRotationF(gamemode->GetWrongNumber());
 					resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
 					resultWidget->SetPercent(0.0f);
 				}
@@ -88,7 +93,11 @@ void UResultSceneComponent::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("bikeComponent NULLPtr!  BikeComponent"));
 	}
 	else {
-		this->autoplay = bikeComponent->GetIsAutoPlay();
+		// 2025.08.25 ã‚¦ãƒ¼ start
+		bikeComponent->OnUpdateAutoPlayEvent.AddDynamic(this, &UResultSceneComponent::UpdateAutoPlay);
+		//this->autoplay = bikeComponent->GetIsAutoPlay();
+		UpdateAutoPlay(bikeComponent->GetIsAutoPlay());	
+		// 2025.08.25 ã‚¦ãƒ¼ end
 	}
 
 	// ...
@@ -100,23 +109,53 @@ void UResultSceneComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (gamemode) {
-	//UE_LOG(LogTemp, Error, TEXT("SetAC"));
-	answerTrue = gamemode->GetCurrectNumber();
-	answerFalse = gamemode->GetWrongNumber();
-    }
+	// 2025.08.25 ã‚¦ãƒ¼ start
+	//if (gamemode) {
+	////UE_LOG(LogTemp, Error, TEXT("SetAC"));
+	//answerTrue = gamemode->GetCurrectNumber();
+	//answerFalse = gamemode->GetWrongNumber();
+ //   }
 
-	if (bikeComponent) {
+	/*if (bikeComponent) {
 		this->autoplay = bikeComponent->GetIsAutoPlay();
-	}
+	}*/
 
+	//if (resultWidget) {
+	//	//UE_LOG(LogTemp, Error, TEXT("SetRotation"));
+	//	resultWidget->SetRotation(answerTrue);
+	//	resultWidget->SetRotationF(answerFalse);
+	//	float answerPercent = ((answerTrue + answerFalse) > 0.0f) ? answerTrue / (answerTrue + answerFalse) * 100 : 0.0f;
+	//	resultWidget->SetPercent(answerPercent);
+	//	if (autoplay) {
+	//		resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
+	//		/*UE_LOG(LogTemp, Error, TEXT("auto"));*/
+	//	}
+	//	else {
+	//		resultWidget->SetColorAndText(1.0f, 0.4f, 0.0f, 1.0f, FText::FromString(TEXT(" Manual Mode")));
+	//		//UE_LOG(LogTemp, Error, TEXT("false"));
+	//	}
+	//}
+	// 2025.08.25 ã‚¦ãƒ¼ end
+	// ...
+}
+
+// 2025.08.25 ã‚¦ãƒ¼ start
+void UResultSceneComponent::UpdateAnswer(int Correct, int Wrong)
+{
 	if (resultWidget) {
 		//UE_LOG(LogTemp, Error, TEXT("SetRotation"));
-		resultWidget->SetRotation(answerTrue);
-		resultWidget->SetRotationF(answerFalse);
-		float answerPercent = ((answerTrue + answerFalse) > 0.0f) ? answerTrue / (answerTrue + answerFalse) * 100 : 0.0f;
-		resultWidget->SetPercent(answerPercent);
-		if (autoplay) {
+		resultWidget->SetRotation((float)Correct / (float)(Correct + Wrong));
+		resultWidget->SetRotationF((float)Wrong / (float)(Correct + Wrong));
+		float AnswerPercent = ((Correct + Wrong) > 0.0f) ? (float)Correct / (float)(Correct + Wrong) * 100 : 0.0f;
+		resultWidget->SetPercent(AnswerPercent);
+	}
+}
+
+void UResultSceneComponent::UpdateAutoPlay(bool IsAutoPlay)
+{
+	if (resultWidget) 
+	{
+		if (IsAutoPlay) {
 			resultWidget->SetColorAndText(0.2f, 0.0f, 0.2f, 1.0f, FText::FromString(TEXT(" Auto Mode")));
 			/*UE_LOG(LogTemp, Error, TEXT("auto"));*/
 		}
@@ -125,6 +164,6 @@ void UResultSceneComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 			//UE_LOG(LogTemp, Error, TEXT("false"));
 		}
 	}
-	// ...
 }
 
+// 2025.08.25 ã‚¦ãƒ¼ end

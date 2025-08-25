@@ -40,6 +40,8 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 	if (_player && passedActor == _player)
 	{
 		// 自転車への制御を強制的にオフにする
+		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		GameInstance->GetDeviceManager()->DisableDefaultActions();
 		if (_playerController)
 		{
 			_playerController->SetPlayerEnabledState(false);
@@ -51,10 +53,11 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
-		/*FTimerDelegate timerDelegate;
-		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		FTimerDelegate timerDelegate;
+		//timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TitleMap");
+		timerDelegate.BindUFunction(this, "ChangeLevel", true);
 		FTimerHandle timerHandle;
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
 	}
 }
 
@@ -94,12 +97,14 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		DisableAllQuestions();
 		// エフェクト
 
+		// 先にデバイスを切断
+
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
-		/*FTimerDelegate timerDelegate;
-		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		FTimerDelegate timerDelegate;
+		timerDelegate.BindUFunction(this, FName("ChangeLevel"), false);
 		FTimerHandle timerHandle;
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
 	}
 	// ゲームクリア
 	else if (IsGameClear())
@@ -163,24 +168,28 @@ void AQuestionGameMode::UpdateAnswerUI()
 	OnUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
 }
 
-void AQuestionGameMode::ChangeLevel(FString levelName)
+void AQuestionGameMode::ChangeLevel(bool IsSucc)
 {
-	// 今の世界を再読み込み
-	if (levelName.Len() != 0)
+	// クリア
+	if (IsSucc)
 	{
-		// レベルが存在するかどうかをチェック
-		UGameplayStatics::OpenLevel(GetWorld(), FName(levelName));
+		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadSuccLevel);
+	}
+	// 失敗
+	else
+	{
+		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadFailLevel);
 	}
 }
 
 void AQuestionGameMode::DisableAllQuestions()
 {
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-	for (AActor* actor : _questionActors)
+	for (AActor* Actor : _questionActors)
 	{
-		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
+		if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(Actor))
 		{
-			question->DisableFeature();
+			Question->DisableFeature();
 		}
 	}
 }

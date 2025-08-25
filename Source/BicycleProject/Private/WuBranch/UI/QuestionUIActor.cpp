@@ -26,10 +26,6 @@ AQuestionUIActor::AQuestionUIActor()
 	//SnapPoint->SetupAttachment(RootComponent);
 	RootComponent = SnapPoint;
 
-	_widget = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
-	_widget->SetupAttachment(RootComponent);
-	AddInstanceComponent(_widget);
-
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
 	_temporaryParkingArea->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));

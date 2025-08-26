@@ -7,6 +7,7 @@
 #include "MyGameInstance.generated.h"
 
 class UDeviceManager;
+struct FQuestion;
 
 /**
  * 
@@ -54,6 +55,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FUpdateCoinDelegate OnUpdateCoin;
 
+	/// <summary>
+	/// リザルトのためにクイズを保存
+	/// </summary>
+	/// <param name="Result"></param>
+	void SaveQuizsForResult(TArray<FQuestion> Result);
+
 private:
 
 	/// <summary>
@@ -74,4 +81,10 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int Coins;
+
+	/// <summary>
+	/// 答えたクイズ
+	/// </summary>
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<FQuestion> Quizs;
 };

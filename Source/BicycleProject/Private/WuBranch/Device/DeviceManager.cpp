@@ -27,7 +27,6 @@ void UDeviceManager::CreateAllDevices()
 	if (UDevice* WiredDevice = CreateWiredDevice())
 	{
 		AddDevice(EDevicePart::Foot, WiredDevice);
-		EnableDefaultActions();
 	}
 	else
 #endif
@@ -36,6 +35,7 @@ void UDeviceManager::CreateAllDevices()
 		UDevice* KeyboardDevice = CreateKeyBoardDevice();
 		AddDevice(EDevicePart::Foot, KeyboardDevice);
 	}
+	EnableDefaultActions();
 }
 
 void UDeviceManager::DisConnectAllDevices()

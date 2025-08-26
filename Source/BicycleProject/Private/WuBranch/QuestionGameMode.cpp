@@ -42,10 +42,11 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		// 自転車への制御を強制的にオフにする
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		GameInstance->GetDeviceManager()->DisableDefaultActions();
-		if (_playerController)
+		GameInstance->GetDeviceManager()->DisConnectAllDevices();
+		/*if (_playerController)
 		{
 			_playerController->SetPlayerEnabledState(false);
-		}
+		}*/
 		_player->GetBikeComponent()->ReduceVelocityTo0();
 
 		// ゴールに到達したらゲームクリア
@@ -93,6 +94,7 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
 		// デフォルト入力を無効
 		GameInstance->GetDeviceManager()->DisableDefaultActions();
+		GameInstance->GetDeviceManager()->DisConnectAllDevices();
 		// クイズを記録
 		GameInstance->SaveQuizsForResult(_questions);
 		// すべての問題を無効にする

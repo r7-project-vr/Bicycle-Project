@@ -85,14 +85,16 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	UpdateAnswerUI();
 	//UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
 
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// ゲームオーバー
 	if (IsGameFailed())
 	{
 		// UIの表示
 		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
 		// デフォルト入力を無効
-		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-		gameInstance->GetDeviceManager()->DisableDefaultActions();
+		GameInstance->GetDeviceManager()->DisableDefaultActions();
+		// クイズを記録
+		GameInstance->SaveQuizsForResult(_questions);
 		// すべての問題を無効にする
 		DisableAllQuestions();
 		// エフェクト
@@ -113,6 +115,8 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		UKismetSystemLibrary::PrintString(this, "GameClear!", true, false, FColor::Green, 10.f);
 		// すべての問題を無効にする
 		DisableAllQuestions();
+		// クイズを記録
+		GameInstance->SaveQuizsForResult(_questions);
 		// ゴールをプレイヤーの進行先に置く
 		PlaceGoal(questionID);
 	}

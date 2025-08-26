@@ -3,6 +3,7 @@
 
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Device/DeviceManager.h"
+#include <UntakuBranch/Question.h>
 
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
@@ -44,6 +45,11 @@ void UMyGameInstance::AddCoins(int Amount)
 
 void UMyGameInstance::SaveCoinsToFile()
 {
+}
+
+void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion> Result)
+{
+	Quizs = Result;
 }
 
 void UMyGameInstance::ReadCoinFromFile()

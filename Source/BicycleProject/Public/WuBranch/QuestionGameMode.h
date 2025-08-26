@@ -93,8 +93,9 @@ private:
 	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
-	/// <param name="levelName">レベル名</param>
-	void ChangeLevel(FString levelName = "");
+	/// <param name="IsSucc">クリアしたか</param>
+	UFUNCTION()
+	void ChangeLevel(bool IsSucc);
 
 	/// <summary>
 	/// すべての問題を無効にする
@@ -158,4 +159,16 @@ private:
 	/// 間違ってる数
 	/// </summary>
 	int _wrongNum;
+
+	/// <summary>
+	/// クリアした後に行くマップ
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<UWorld> LoadSuccLevel;
+
+	/// <summary>
+	/// 失敗した後に行くマップ
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<UWorld> LoadFailLevel;
 };

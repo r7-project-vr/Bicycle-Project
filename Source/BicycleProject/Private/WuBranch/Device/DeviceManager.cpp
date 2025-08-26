@@ -38,6 +38,24 @@ void UDeviceManager::CreateAllDevices()
 	}
 }
 
+void UDeviceManager::DisConnectAllDevices()
+{
+	TArray<EDevicePart> AllDeviceParts;
+	Devices.GenerateKeyArray(AllDeviceParts);
+	for (EDevicePart Part : AllDeviceParts)
+	{
+		UDevice* Device = GetDevice(Part);
+		if (Device->Disconnect())
+		{
+			DeleteDevice(Part);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Remove %s device fail"), *UEnum::GetValueAsString(Part));
+		}
+	}
+}
+
 void UDeviceManager::AddDevice(EDevicePart Part, UDevice* device)
 {
 	if (!Devices.Contains(Part))

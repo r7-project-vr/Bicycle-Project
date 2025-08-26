@@ -28,9 +28,7 @@ public:
 private:
 
 	UFUNCTION()
-	void OnOverlapBeginFinishLine(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-		const FHitResult& SweepResult);
+	void OnOverlapBeginFinishLine(AActor* OverlappedActor, AActor* OtherActor);
 
 	/// <summary>
 	/// 花火の初期化

@@ -9,8 +9,8 @@
 
 // Sets default values
 ACoin::ACoin()
-	: MoveCnt(0.f)
-	, IsRotating(false)
+	: IsRotating(false)
+	, MoveCnt(0.f)
 	, RotateTimeCnt(0.f)
 	, MoveDistanceForAnimation(0.f)
 {

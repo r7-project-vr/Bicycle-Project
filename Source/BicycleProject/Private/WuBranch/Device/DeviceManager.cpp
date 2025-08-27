@@ -82,6 +82,9 @@ void UDeviceManager::DeleteDevice(EDevicePart Part)
 
 UDevice* UDeviceManager::GetDevice(EDevicePart Part)
 {
+	if (Devices.IsEmpty())
+		return nullptr;
+
 	UDevice* Device = *Devices.Find(Part);
 	if (Device)
 		return Device;

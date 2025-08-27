@@ -53,14 +53,14 @@ void URandomFoliageSpawner::SpawnFoliageInZone()
         return;
     }
 
-    for (const FBox& Zone : SpawnZones)
+    for (const FSpawnTreeZone& Zone : SpawnZones)
     {
-        for (int32 i = 0; i < NumberOfInstancesPerZone; ++i)
+        for (int32 Index = 0; Index < Zone.Amount; ++Index)
         {
 			// 範囲内のランダムな位置をゲット
-            FVector RandomPointInBox = RandomStream.RandPointInBox(Zone);
+            FVector RandomPointInBox = RandomStream.RandPointInBox(Zone.Zone);
 			
-			AddFoliageInstance(RandomPointInBox, Zone);
+			AddFoliageInstance(RandomPointInBox, Zone.Zone);
         }
     }
 }
@@ -153,7 +153,7 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 			FHitResult HitResult;
 
 			FCollisionShape Sphere = FCollisionShape::MakeSphere(Radius * ScaleFactor);
-			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 1000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_WorldStatic, Sphere);
+			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 1000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_Visibility, Sphere);
 			
 			if (!Hit)
 				continue;

@@ -85,6 +85,6 @@ private:
 	/// <summary>
 	/// 答えたクイズ
 	/// </summary>
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FQuestion> Quizs;
 };

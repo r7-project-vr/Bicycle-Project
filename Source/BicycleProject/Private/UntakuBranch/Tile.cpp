@@ -12,6 +12,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Actor/Component/RandomFoliageSpawner.h"
 #include "WuBranch/Actor/Component/EnvironmentalObjectComponent.h"
+#include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 
 // Sets default values
 ATile::ATile()
@@ -43,6 +44,11 @@ ATile::ATile()
 	FoliageSpawner = CreateDefaultSubobject<URandomFoliageSpawner>("Foliage Spawner");
 	FoliageSpawner->SetupAttachment(RootComponent);
 	// 2025.08.18 ウー end
+
+	// 2025.08.28 ウー start
+	CoinSpawner = CreateDefaultSubobject<UCoinSpawnerComponent>("Coin Spawner");
+	CoinSpawner->SetupAttachment(RootComponent);
+	// 2025.08.28 ウー end
 }
 
 // 2025.08.01 ウー start
@@ -71,6 +77,9 @@ void ATile::SpawnEnvironmentals(int Seed)
 	// フォリッジ
 	FoliageSpawner->SetSeed(Seed);
 	FoliageSpawner->StartSpawnFoliage();
+	// コイン
+	CoinSpawner->SetSeed(Seed);
+	CoinSpawner->Spawn();
 }
 // 2025.08.19 ウー end
 

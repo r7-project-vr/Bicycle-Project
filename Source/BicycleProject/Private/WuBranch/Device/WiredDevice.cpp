@@ -159,7 +159,7 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 {
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
 	uint16 RPM = TransformDataToInt<uint16>(RPMData.data, RPMData.data_num);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d"), RPM));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d"), RPM));
 	FVector2D MoveVector(RPM, 0);
 	NotifyMoveEvent(MoveVector);
 }

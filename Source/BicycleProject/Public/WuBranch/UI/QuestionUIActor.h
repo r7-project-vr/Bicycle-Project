@@ -9,6 +9,7 @@
 
 class UBikeComponent;
 class USplineComponent;
+struct FQuestion;
 
 /**
  * 
@@ -70,7 +71,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Snap")
 	USceneComponent* SnapPoint;
 
-	struct FQuestion* GetNowQuestion();
+	/// <summary>
+	/// クイズをもらう
+	/// </summary>
+	void GetQuestionFromManger();
+
+	/// <summary>
+	/// クイズをゲット
+	/// </summary>
+	/// <returns></returns>
+	FQuestion* GetNowQuestion();
 
 	FVector GetSnapLocation() const;
 	FRotator GetSnapRotation() const;
@@ -169,5 +179,8 @@ private:
 	/// </summary>
 	bool _isGameFinished;
 
-	FQuestion* _questionTmp;
+	/// <summary>
+	/// クイズ
+	/// </summary>
+	FQuestion* Question;
 };

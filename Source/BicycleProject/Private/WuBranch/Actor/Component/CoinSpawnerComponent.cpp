@@ -3,6 +3,7 @@
 
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 #include "WuBranch/Actor/Coin.h"
+#include "UntakuBranch/Question.h"
 
 // Sets default values for this component's properties
 UCoinSpawnerComponent::UCoinSpawnerComponent()
@@ -12,6 +13,10 @@ UCoinSpawnerComponent::UCoinSpawnerComponent()
 	//PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+
+	Amount.Add(EQuestionLevel::Easy, 1);
+	Amount.Add(EQuestionLevel::Normal, 1);
+	Amount.Add(EQuestionLevel::Hard, 1);
 }
 
 
@@ -38,15 +43,13 @@ void UCoinSpawnerComponent::SetSeed(int Seed)
 	RandomStream.Initialize(Seed);
 }
 
-void UCoinSpawnerComponent::Spawn()
+void UCoinSpawnerComponent::Spawn(EQuestionLevel Level)
 {
-	for (int Index = 0; Index < Amount; Index++)
-	{
-		// 位置決定
-		FVector Location = RandomStream.RandPointInBox(SpawnZone);
+	if (Amount.Num() <= 0)
+		return;
 
-		GetWorld()->SpawnActor<ACoin>(CoinTemplate, Location, FRotator::ZeroRotator);
-	}
+	int* Num = Amount.Find(Level);
+	Spawn(*Num);
 }
 
 void UCoinSpawnerComponent::Spawn(int Num)

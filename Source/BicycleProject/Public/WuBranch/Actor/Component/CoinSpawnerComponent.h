@@ -7,6 +7,7 @@
 #include "CoinSpawnerComponent.generated.h"
 
 class ACoin;
+enum class EQuestionLevel : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UCoinSpawnerComponent : public USceneComponent
@@ -32,17 +33,18 @@ public:
 	void SetSeed(int Seed);
 
 	/// <summary>
-	/// 生成
+	/// コインを生成
 	/// </summary>
-	void Spawn();
+	/// <param name="Level">クイズの難易度</param>
+	void Spawn(EQuestionLevel Level);
+
+private:
 
 	/// <summary>
 	/// 指定された数を生成
 	/// </summary>
 	/// <param name="Num">数</param>
 	void Spawn(int Num);
-
-private:
 
 	/// <summary>
 	/// コインのテンプレート
@@ -65,6 +67,6 @@ private:
 	/// 生成数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int Amount;
+	TMap<EQuestionLevel, int> Amount;
 
 };

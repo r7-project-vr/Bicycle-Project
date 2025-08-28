@@ -31,17 +31,22 @@ private:
 	/// </summary>
 	void Chase();
 
+	/// <summary>
+	/// 動物のメッシュ
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh;
 
 	/// <summary>
 	/// 追う目標
 	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<ACharacter> Target;
 
 	/// <summary>
 	/// 追い始まる距離
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float StartChaseDistance;
 
 	/// <summary>

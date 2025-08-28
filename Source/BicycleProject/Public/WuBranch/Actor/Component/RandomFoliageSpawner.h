@@ -9,6 +9,20 @@
 class UFoliageType_InstancedStaticMesh;
 class UInstancedStaticMeshComponent;
 
+USTRUCT(BlueprintType)
+struct FSpawnTreeZone
+{
+	GENERATED_BODY()
+
+	// 範囲
+	UPROPERTY(EditDefaultsOnly)
+	FBox Zone;
+
+	// 木の数
+	UPROPERTY(EditDefaultsOnly)
+	int Amount;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API URandomFoliageSpawner : public USceneComponent
 {
@@ -109,13 +123,7 @@ private:
 	/// 指定範囲
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Foliage Settings", meta = (AllowPrivateAccess = "true"))
-	TArray<FBox> SpawnZones;
-
-	/// <summary>
-	/// 生成する数
-	/// </summary>
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Foliage Settings", meta = (AllowPrivateAccess = "true"))
-	int32 NumberOfInstancesPerZone = 100;
+	TArray<FSpawnTreeZone> SpawnZones;
 
 	/// <summary>
 	/// 角度(最小、最大)

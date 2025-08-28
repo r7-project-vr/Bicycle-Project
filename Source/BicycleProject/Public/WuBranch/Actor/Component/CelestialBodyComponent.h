@@ -4,21 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "WuBranch/Struct/MyTime.h"
 #include "CelestialBodyComponent.generated.h"
 
 class UDirectionalLightComponent;
-
-USTRUCT(BlueprintType)
-struct FMyTime
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 hour24;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 min;
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UCelestialBodyComponent : public UActorComponent

@@ -148,9 +148,15 @@ bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oF
 	return false;
 }
 
+void AQuestionUIActor::GetQuestionFromManger()
+{
+	if (AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode()))
+		Question = GameMode->GetQuestion();
+}
+
 FQuestion* AQuestionUIActor::GetNowQuestion()
 {
-	return _questionTmp;
+	return Question;
 }
 
 void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
@@ -175,11 +181,7 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
 	{
 		//UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
-
-		// 問題内容をゲット
-		AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
-		FQuestion* Question = GameMode->GetQuestion();
-		_questionTmp = Question;
+		
 		// 問題UIにデータを渡す
 		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
 		{
@@ -193,8 +195,6 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 
 		DisableCollision();
 	}
-
-
 }
 
 void AQuestionUIActor::SetTarget(UBikeComponent* Target)

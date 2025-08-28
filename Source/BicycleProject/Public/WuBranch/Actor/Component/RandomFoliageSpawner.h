@@ -122,7 +122,7 @@ private:
 	/// <summary>
 	/// 指定範囲
 	/// </summary>
-	UPROPERTY(EditAnywhere, Category = "Foliage Settings", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Foliage Settings", meta = (AllowPrivateAccess = "true"))
 	TArray<FSpawnTreeZone> SpawnZones;
 
 	/// <summary>

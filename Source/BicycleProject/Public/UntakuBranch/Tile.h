@@ -10,6 +10,7 @@ class ATileManager;
 class UBoxComponent;
 class URandomFoliageSpawner;
 class UEnvironmentalObjectComponent;
+class UCoinSpawnerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ATile : public AActor
@@ -112,4 +113,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<UEnvironmentalObjectComponent*> Buildings;
 	// 2025.08.18 ウー end
+
+	// 2025.08.28 ウー start
+	
+	/// <summary>
+	/// コイン生成者
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCoinSpawnerComponent* CoinSpawner;
+	// 2025.08.28 ウー end
 };

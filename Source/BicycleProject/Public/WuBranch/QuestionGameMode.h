@@ -171,4 +171,16 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSoftObjectPtr<UWorld> LoadFailLevel;
+
+	/// <summary>
+	/// 正解のSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USoundBase* CorrectSound;
+
+	/// <summary>
+	/// 間違ったのSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USoundBase* WrongSound;
 };

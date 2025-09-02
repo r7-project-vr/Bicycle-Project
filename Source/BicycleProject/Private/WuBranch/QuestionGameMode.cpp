@@ -66,12 +66,22 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
 	bool Result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
-	// 正解と不正解の数を計算
+	
 	if (Result)
+	{
+		// 正解の数を計算
 		_correctNum++;
+		// SE
+		UGameplayStatics::PlaySound2D(GetWorld(), CorrectSound);
+	}
 	else
+	{
+		// 不正解の数を計算
 		_wrongNum++;
-
+		// SE
+		UGameplayStatics::PlaySound2D(GetWorld(), CorrectSound);
+	}
+	
 	// 答えを保存
 	// 問題IDがquestionIDの問題を見つける
 	FQuestion* question = _questions.FindByPredicate([questionID](const FQuestion& question) {

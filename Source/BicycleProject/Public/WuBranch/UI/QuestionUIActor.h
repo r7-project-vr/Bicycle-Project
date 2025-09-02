@@ -105,6 +105,12 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// クイズの入り口についた
+	/// </summary>
+	UFUNCTION()
+	void OnArrivedEnterLocation(UBikeComponent* Bike);
+
+	/// <summary>
 	/// オートプレイ対象を一旦記録して
 	/// </summary>
 	/// <param name="target"></param>

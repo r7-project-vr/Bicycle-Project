@@ -49,8 +49,15 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (_isAutoPlay)
 	{
-		FVector deltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
-		GetOwner()->SetActorLocation(deltaPos);
+		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
+		{
+			OnArrivedLocationEvent.Broadcast(this);
+		}
+		else
+		{
+			FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+			GetOwner()->SetActorLocation(DeltaPos);
+		}
 	}
 	else
 	{

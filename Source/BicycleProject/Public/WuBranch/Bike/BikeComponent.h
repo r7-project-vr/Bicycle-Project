@@ -86,6 +86,13 @@ public:
 	FUpdateAutoPlayDelegate OnUpdateAutoPlayEvent;
 
 	/// <summary>
+	/// オートプレイの際に指定された位置についたの通知
+	/// </summary>
+	/// <param name=""></param>
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArriveLocationDelegate, UBikeComponent*, Bike);
+	FArriveLocationDelegate OnArrivedLocationEvent;
+
+	/// <summary>
 	/// オートプレイする時同期したい座標
 	/// </summary>
 	/// <param name="pos">座標</param>

@@ -61,7 +61,7 @@ void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComp
 		if (Question) {
 			if (!Question->GetAnsweredStatus())
 			{
-				Question->DisplayUI();	
+				Question->DisplayUI();
 				EnableHintLine();
 			}
 		}

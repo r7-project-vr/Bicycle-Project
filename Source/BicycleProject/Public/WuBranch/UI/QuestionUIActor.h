@@ -131,6 +131,12 @@ private:
 	class UBoxComponent* _temporaryParkingArea;
 
 	/// <summary>
+	/// 掲示板
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* MessageBoard;
+
+	/// <summary>
 	/// オートプレイ対象
 	/// </summary>
 	UBikeComponent* _autoPlayTarget;

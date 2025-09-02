@@ -50,6 +50,9 @@ AQuestionUIActor::AQuestionUIActor()
 
 	_autoPlayMoveSpeed = 10.0f;
 
+	MessageBoard = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Message board"));
+	MessageBoard->SetupAttachment(RootComponent);
+
 	Widget->SetupAttachment(RootComponent);
 }
 

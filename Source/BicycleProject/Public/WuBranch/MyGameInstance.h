@@ -67,6 +67,34 @@ public:
 	/// <param name="Result">true: クリア, false: 失敗</param>
 	void SetGameResult(bool Result);
 
+	/// <summary>
+	/// 最大回転数をゲット
+	/// </summary>
+	/// <returns>最大回転数</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetMaxRPM() const;
+
+	/// <summary>
+	/// 最大回転数を設定
+	/// </summary>
+	/// <param name="Value">回転数</param>
+	UFUNCTION(BlueprintCallable)
+	void SetMaxRPM(int Value);
+
+	/// <summary>
+	/// 回転数の標準値をゲット
+	/// </summary>
+	/// <returns>回転数の標準値</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetStandardRPM() const;
+
+	/// <summary>
+	/// 回転数の標準値を設定
+	/// </summary>
+	/// <param name="Value">標準値</param>
+	UFUNCTION(BlueprintCallable)
+	void SetStandardRPM(int Value);
+
 private:
 
 	/// <summary>
@@ -99,4 +127,14 @@ private:
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool IsClear;
+
+	/// <summary>
+	/// 最大回転数
+	/// </summary>
+	int MaxRPM;
+
+	/// <summary>
+	/// 回転数の標準値
+	/// </summary>
+	int StandardRPM;
 };

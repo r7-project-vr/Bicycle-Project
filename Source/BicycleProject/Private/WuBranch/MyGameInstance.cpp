@@ -58,6 +58,26 @@ void UMyGameInstance::SetGameResult(bool Result)
 	IsClear = Result;
 }
 
+int UMyGameInstance::GetMaxRPM() const
+{
+	return MaxRPM;
+}
+
+void UMyGameInstance::SetMaxRPM(int Value)
+{
+	MaxRPM = Value;
+}
+
+int UMyGameInstance::GetStandardRPM() const
+{
+	return StandardRPM;
+}
+
+void UMyGameInstance::SetStandardRPM(int Value)
+{
+	StandardRPM = Value;
+}
+
 void UMyGameInstance::ReadCoinFromFile()
 {
 	Coins = 0; // 初期化

@@ -50,12 +50,6 @@ private:
 	float StartChaseDistance;
 
 	/// <summary>
-	/// 毎フレーム追う距離(%)
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float ChaseDistancePerFrame;
-
-	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

@@ -5,18 +5,13 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Bike/BikeCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AAnimal::AAnimal()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
-	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
-
 }
 
 // Called when the game starts or when spawned
@@ -32,10 +27,15 @@ void AAnimal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Chase();
+	Chase(DeltaTime);
 }
 
-void AAnimal::Chase()
+float AAnimal::GetCurrentSpeed() const
+{
+	return GetCharacterMovement()->Velocity.Length();
+}
+
+void AAnimal::Chase(float DeltaTime)
 {
 	if (Target.IsNull())
 		return;
@@ -47,13 +47,13 @@ void AAnimal::Chase()
 	// 一定以上の距離を離れたら追う
 	if (TotalDistance >= StartChaseDistance)
 	{
-		float DeltaDistance = TotalDistance * ChaseDistancePerFrame / 100;
 		FVector Direction = TargetLocation - MyLocation;
 
 		// 向き変更
 		SetActorRotation(Direction.Rotation());
 		// 座標
-		SetActorLocation(GetActorLocation() + Direction.GetSafeNormal() * DeltaDistance);
+		GetCharacterMovement()->AddInputVector(Direction.GetSafeNormal() * Speed * DeltaTime);
+		//SetActorLocation(GetActorLocation() + Direction.GetSafeNormal() * DeltaDistance);
 	}
 }
 

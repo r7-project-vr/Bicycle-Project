@@ -4,11 +4,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "Animal.generated.h"
 
 UCLASS()
-class BICYCLEPROJECT_API AAnimal : public AActor
+class BICYCLEPROJECT_API AAnimal : public ACharacter
 {
 	GENERATED_BODY()
 	
@@ -24,18 +24,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// <summary>
+	/// 今のスピードをゲット
+	/// </summary>
+	/// <returns>スピード</returns>
+	float GetCurrentSpeed() const;
+
 private:
 
 	/// <summary>
 	/// 追う
 	/// </summary>
-	void Chase();
-
-	/// <summary>
-	/// 動物のメッシュ
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Mesh;
+	void Chase(float DeltaTime);
 
 	/// <summary>
 	/// 追う目標
@@ -54,4 +54,10 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float ChaseDistancePerFrame;
+
+	/// <summary>
+	/// スピード
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float Speed;
 };

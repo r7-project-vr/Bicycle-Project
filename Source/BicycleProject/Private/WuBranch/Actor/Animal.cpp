@@ -21,7 +21,7 @@ void AAnimal::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Target = Cast<ACharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), ABikeCharacter::StaticClass()));
+	CurrentTarget = Cast<ACharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), ABikeCharacter::StaticClass()));
 }
 
 // Called every frame
@@ -37,13 +37,18 @@ float AAnimal::GetCurrentSpeed() const
 	return GetCharacterMovement()->Velocity.Length();
 }
 
+void AAnimal::SetTarget(ACharacter* Target)
+{
+	CurrentTarget = Target;
+}
+
 void AAnimal::Chase(float DeltaTime)
 {
-	if (Target.IsNull())
+	if (CurrentTarget.IsNull())
 		return;
 
 	FVector MyLocation = GetActorLocation();
-	FVector TargetLocation = Target.Get()->GetActorLocation();
+	FVector TargetLocation = CurrentTarget.Get()->GetActorLocation();
 	float TotalDistance = FVector::DistXY(MyLocation, TargetLocation);
 
 	// 一定以上の距離を離れたら追う

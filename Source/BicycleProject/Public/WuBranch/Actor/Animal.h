@@ -30,6 +30,12 @@ public:
 	/// <returns>スピード</returns>
 	float GetCurrentSpeed() const;
 
+	/// <summary>
+	/// 目標を設定
+	/// </summary>
+	/// <param name="Target">目標</param>
+	void SetTarget(ACharacter* Target);
+
 private:
 
 	/// <summary>
@@ -41,7 +47,7 @@ private:
 	/// 追う目標
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<ACharacter> Target;
+	TObjectPtr<ACharacter> CurrentTarget;
 
 	/// <summary>
 	/// 追い始まる距離

@@ -97,9 +97,10 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		GameInstance->GetDeviceManager()->DisConnectAllDevices();
 		// クイズを記録
 		GameInstance->SaveQuizsForResult(_questions);
+		// 結果を記録
+		GameInstance->SetGameResult(false);
 		// すべての問題を無効にする
 		DisableAllQuestions();
-		// エフェクト
 
 		// 先にデバイスを切断
 
@@ -119,6 +120,8 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		DisableAllQuestions();
 		// クイズを記録
 		GameInstance->SaveQuizsForResult(_questions);
+		// 結果を記録
+		GameInstance->SetGameResult(true);
 		// ゴールをプレイヤーの進行先に置く
 		PlaceGoal(questionID);
 	}
@@ -210,7 +213,6 @@ void AQuestionGameMode::PlaceGoal(int32 questionID)
 		UE_LOG(LogTemp, Error, TEXT("Did not find Goal!!"));
 		return;
 	}
-		
 
 	AActor* goal = goals[0];
 	// 問題を特定

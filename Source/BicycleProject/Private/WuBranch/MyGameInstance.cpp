@@ -7,6 +7,7 @@
 
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
+	, IsClear(false)
 {
 	DeviceManager = nullptr;
 }
@@ -50,6 +51,11 @@ void UMyGameInstance::SaveCoinsToFile()
 void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion> Result)
 {
 	Quizs = Result;
+}
+
+void UMyGameInstance::SetGameResult(bool Result)
+{
+	IsClear = Result;
 }
 
 void UMyGameInstance::ReadCoinFromFile()

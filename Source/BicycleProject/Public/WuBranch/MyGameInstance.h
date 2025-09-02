@@ -61,6 +61,12 @@ public:
 	/// <param name="Result"></param>
 	void SaveQuizsForResult(TArray<FQuestion> Result);
 
+	/// <summary>
+	/// 一ゲームの結果を記録
+	/// </summary>
+	/// <param name="Result">true: クリア, false: 失敗</param>
+	void SetGameResult(bool Result);
+
 private:
 
 	/// <summary>
@@ -87,4 +93,10 @@ private:
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FQuestion> Quizs;
+
+	/// <summary>
+	/// ゲームクリアのフラグ
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool IsClear;
 };

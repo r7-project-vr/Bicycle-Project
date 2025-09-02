@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "WuBranch/Bike/BikeComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -56,8 +57,8 @@ void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 			// エフェクト
 
 			// SE
-			if(PickupSound)
-				
+			if (PickupSound)
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
 
 			Destroy();
 		}

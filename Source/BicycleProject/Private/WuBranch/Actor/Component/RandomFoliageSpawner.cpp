@@ -103,6 +103,7 @@ void URandomFoliageSpawner::AddFoliageInstance(const FVector InLocation, const F
 		if (!FoliageType)
 			continue;
 		
+		// 生成する予定置の高さがあってない
 		if (InLocation.Z < FoliageType->Height.Min || InLocation.Z > FoliageType->Height.Max)
 			continue;
 

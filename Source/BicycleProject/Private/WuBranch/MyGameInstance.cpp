@@ -8,6 +8,8 @@
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
 	, IsClear(false)
+	, MaxRPM(100)
+	, StandardRPM(50)
 {
 	DeviceManager = nullptr;
 }
@@ -76,6 +78,11 @@ int UMyGameInstance::GetStandardRPM() const
 void UMyGameInstance::SetStandardRPM(int Value)
 {
 	StandardRPM = Value;
+}
+
+void UMyGameInstance::ResetStandardRPM()
+{
+	StandardRPM = 50;
 }
 
 void UMyGameInstance::ReadCoinFromFile()

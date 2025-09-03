@@ -95,6 +95,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetStandardRPM(int Value);
 
+	/// <summary>
+	/// 回転数の標準値をリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetStandardRPM();
+
 private:
 
 	/// <summary>

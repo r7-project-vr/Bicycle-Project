@@ -105,6 +105,12 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// クイズの入り口についた
+	/// </summary>
+	UFUNCTION()
+	void OnArrivedEnterLocation(UBikeComponent* Bike);
+
+	/// <summary>
 	/// オートプレイ対象を一旦記録して
 	/// </summary>
 	/// <param name="target"></param>
@@ -129,6 +135,12 @@ private:
 	/// 一時停車領域
 	/// </summary>
 	class UBoxComponent* _temporaryParkingArea;
+
+	/// <summary>
+	/// 掲示板
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* MessageBoard;
 
 	/// <summary>
 	/// オートプレイ対象

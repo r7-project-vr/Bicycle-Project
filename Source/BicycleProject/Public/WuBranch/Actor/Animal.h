@@ -4,11 +4,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "Animal.generated.h"
 
 UCLASS()
-class BICYCLEPROJECT_API AAnimal : public AActor
+class BICYCLEPROJECT_API AAnimal : public ACharacter
 {
 	GENERATED_BODY()
 	
@@ -24,29 +24,40 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// <summary>
+	/// 今のスピードをゲット
+	/// </summary>
+	/// <returns>スピード</returns>
+	float GetCurrentSpeed() const;
+
+	/// <summary>
+	/// 目標を設定
+	/// </summary>
+	/// <param name="Target">目標</param>
+	void SetTarget(ACharacter* Target);
+
 private:
 
 	/// <summary>
 	/// 追う
 	/// </summary>
-	void Chase();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Mesh;
+	void Chase(float DeltaTime);
 
 	/// <summary>
 	/// 追う目標
 	/// </summary>
-	TObjectPtr<ACharacter> Target;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<ACharacter> CurrentTarget;
 
 	/// <summary>
 	/// 追い始まる距離
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float StartChaseDistance;
 
 	/// <summary>
-	/// 毎フレーム追う距離(%)
+	/// スピード
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float ChaseDistancePerFrame;
+	float Speed;
 };

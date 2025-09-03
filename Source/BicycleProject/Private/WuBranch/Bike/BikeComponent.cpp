@@ -49,8 +49,15 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (_isAutoPlay)
 	{
-		FVector deltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
-		GetOwner()->SetActorLocation(deltaPos);
+		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
+		{
+			OnArrivedLocationEvent.Broadcast(this);
+		}
+		else
+		{
+			FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+			GetOwner()->SetActorLocation(DeltaPos);
+		}
 	}
 	else
 	{
@@ -127,8 +134,6 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
-	//UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
-
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
@@ -140,7 +145,8 @@ void UBikeComponent::OnMove(FVector2D direction)
 	dir = actorForward * bikeDir.X + actorRight * bikeDir.Y;
 
 	// 移動
-	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
+	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
+	// 破棄してACharacterのCharacterMovementを利用します
 	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
 	character->AddMovementInput(actorForward, bikeDir.X);
 	character->AddMovementInput(actorRight, bikeDir.Y);

@@ -7,6 +7,7 @@
 
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
+	, IsClear(false)
 {
 	DeviceManager = nullptr;
 }
@@ -50,6 +51,31 @@ void UMyGameInstance::SaveCoinsToFile()
 void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion> Result)
 {
 	Quizs = Result;
+}
+
+void UMyGameInstance::SetGameResult(bool Result)
+{
+	IsClear = Result;
+}
+
+int UMyGameInstance::GetMaxRPM() const
+{
+	return MaxRPM;
+}
+
+void UMyGameInstance::SetMaxRPM(int Value)
+{
+	MaxRPM = Value;
+}
+
+int UMyGameInstance::GetStandardRPM() const
+{
+	return StandardRPM;
+}
+
+void UMyGameInstance::SetStandardRPM(int Value)
+{
+	StandardRPM = Value;
 }
 
 void UMyGameInstance::ReadCoinFromFile()

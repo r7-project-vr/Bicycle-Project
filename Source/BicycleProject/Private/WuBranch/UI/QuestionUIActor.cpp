@@ -50,6 +50,9 @@ AQuestionUIActor::AQuestionUIActor()
 
 	_autoPlayMoveSpeed = 10.0f;
 
+	MessageBoard = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Message board"));
+	MessageBoard->SetupAttachment(RootComponent);
+
 	Widget->SetupAttachment(RootComponent);
 }
 
@@ -172,6 +175,7 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
 
 	// オートプレイのスタート地点へ誘導
 	Bike->EnableAutoPlay(this);
+	Bike->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
 	FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
 	Bike->SetSynchPos(Pos);
 }
@@ -195,6 +199,12 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 
 		DisableCollision();
 	}
+}
+
+void AQuestionUIActor::OnArrivedEnterLocation(UBikeComponent* Bike)
+{
+	DisplayUI();
+	Bike->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
 }
 
 void AQuestionUIActor::SetTarget(UBikeComponent* Target)

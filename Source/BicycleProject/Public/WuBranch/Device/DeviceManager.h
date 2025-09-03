@@ -97,7 +97,7 @@ public:
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void BindMoveEvent(UObject* object, FName functionName);
 
 	/// <summary>

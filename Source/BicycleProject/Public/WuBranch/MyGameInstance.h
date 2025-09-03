@@ -8,6 +8,7 @@
 
 class UDeviceManager;
 struct FQuestion;
+class AAnimal;
 
 /**
  * 
@@ -23,12 +24,27 @@ public:
 
 	virtual void Init() override;
 
+#pragma region デバイス
+public:
+
 	/// <summary>
 	/// デバイスマネージャーを取得
 	/// </summary>
 	/// <returns></returns>
 	UFUNCTION(BlueprintCallable, Category = "Device")
 	UDeviceManager* GetDeviceManager() const;
+
+private:
+
+	/// <summary>
+	/// デバイスマネージャー
+	/// </summary>
+	UPROPERTY()
+	UDeviceManager* DeviceManager;
+#pragma endregion
+
+#pragma region コイン
+public:
 
 	/// <summary>
 	/// コインを取得
@@ -42,11 +58,6 @@ public:
 	/// <param name="Amount">追加する量</param>
 	void AddCoins(int Amount);
 
-	/// <summary>
-	/// コインをファイルに保存
-	/// </summary>
-	void SaveCoinsToFile();
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinDelegate, int, Num);
 
 	/// <summary>
@@ -54,6 +65,33 @@ public:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FUpdateCoinDelegate OnUpdateCoin;
+
+private:
+
+	/// <summary>
+	/// コインをファイルに保存
+	/// </summary>
+	void SaveCoinsToFile();
+
+	/// <summary>
+	/// ファイルからコインを読み込む
+	/// </summary>
+	void ReadCoinFromFile();
+
+	/// <summary>
+	/// コインの数を更新
+	/// </summary>
+	void UpdateCoin();
+
+	/// <summary>
+	/// 持ってるコイン
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int Coins;
+#pragma endregion
+	
+#pragma region ゲーム結果
+public:
 
 	/// <summary>
 	/// リザルトのためにクイズを保存
@@ -66,6 +104,24 @@ public:
 	/// </summary>
 	/// <param name="Result">true: クリア, false: 失敗</param>
 	void SetGameResult(bool Result);
+
+private:
+
+	/// <summary>
+	/// 答えたクイズ
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TArray<FQuestion> Quizs;
+
+	/// <summary>
+	/// ゲームクリアのフラグ
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool IsClear;
+#pragma endregion
+	
+#pragma region RPM
+public:
 
 	/// <summary>
 	/// 最大回転数をゲット
@@ -95,38 +151,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetStandardRPM(int Value);
 
+	/// <summary>
+	/// 回転数の標準値をリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetStandardRPM();
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateStandardRPMDelegate, int, Num);
+
+	/// <summary>
+	/// 標準回転数が変わった通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateStandardRPMDelegate OnUpdateStandardRPM;
+
 private:
 
 	/// <summary>
-	/// 
+	/// 標準回転数が変わったのを通知する
 	/// </summary>
-	void ReadCoinFromFile();
-
-	/// <summary>
-	/// コインの数を更新
-	/// </summary>
-	void UpdateCoin();
-
-	UPROPERTY()
-	UDeviceManager* DeviceManager;
-
-	/// <summary>
-	/// 持ってるコイン
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int Coins;
-
-	/// <summary>
-	/// 答えたクイズ
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TArray<FQuestion> Quizs;
-
-	/// <summary>
-	/// ゲームクリアのフラグ
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool IsClear;
+	void NotifyUpdateStandardRPM();
 
 	/// <summary>
 	/// 最大回転数
@@ -137,4 +181,67 @@ private:
 	/// 回転数の標準値
 	/// </summary>
 	int StandardRPM;
+#pragma endregion
+	
+#pragma region 動物
+public:
+
+	/// <summary>
+	/// 動物を追加
+	/// </summary>
+	/// <param name="Animal">対象動物</param>
+	UFUNCTION(BlueprintCallable)
+	void AddAnimal(TSubclassOf<AAnimal> Animal);
+
+	/// <summary>
+	/// 動物を削除
+	/// </summary>
+	/// <param name="Animal">対象動物</param>
+	void RemoveAnimal(TSubclassOf<AAnimal> Animal);
+
+	/// <summary>
+	/// 全動物をゲット
+	/// </summary>
+	/// <returns>全動物</returns>
+	TArray<TSubclassOf<AAnimal>> GetAnimals() const;
+
+	/// <summary>
+	/// ついてこれる動物の数を設定
+	/// </summary>
+	/// <param name="Amount">数</param>
+	void SetMaxAnimalCount(int Amount);
+
+private:
+	
+	/// <summary>
+	/// 動物をファイルに保存
+	/// </summary>
+	void SaveAnimalToFile();
+
+	/// <summary>
+	/// 一ゲーム内でついてくる動物
+	/// </summary>
+	TArray<TSubclassOf<AAnimal>> Animals;
+
+	/// <summary>
+	/// 最大ついて来れる動物の数
+	/// </summary>
+	int MaxAnimalCount;
+#pragma endregion
+
+#pragma region セーブ
+public:
+
+	/// <summary>
+	/// すべてのデータをセーブ
+	/// </summary>
+	void SaveAllToFile();
+
+private:
+	
+	/// <summary>
+	/// すべてのデータを読み込む
+	/// </summary>
+	void ReadAll();
+#pragma endregion
 };

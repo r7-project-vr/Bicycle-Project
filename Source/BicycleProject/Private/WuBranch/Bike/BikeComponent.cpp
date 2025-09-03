@@ -51,10 +51,12 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	{
 		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
 		{
+			// 目標地点についたら通知
 			OnArrivedLocationEvent.Broadcast(this);
 		}
 		else
 		{
+			// 目標地点に移動
 			FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
 			GetOwner()->SetActorLocation(DeltaPos);
 		}

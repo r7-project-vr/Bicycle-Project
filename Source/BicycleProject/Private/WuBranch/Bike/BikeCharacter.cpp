@@ -9,6 +9,7 @@
 #include <WuBranch/Bike/BikeComponent.h>
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 #include <WuBranch/QuestionGameMode.h>
+#include "WuBranch/Actor/Component/AnimalManagerComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -18,7 +19,8 @@ ABikeCharacter::ABikeCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
-	AddInstanceComponent(_bike);
+
+	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;

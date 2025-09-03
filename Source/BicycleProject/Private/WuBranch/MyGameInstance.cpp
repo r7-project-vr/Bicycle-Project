@@ -4,10 +4,13 @@
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Device/DeviceManager.h"
 #include <UntakuBranch/Question.h>
+#include "WuBranch/Actor/Animal.h"
 
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
 	, IsClear(false)
+	, MaxRPM(100)
+	, StandardRPM(50)
 {
 	DeviceManager = nullptr;
 }
@@ -21,14 +24,17 @@ void UMyGameInstance::Init()
 		DeviceManager = NewObject<UDeviceManager>(this);
 	}
 
-	ReadCoinFromFile();
+	ReadAll();
 }
 
+#pragma region デバイス
 UDeviceManager* UMyGameInstance::GetDeviceManager() const
 {
 	return DeviceManager;
 }
+#pragma endregion
 
+#pragma region コイン
 int UMyGameInstance::GetCoins() const
 {
 	return Coins;
@@ -48,6 +54,23 @@ void UMyGameInstance::SaveCoinsToFile()
 {
 }
 
+void UMyGameInstance::ReadCoinFromFile()
+{
+	Coins = 0; // 初期化
+}
+
+void UMyGameInstance::UpdateCoin()
+{
+	if (OnUpdateCoin.IsBound())
+	{
+		OnUpdateCoin.Broadcast(Coins);
+	}
+}
+#pragma endregion
+
+#pragma region ゲーム結果
+
+
 void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion> Result)
 {
 	Quizs = Result;
@@ -57,7 +80,9 @@ void UMyGameInstance::SetGameResult(bool Result)
 {
 	IsClear = Result;
 }
+#pragma endregion
 
+#pragma region RPM
 int UMyGameInstance::GetMaxRPM() const
 {
 	return MaxRPM;
@@ -76,17 +101,75 @@ int UMyGameInstance::GetStandardRPM() const
 void UMyGameInstance::SetStandardRPM(int Value)
 {
 	StandardRPM = Value;
+	NotifyUpdateStandardRPM();
 }
 
-void UMyGameInstance::ReadCoinFromFile()
+void UMyGameInstance::ResetStandardRPM()
 {
-	Coins = 0; // 初期化
+	StandardRPM = 50;
+	NotifyUpdateStandardRPM();
 }
 
-void UMyGameInstance::UpdateCoin()
+void UMyGameInstance::NotifyUpdateStandardRPM()
 {
-	if (OnUpdateCoin.IsBound())
-	{
-		OnUpdateCoin.Broadcast(Coins);
-	}
+	if (OnUpdateStandardRPM.IsBound())
+		OnUpdateStandardRPM.Broadcast(StandardRPM);
 }
+#pragma endregion
+
+#pragma region 動物
+void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)
+{
+	// ヌール検査
+	if (!Animal)
+		return;
+
+	// もう入れられない
+	if (Animals.Num() >= MaxAnimalCount)
+		return;
+
+	// 追加
+	Animals.Add(Animal);
+}
+
+void UMyGameInstance::RemoveAnimal(TSubclassOf<AAnimal> Animal)
+{
+	// ヌール検査
+	if (!Animal)
+		return;
+
+	// 配列から見つけない
+	if (Animals.Num() > 0 && Animals.Contains(Animal))
+		return;
+
+	// 削除
+	Animals.Remove(Animal);
+}
+
+TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
+{
+	return Animals;
+}
+
+void UMyGameInstance::SetMaxAnimalCount(int Amount)
+{
+	MaxAnimalCount = Amount;
+}
+
+void UMyGameInstance::SaveAnimalToFile()
+{
+}
+#pragma endregion
+
+#pragma region セーブ
+void UMyGameInstance::SaveAllToFile()
+{
+	SaveAnimalToFile();
+	SaveCoinsToFile();
+}
+
+void UMyGameInstance::ReadAll()
+{
+	ReadCoinFromFile();
+}
+#pragma endregion

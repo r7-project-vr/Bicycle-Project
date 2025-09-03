@@ -7,6 +7,7 @@
 #include "BikeCharacter.generated.h"
 
 class UBikeComponent;
+class UAnimalManagerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
@@ -108,7 +109,14 @@ private:
 	/// <summary>
 	/// 自転車の機能
 	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBikeComponent* _bike;
+
+	/// <summary>
+	/// 動物管理者
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UAnimalManagerComponent* AnimalManager;
 
 	/// <summary>
 	/// UI操作用のヒントライン

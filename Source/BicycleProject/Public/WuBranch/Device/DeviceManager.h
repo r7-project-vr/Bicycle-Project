@@ -52,6 +52,7 @@ public:
 	/// </summary>
 	/// <param name="Part">取得したいデバイスのタイプ</param>
 	/// <returns>デバイス</returns>
+	UFUNCTION(BlueprintCallable)
 	UDevice* GetDevice(EDevicePart Part);
 
 //-----------------------------------------------------------------------------
@@ -97,7 +98,7 @@ public:
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void BindMoveEvent(UObject* object, FName functionName);
 
 	/// <summary>

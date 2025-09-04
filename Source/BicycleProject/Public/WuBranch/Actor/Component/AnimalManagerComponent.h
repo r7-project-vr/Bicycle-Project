@@ -53,8 +53,9 @@ private:
 	/// 位置の確認、何かとぶつかるか
 	/// </summary>
 	/// <param name="Location">位置</param>
+	/// <param name="OGroundLocation">地面の位置</param>
 	/// <returns>true: 大丈夫, false: 使えない</returns>
-	bool CheckLocation(FVector Location);
+	bool CheckLocation(FVector Location, FVector& OGroundLocation);
 
 	/// <summary>
 	/// ついていく対象

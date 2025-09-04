@@ -78,4 +78,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Effect")
 	UNiagaraComponent* _fireworkEffect6;
 
+	/// <summary>
+	/// SE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	USoundBase* FireworkSE;
+
 };

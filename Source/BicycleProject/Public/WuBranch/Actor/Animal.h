@@ -7,6 +7,10 @@
 #include "GameFramework/Character.h"
 #include "Animal.generated.h"
 
+class USkeletalMeshComponent;
+class UCapsuleComponent;
+class UAnimalManagerComponent;
+
 UCLASS()
 class BICYCLEPROJECT_API AAnimal : public ACharacter
 {
@@ -34,7 +38,8 @@ public:
 	/// 目標を設定
 	/// </summary>
 	/// <param name="Target">目標</param>
-	void SetTarget(ACharacter* Target);
+	/// <param name="Manager">管理者</param>
+	void Init(ACharacter* Target, UAnimalManagerComponent* Manager);
 
 private:
 
@@ -44,10 +49,21 @@ private:
 	void Chase(float DeltaTime);
 
 	/// <summary>
+	/// 追うのをあきらめた
+	/// </summary>
+	/// <returns>true: 諦めた, false: 続ける</returns>
+	bool GiveUp();
+
+	/// <summary>
 	/// 追う目標
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<ACharacter> CurrentTarget;
+
+	/// <summary>
+	/// 管理者
+	/// </summary>
+	UAnimalManagerComponent* AnimalManager;
 
 	/// <summary>
 	/// 追い始まる距離
@@ -56,8 +72,19 @@ private:
 	float StartChaseDistance;
 
 	/// <summary>
+	/// 追わなくなる距離
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float GiveUpDistance;
+
+	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float Speed;
+
+	/// <summary>
+	/// 一フレーム前の目標の位置
+	/// </summary>
+	FVector TargetPreLocation;
 };

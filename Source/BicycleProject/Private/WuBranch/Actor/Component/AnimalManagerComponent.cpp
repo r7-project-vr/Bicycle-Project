@@ -91,7 +91,7 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 		if (Animal)
 		{
 			// 設定
-			Animal->SetTarget(Target);
+			Animal->Init(Target, this);
 			FollowingAnimals.Add(Animal);
 		}
 	}

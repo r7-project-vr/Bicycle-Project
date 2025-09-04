@@ -115,5 +115,10 @@ void AEndPosition::Fire()
 	{
 		_fireworkEffect6->Activate(true);
 	}
+
+	if (FireworkSE)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireworkSE, GetActorLocation());
+	}
 }
 

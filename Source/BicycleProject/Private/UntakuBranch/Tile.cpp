@@ -142,7 +142,7 @@ void ATile::DestroyAll()
 	const float MaxDistance = 15000.0f;
 	TArray<AActor*> Actors;
 
-	// 自身の上にある環境物を見つける
+	// 自身の上にある建物を見つける
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStaticMeshActor::StaticClass(), Actors);
 	Actors.RemoveAll([&](AActor* Actor) {
 		if (!Actor)
@@ -154,12 +154,32 @@ void ATile::DestroyAll()
 		bool IsInRangeY = FMath::Abs(ObjectLocation.Y - MyLocation.Y) <= MaxDistance;
 		return !(IsInRangeX && IsInRangeY);
 	});
-	
-	// 対象環境物を削除
-	for (AActor* Actor : Actors)
+	// 対象物を削除
+	while (Actors.Num() > 0)
 	{
+		AActor* Actor = Actors.Pop();
 		Actor->Destroy();
 	}
+
+	// 動ける物を削除
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), Actors);
+	Actors.RemoveAll([&](AActor* Actor) {
+		if (!Actor)
+			return true;
+
+		// 範囲内
+		FVector ObjectLocation = Actor->GetActorLocation();
+		bool IsInRangeX = FMath::Abs(ObjectLocation.X - MyLocation.X) <= MaxDistance;
+		bool IsInRangeY = FMath::Abs(ObjectLocation.Y - MyLocation.Y) <= MaxDistance;
+		return !(IsInRangeX && IsInRangeY);
+		});
+	// 対象物を削除
+	while (Actors.Num() > 0)
+	{
+		AActor* Actor = Actors.Pop();
+		Actor->Destroy();
+	}
+
 	// 自分も削除
 	Destroy();
 }

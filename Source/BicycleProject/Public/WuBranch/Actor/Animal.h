@@ -41,6 +41,12 @@ public:
 	/// <param name="Manager">管理者</param>
 	void Init(ACharacter* Target, UAnimalManagerComponent* Manager);
 
+	/// <summary>
+	/// 偏移を変える
+	/// </summary>
+	/// <param name="Offset">偏移量</param>
+	void ChangeOffset(FVector Offset);
+
 private:
 
 	/// <summary>

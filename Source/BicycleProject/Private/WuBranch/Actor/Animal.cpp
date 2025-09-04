@@ -45,7 +45,11 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager)
 {
 	CurrentTarget = Target;
 	AnimalManager = Manager;
-	RelativeOffset = GetActorLocation() - Target->GetActorLocation();
+}
+
+void AAnimal::ChangeOffset(FVector Offset)
+{
+	RelativeOffset = Offset;
 }
 
 void AAnimal::Chase(float DeltaTime)
@@ -88,6 +92,7 @@ bool AAnimal::GiveUp()
 	// 一定以上距離を離れたら追わなくなる
 	if (TotalDistance >= GiveUpDistance)
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("%s distance: %lf"), *GetFName().ToString(), TotalDistance));
 		AnimalManager->ReduceAnimal(this);
 		CurrentTarget = nullptr;
 		return true;

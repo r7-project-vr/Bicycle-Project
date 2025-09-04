@@ -63,6 +63,19 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 {
 	for (TSubclassOf<AAnimal> AnimalClass : Animals)
 	{
+		// TSubclassOfからカプセルの高さの半分をゲット
+		float CapsuleHalfHeight = 0.0f;
+		float CapsuleWidth = 0.f;
+		if (AnimalClass)
+		{
+			AAnimal* DefaultAnimal = AnimalClass->GetDefaultObject<AAnimal>();
+			if (DefaultAnimal && DefaultAnimal->GetCapsuleComponent())
+			{
+				CapsuleHalfHeight = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+				CapsuleWidth = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleRadius();
+			}
+		}
+
 		// おいていける位置を探す
 		FVector GroundLocation;
 		bool bIsValidLocation = false;
@@ -71,17 +84,7 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 			bIsValidLocation = CheckLocation(NewLocation, GroundLocation);
 		} while (!bIsValidLocation);
 
-		// 高さの調整、TSubclassOfからカプセルの高さの半分をゲット
-		float CapsuleHalfHeight = 0.0f;
-		if (AnimalClass)
-		{
-			AAnimal* DefaultAnimal = AnimalClass->GetDefaultObject<AAnimal>();
-			if (DefaultAnimal && DefaultAnimal->GetCapsuleComponent())
-			{
-				CapsuleHalfHeight = DefaultAnimal->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-			}
-		}
-
+		// 高さの調整
 		FVector SpawnLocation = GroundLocation + FVector(0, 0, CapsuleHalfHeight);
 
 		FActorSpawnParameters SpawnParams;
@@ -92,6 +95,8 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 		{
 			// 設定
 			Animal->Init(Target, this);
+			FVector Offset = GroundLocation - Target->GetActorLocation();
+			Animal->ChangeOffset(FVector(Offset.X, Offset.Y, 0));
 			FollowingAnimals.Add(Animal);
 		}
 	}
@@ -102,7 +107,6 @@ FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 	// 円形
 	// 今プレイヤーの正面は0度になっている
 	// ランダムな角度(30度 ~ 330度)
-	//float Angle = RandomStream.FRandRange(-(float)4 / 3 * PI, (float)2 / 3 * PI);
 	float Angle = RandomStream.FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
 
 	// ランダムな距離（0～半径）、均等分布のため sqrt を使う
@@ -118,7 +122,7 @@ FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 	return Location;
 }
 
-bool UAnimalManagerComponent::CheckLocation(FVector Location, FVector& OGroundLocation)
+bool UAnimalManagerComponent::CheckLocation(const FVector& Location, FVector& OGroundLocation)
 {
 	FHitResult HitResult;
 	FVector Start = Location + FVector(0, 0, 2000);

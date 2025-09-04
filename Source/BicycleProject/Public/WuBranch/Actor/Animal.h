@@ -55,7 +55,7 @@ private:
 	bool GiveUp();
 
 	/// <summary>
-	/// 追う目標
+	/// ついている目標
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<ACharacter> CurrentTarget;
@@ -84,7 +84,7 @@ private:
 	float Speed;
 
 	/// <summary>
-	/// 一フレーム前の目標の位置
+	/// 対象との相対位置
 	/// </summary>
-	FVector TargetPreLocation;
+	FVector RelativeOffset;
 };

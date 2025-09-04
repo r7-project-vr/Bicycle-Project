@@ -22,10 +22,6 @@ void AAnimal::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
-	//CurrentTarget = Cast<ACharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), ABikeCharacter::StaticClass()));
-	//if(CurrentTarget)
-	//	TargetPreLocation = CurrentTarget->GetActorLocation();
 }
 
 // Called every frame
@@ -49,37 +45,45 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager)
 {
 	CurrentTarget = Target;
 	AnimalManager = Manager;
+	RelativeOffset = GetActorLocation() - Target->GetActorLocation();
 }
 
 void AAnimal::Chase(float DeltaTime)
 {
-	ACharacter* Target = CurrentTarget.Get();
+	ACharacter* Player = CurrentTarget.Get();
+
+	FVector PlayerLocation = Player->GetActorLocation();
+	FRotator PlayerRotation = Player->GetActorRotation();
 	FVector MyLocation = GetActorLocation();
-	FVector TargetCurrentLocation = Target->GetActorLocation();
-	float TotalDistance = FVector::DistXY(MyLocation, TargetCurrentLocation);
+	// 目標位置、プレイヤー位置 + 相対位置 * プレイヤーの角度
+	FVector TargetLocation = PlayerLocation + PlayerRotation.RotateVector(RelativeOffset);
+	// 目標との距離
+	float Distance = FVector::DistXY(MyLocation, TargetLocation);
 
 	// 一定以上の距離を離れたら追う
-	if (TotalDistance >= StartChaseDistance)
+	if (Distance >= StartChaseDistance)
 	{
-		FVector Direction = TargetCurrentLocation - MyLocation;
+		FVector Direction = (TargetLocation - MyLocation).GetSafeNormal();
 
 		// 向き変更
-		SetActorRotation(Direction.Rotation());
+		FRotator TargetRotation = Direction.Rotation();
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f));
 		
-		// 座標
+		// 移動
 		GetCharacterMovement()->AddInputVector(Direction.GetSafeNormal() * Speed * DeltaTime);
 		//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Direction: %s, Velocity: %s"), *Direction.ToString(), *GetCharacterMovement()->Velocity.ToString()));
 	}
-
-	TargetPreLocation = TargetCurrentLocation;
 }
 
 bool AAnimal::GiveUp()
 {
-	ACharacter* Target = CurrentTarget.Get();
+	ACharacter* Player = CurrentTarget.Get();
+
+	FVector PlayerLocation = Player->GetActorLocation();
+	FRotator PlayerRotation = Player->GetActorRotation();
 	FVector MyLocation = GetActorLocation();
-	FVector TargetCurrentLocation = Target->GetActorLocation();
-	float TotalDistance = FVector::DistXY(MyLocation, TargetCurrentLocation);
+	FVector TargetLocation = PlayerLocation + PlayerRotation.RotateVector(RelativeOffset);
+	float TotalDistance = FVector::DistXY(MyLocation, TargetLocation);
 
 	// 一定以上距離を離れたら追わなくなる
 	if (TotalDistance >= GiveUpDistance)

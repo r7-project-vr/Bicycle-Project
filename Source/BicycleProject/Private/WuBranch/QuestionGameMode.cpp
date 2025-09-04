@@ -79,7 +79,7 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 		// 不正解の数を計算
 		_wrongNum++;
 		// SE
-		UGameplayStatics::PlaySound2D(GetWorld(), CorrectSound);
+		UGameplayStatics::PlaySound2D(GetWorld(), WrongSound);
 	}
 	
 	// 答えを保存

@@ -2,9 +2,9 @@
 
 
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
-#include "GameFramework/Character.h"
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Actor/Animal.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
@@ -64,18 +64,33 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 	for (TSubclassOf<AAnimal> AnimalClass : Animals)
 	{
 		// おいていける位置を探す
-		FVector NewLocation;
+		FVector GroundLocation;
+		bool bIsValidLocation = false;
 		do {
-			NewLocation = GetRandomLocationNearPlayer();
-		} while (!CheckLocation(NewLocation));
+			FVector NewLocation = GetRandomLocationNearPlayer();
+			bIsValidLocation = CheckLocation(NewLocation, GroundLocation);
+		} while (!bIsValidLocation);
+
+		// 高さの調整、TSubclassOfからカプセルの高さの半分をゲット
+		float CapsuleHalfHeight = 0.0f;
+		if (AnimalClass)
+		{
+			AAnimal* DefaultAnimal = AnimalClass->GetDefaultObject<AAnimal>();
+			if (DefaultAnimal && DefaultAnimal->GetCapsuleComponent())
+			{
+				CapsuleHalfHeight = DefaultAnimal->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+			}
+		}
+
+		FVector SpawnLocation = GroundLocation + FVector(0, 0, CapsuleHalfHeight);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AAnimal* Animal = GetWorld()->SpawnActor<AAnimal>(AnimalClass, NewLocation, FRotator::ZeroRotator, SpawnParams);
-		
-		// 設定
+		AAnimal* Animal = GetWorld()->SpawnActor<AAnimal>(AnimalClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+				
 		if (Animal)
 		{
+			// 設定
 			Animal->SetTarget(Target);
 			FollowingAnimals.Add(Animal);
 		}
@@ -85,8 +100,10 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 {
 	// 円形
-	// ランダムな角度（0～2π）
-	float Angle = RandomStream.FRandRange(0.f, 2 * PI);
+	// 今プレイヤーの正面は0度になっている
+	// ランダムな角度(30度 ~ 330度)
+	//float Angle = RandomStream.FRandRange(-(float)4 / 3 * PI, (float)2 / 3 * PI);
+	float Angle = RandomStream.FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
 
 	// ランダムな距離（0～半径）、均等分布のため sqrt を使う
 	float Distance = FMath::Sqrt(RandomStream.FRand()) * Radius;
@@ -101,15 +118,18 @@ FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 	return Location;
 }
 
-bool UAnimalManagerComponent::CheckLocation(FVector Location)
+bool UAnimalManagerComponent::CheckLocation(FVector Location, FVector& OGroundLocation)
 {
 	FHitResult HitResult;
 	FVector Start = Location + FVector(0, 0, 2000);
 	FVector End = Location + FVector(0, 0, -2000);
 
 	// 円形の射線
-	FCollisionShape Sphere = FCollisionShape::MakeSphere(Radius);
-	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity, ECC_Visibility, Sphere);
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(100.f);
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	bool bHit = GetWorld()->SweepSingleByObjectType(HitResult, Start, End, FQuat::Identity, ObjectQueryParams, Sphere);
 
 	if (!bHit)
 		return false;
@@ -118,5 +138,6 @@ bool UAnimalManagerComponent::CheckLocation(FVector Location)
 	if (!HitResult.GetActor()->ActorHasTag("Tile"))
 		return false;
 
+	OGroundLocation = HitResult.ImpactPoint;
 	return true;
 }

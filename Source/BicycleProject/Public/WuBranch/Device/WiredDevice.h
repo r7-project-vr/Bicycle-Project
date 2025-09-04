@@ -114,4 +114,9 @@ private:
 	/// </summary>
 	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc> DataQueue;
 	
+	/// <summary>
+	/// 最大回転数
+	/// </summary>
+	float MaxRPM;
+
 };

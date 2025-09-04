@@ -221,6 +221,7 @@ private:
 	/// <summary>
 	/// 一ゲーム内でついてくる動物
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AAnimal>> Animals;
 
 	/// <summary>

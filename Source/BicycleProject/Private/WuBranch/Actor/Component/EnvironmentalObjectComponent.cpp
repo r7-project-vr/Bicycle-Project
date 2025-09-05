@@ -8,6 +8,7 @@
 
 // Sets default values for this component's properties
 UEnvironmentalObjectComponent::UEnvironmentalObjectComponent()
+	: EnvironmentalObject(nullptr)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -38,6 +39,14 @@ void UEnvironmentalObjectComponent::StartSpawnEnvironmentalObject()
 {
 	CaculateTotalProbility();
 	LoadResource(DecideMesh());
+}
+
+void UEnvironmentalObjectComponent::DestroyEnvironmental()
+{
+	if (EnvironmentalObject)
+	{
+		EnvironmentalObject->Destroy();
+	}
 }
 
 void UEnvironmentalObjectComponent::CaculateTotalProbility()

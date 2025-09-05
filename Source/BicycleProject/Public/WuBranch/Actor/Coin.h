@@ -8,6 +8,7 @@
 
 class UBoxComponent;
 class USoundBase;
+class UCoinSpawnerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ACoin : public AActor
@@ -25,6 +26,12 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="Spawner">生成者</param>
+	void Init(UCoinSpawnerComponent* Spawner);
 
 private:
 
@@ -66,6 +73,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* Collision;
+
+	/// <summary>
+	/// 生成者
+	/// </summary>
+	UCoinSpawnerComponent* Maker;
 
 	/// <summary>
 	/// 回転するか

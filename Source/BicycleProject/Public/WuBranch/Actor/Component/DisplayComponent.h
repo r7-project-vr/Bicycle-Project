@@ -35,13 +35,13 @@ private:
 	void UpdateTime(FMyTime Time);
 
 	/// <summary>
-	/// 
+	/// 表示開始時間
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FMyTime ShowTime;
 
 	/// <summary>
-	/// 
+	/// 非表示開始時間
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FMyTime HideTime;

@@ -57,9 +57,12 @@ void UCoinSpawnerComponent::Spawn(int Num)
 	for (int Index = 0; Index < Num; Index++)
 	{
 		// 位置決定
-		FVector Location = RandomStream.RandPointInBox(SpawnZone);
+		FVector LocalLocation = RandomStream.RandPointInBox(SpawnZone);
 
-		GetWorld()->SpawnActor<ACoin>(CoinTemplate, Location, FRotator::ZeroRotator);
+		// Locationは相対位置なので、アクターの位置と回転に
+		FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(LocalLocation);
+
+		GetWorld()->SpawnActor<ACoin>(CoinTemplate, WorldLocation, FRotator::ZeroRotator);
 	}
 }
 

@@ -10,6 +10,7 @@
 class UBikeComponent;
 class USplineComponent;
 struct FQuestion;
+class UBoxComponent;
 
 /**
  * 
@@ -30,11 +31,6 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	/// <summary>
-	/// 問題資料を設置
-	/// </summary>
-	void SetProblem();
 
 	/// <summary>
 	/// 左出口から出る
@@ -105,6 +101,17 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// 停車エリアを出たら
+	/// </summary>
+	UFUNCTION()
+	void OnOverlapEndParkingArea(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	/// <summary>
+	/// クイズUIにデータを渡す
+	/// </summary>
+	void SetQuiz();
+
+	/// <summary>
 	/// クイズの入り口についた
 	/// </summary>
 	UFUNCTION()
@@ -122,11 +129,6 @@ private:
 	void LeadToExit(float DeltaTime);
 
 	/// <summary>
-	/// 状況を更新する
-	/// </summary>
-	void UpdateStatus();
-
-	/// <summary>
 	/// コリジョンを無効
 	/// </summary>
 	void DisableCollision();
@@ -134,7 +136,8 @@ private:
 	/// <summary>
 	/// 一時停車領域
 	/// </summary>
-	class UBoxComponent* _temporaryParkingArea;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* _temporaryParkingArea;
 
 	/// <summary>
 	/// 掲示板
@@ -185,11 +188,6 @@ private:
 	/// 回答済みですか
 	/// </summary>
 	bool _isAnswered;
-
-	/// <summary>
-	/// ゲーム終了したか
-	/// </summary>
-	bool _isGameFinished;
 
 	/// <summary>
 	/// クイズ

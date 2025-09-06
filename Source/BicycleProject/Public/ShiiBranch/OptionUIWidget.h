@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,6 +25,18 @@ public:
 	void OnSelectedOption(int32 OptionIndex);
 
 	int GetQuestionID()const;
+
+	// 2025.09.06 ウー start
+	
+	/// <summary>
+	/// 選んだ答えが正解かどうか
+	/// </summary>
+	/// <param name="OptionIndex">選んだ答えインデックス</param>
+	/// <param name="Result">結果</param>
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetResult(int32 OptionIndex, bool Result);
+	// 2025.09.06 ウー end
+
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)

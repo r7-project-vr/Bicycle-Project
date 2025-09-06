@@ -273,3 +273,11 @@ FRotator AQuestionUIActor::GetSnapRotation_Implementation() const
 	// アクター自身の向きを返す
 	return GetActorRotation();
 }
+
+void AQuestionUIActor::SetResult(int AnswerIndex, bool Result)
+{
+	if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
+	{
+		UI->SetResult(AnswerIndex, Result);
+	}
+}

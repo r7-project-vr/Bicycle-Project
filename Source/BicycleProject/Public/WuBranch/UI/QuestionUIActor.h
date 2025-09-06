@@ -84,6 +84,13 @@ public:
 	virtual FVector GetSnapLocation_Implementation() const override;
 	virtual FRotator GetSnapRotation_Implementation() const override;
 
+	/// <summary>
+	/// 結果を設定
+	/// </summary>
+	/// <param name="AnswerIndex">答えのインデックス</param>
+	/// <param name="Result">結果</param>
+	void SetResult(int AnswerIndex, bool Result);
+
 private:
 
 	/// <summary>

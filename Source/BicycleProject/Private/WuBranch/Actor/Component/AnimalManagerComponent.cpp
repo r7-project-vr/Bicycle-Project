@@ -65,14 +65,16 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 	{
 		// TSubclassOfからカプセルの高さの半分をゲット
 		float CapsuleHalfHeight = 0.0f;
-		float CapsuleWidth = 0.f;
+		float CapsuleRadius = 0.f;
+		float ChaseDistance = 0.f;
 		if (AnimalClass)
 		{
 			AAnimal* DefaultAnimal = AnimalClass->GetDefaultObject<AAnimal>();
 			if (DefaultAnimal && DefaultAnimal->GetCapsuleComponent())
 			{
 				CapsuleHalfHeight = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-				CapsuleWidth = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleRadius();
+				CapsuleRadius = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleRadius();
+				ChaseDistance = DefaultAnimal->GetChaseDistance();
 			}
 		}
 
@@ -80,8 +82,8 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 		FVector GroundLocation;
 		bool bIsValidLocation = false;
 		do {
-			FVector NewLocation = GetRandomLocationNearPlayer();
-			bIsValidLocation = CheckLocation(NewLocation, GroundLocation);
+			FVector NewLocation = GetRandomLocationNearPlayer(ChaseDistance);
+			bIsValidLocation = CheckLocation(CapsuleRadius, NewLocation, GroundLocation);
 		} while (!bIsValidLocation);
 
 		// 高さの調整
@@ -102,15 +104,15 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 	}
 }
 
-FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
+FVector UAnimalManagerComponent::GetRandomLocationNearPlayer(float ChaseDistance)
 {
 	// 円形
 	// 今プレイヤーの正面は0度になっている
 	// ランダムな角度(30度 ~ 330度)
 	float Angle = RandomStream.FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
 
-	// ランダムな距離（0～半径）、均等分布のため sqrt を使う
-	float Distance = FMath::Sqrt(RandomStream.FRand()) * Radius;
+	// ランダムな距離（0～追う始まる距離）、均等分布のため sqrt を使う
+	float Distance = FMath::Sqrt(RandomStream.FRand()) * ChaseDistance;
 
 	float X = FMath::Cos(Angle) * Distance;
 	float Y = FMath::Sin(Angle) * Distance;
@@ -122,14 +124,14 @@ FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 	return Location;
 }
 
-bool UAnimalManagerComponent::CheckLocation(const FVector& Location, FVector& OGroundLocation)
+bool UAnimalManagerComponent::CheckLocation(float CollisionRadius, const FVector& Location, FVector& OGroundLocation)
 {
 	FHitResult HitResult;
 	FVector Start = Location + FVector(0, 0, 2000);
 	FVector End = Location + FVector(0, 0, -2000);
 
 	// 円形の射線
-	FCollisionShape Sphere = FCollisionShape::MakeSphere(100.f);
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(CollisionRadius);
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);

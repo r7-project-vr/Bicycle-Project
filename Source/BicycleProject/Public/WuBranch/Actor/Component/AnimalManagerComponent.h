@@ -46,16 +46,18 @@ private:
 	/// <summary>
 	/// 対象の周りの位置をランダムで一つをとる
 	/// </summary>
+	/// <param name="ChaseDistance">追う始まる距離</param>
 	/// <returns>位置</returns>
-	FVector GetRandomLocationNearPlayer();
+	FVector GetRandomLocationNearPlayer(float ChaseDistance);
 
 	/// <summary>
 	/// 位置の確認、何かとぶつかるか
 	/// </summary>
+	/// <param name="CollisionRadius">半径</param>
 	/// <param name="Location">位置</param>
 	/// <param name="OGroundLocation">地面の位置</param>
 	/// <returns>true: 大丈夫, false: 使えない</returns>
-	bool CheckLocation(const FVector& Location, FVector& OGroundLocation);
+	bool CheckLocation(float CollisionRadius, const FVector& Location, FVector& OGroundLocation);
 
 	/// <summary>
 	/// ついていく対象

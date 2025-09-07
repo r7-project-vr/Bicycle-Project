@@ -84,12 +84,12 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	
 	// 答えを保存
 	// 問題IDがquestionIDの問題を見つける
-	FQuestion* question = _questions.FindByPredicate([questionID](const FQuestion& question) {
-		return question.ID == questionID;
+	FQuestion* Question = *_questions.FindByPredicate([questionID](const FQuestion* question) {
+		return question->ID == questionID;
 	});
-	if (question)
+	if (Question)
 	{
-		question->PlayerAnswer = answer;
+		Question->PlayerAnswer = answer;
 	}
 
 	// UI更新
@@ -158,7 +158,7 @@ void AQuestionGameMode::GetAllQuestions()
 	}
 
 	// 問題の総数はゲームオーバーになる不正解数とゲームクリアになる正解数の合計
-	_questions = _questionManager->GetRandomQuestions(_failCondition + _successCondition);
+	_questions = _questionManager->GetQuizs(_failCondition + _successCondition);
 	if (_questions.Num() <= 0)
 		UE_LOG(LogTemp, Error, TEXT("Get questions failed!!"));
 }
@@ -167,7 +167,7 @@ FQuestion* AQuestionGameMode::GetQuestion()
 {
 	if (_questions.Num() > 0)
 	{
-		return &_questions[_questionIndex++];
+		return _questions[_questionIndex++];
 	}
 	return nullptr;
 }

@@ -126,7 +126,7 @@ private:
 	/// <summary>
 	/// 問題
 	/// </summary>
-	TArray<FQuestion> _questions;
+	TArray<FQuestion*> _questions;
 
 	/// <summary>
 	/// 問題のインデックス

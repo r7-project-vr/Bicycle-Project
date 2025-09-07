@@ -97,7 +97,7 @@ public:
 	/// リザルトのためにクイズを保存
 	/// </summary>
 	/// <param name="Result"></param>
-	void SaveQuizsForResult(TArray<FQuestion> Result);
+	void SaveQuizsForResult(TArray<FQuestion*> Result);
 
 	/// <summary>
 	/// 一ゲームの結果を記録

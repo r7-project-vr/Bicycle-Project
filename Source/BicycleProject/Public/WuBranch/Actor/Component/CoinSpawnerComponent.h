@@ -38,6 +38,17 @@ public:
 	/// <param name="Level">クイズの難易度</param>
 	void Spawn(EQuestionLevel Level);
 
+	/// <summary>
+	/// コインを削除
+	/// </summary>
+	/// <param name="Coin">コイン</param>
+	void DestroyCoin(ACoin* Coin);
+
+	/// <summary>
+	/// すべてのコインを削除
+	/// </summary>
+	void DestroyCoins();
+
 private:
 
 	/// <summary>
@@ -68,5 +79,10 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<EQuestionLevel, int> Amount;
+
+	/// <summary>
+	/// 生成したコイン
+	/// </summary>
+	TArray<ACoin*> Coins;
 
 };

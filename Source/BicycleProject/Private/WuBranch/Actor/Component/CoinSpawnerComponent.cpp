@@ -52,14 +52,39 @@ void UCoinSpawnerComponent::Spawn(EQuestionLevel Level)
 	Spawn(*Num);
 }
 
+void UCoinSpawnerComponent::DestroyCoin(ACoin* Coin)
+{
+	if (!Coins.Contains(Coin))
+		return;
+
+	Coins.Remove(Coin);
+}
+
+void UCoinSpawnerComponent::DestroyCoins()
+{
+	if (Coins.Num() <= 0)
+		return;
+
+	while (Coins.Num() > 0)
+	{
+		ACoin* Coin = Coins.Pop();
+		Coin->Destroy();
+	}
+}
+
 void UCoinSpawnerComponent::Spawn(int Num)
 {
 	for (int Index = 0; Index < Num; Index++)
 	{
 		// 位置決定
-		FVector Location = RandomStream.RandPointInBox(SpawnZone);
+		FVector LocalLocation = RandomStream.RandPointInBox(SpawnZone);
 
-		GetWorld()->SpawnActor<ACoin>(CoinTemplate, Location, FRotator::ZeroRotator);
+		// Locationは相対位置なので、アクターの位置と回転に
+		FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(LocalLocation);
+
+		ACoin* Coin = GetWorld()->SpawnActor<ACoin>(CoinTemplate, WorldLocation, FRotator::ZeroRotator);
+		Coin->Init(this);
+		Coins.Add(Coin);
 	}
 }
 

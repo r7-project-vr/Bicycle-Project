@@ -171,6 +171,8 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// 正解か不正解を表示
+	_questionActor->SetResult(0, Result);
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	HandleCoin(Result, !Character->HasOverSpeed());
@@ -194,6 +196,8 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// 正解か不正解を表示
+	_questionActor->SetResult(1, Result);
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	HandleCoin(Result, !Character->HasOverSpeed());

@@ -71,9 +71,13 @@ void UMyGameInstance::UpdateCoin()
 #pragma region ゲーム結果
 
 
-void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion> Result)
+void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion*> Result)
 {
-	Quizs = Result;
+	Quizs.Empty();
+	for (FQuestion* Quiz : Result)
+	{
+		Quizs.Add(*Quiz);
+	}
 }
 
 void UMyGameInstance::SetGameResult(bool Result)

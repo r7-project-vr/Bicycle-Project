@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -41,8 +41,77 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Question")
 	bool CheckPlayerAnswerInLastRandom(int32 QuestionID, int32 PlayerAnswer);
 
+	// 2025.09.07 ウー start
+	/// <summary>
+	/// 一ゲームの全クイズをゲット
+	/// </summary>
+	/// <param name="NeedAmount">欲しいクイズ数</param>
+	/// <returns>クイズ</returns>
+	TArray<FQuestion*> GetQuizs(int32 NeedAmount);
+	
+	// 2025.09.07 ウー end
+
 private:
 	void TestRandomQuestions();
+
+	// 2025.09.07 ウー start
+
+	/// <summary>
+	/// 問題データをロード
+	/// </summary>
+	void LoadQuestionsData();
+
+	/// <summary>
+	/// 必要とする数の修正
+	/// </summary>
+	/// <param name="QuizNum">各レベルのクイズの数</param>
+	/// <param name="NeedNum">必要な数</param>
+	/// <param name="LackSum">足りない数</param>
+	void ClampNeedNum(const int& QuizNum, int& NeedNum, int& LackSum);
+
+	/// <summary>
+	/// クイズを補充する
+	/// </summary>
+	/// <param name="LackSum">足りない数</param>
+	/// <param name="QuizNum">各レベルのクイズの数</param>
+	/// <param name="NeedNum">必要な数</param>
+	void ReplenishQuiz(int& LackSum, const int& QuizNum, int& NeedNum);
+
+	/// <summary>
+	/// ソースからランダムで一定数のクイズを選ぶ
+	/// </summary>
+	/// <param name="Quizs">ソースクイズ</param>
+	/// <param name="Num">数</param>
+	/// <returns>クイズ</returns>
+	TArray<FQuestion*> GetRandomQuizsWithNum(TArray<FQuestion*> Quizs, int Num);
+
+	/// <summary>
+	/// イージーなクイズ
+	/// </summary>
+	TArray<FQuestion*> EasyQuizs;
+
+	/// <summary>
+	/// ノーマルなクイズ
+	/// </summary>
+	TArray<FQuestion*> NormalQuizs;
+
+	/// <summary>
+	/// ハードなクイズ
+	/// </summary>
+	TArray<FQuestion*> HardQuizs;
+
+	/// <summary>
+	/// 各クイズ難易度の数の割合
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<EQuestionLevel, float> DifficultyQuizRatio;
+
+	/// <summary>
+	/// 一ゲームのクイズ
+	/// </summary>
+	TArray<FQuestion*> QuizsInGame;
+
+	// 2025.09.07 ウー end
 
 	TArray<FQuestion> LastRandomQuestions;
 };

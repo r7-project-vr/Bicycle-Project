@@ -6,7 +6,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Components/BoxComponent.h"
 #include "UntakuBranch/TileManager.h"
-#include "GameFramework/Character.h"
+#include "WuBranch/Bike/BikeCharacter.h"
 #include <WuBranch/Bike/BikeComponent.h>
 #include <WuBranch/UI/QuestionUIActor.h>
 #include <Kismet/GameplayStatics.h>
@@ -101,7 +101,7 @@ void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
 	const FHitResult& Sweep)
 {
 	//Only player step in to Triggering
-	if (Other->IsA(ACharacter::StaticClass()) && TileManager)
+	if (Other->IsA(ABikeCharacter::StaticClass()) && TileManager)
 	{
 		TileManager->OnPlayerSteppedOnTile(this);
 	}
@@ -137,31 +137,22 @@ void ATile::DestroyAll()
 	}
 	// 2025.08.19 ウー end
 
+	// 2025.09.06 ウー start
 	// 建物を削除
-	FVector MyLocation = GetActorLocation();
-	const float MaxDistance = 15000.0f;
-	TArray<AActor*> Actors;
+	for (UEnvironmentalObjectComponent* Building : Buildings)
+		Building->DestroyEnvironmental();
 
-	// 自身の上にある建物を見つける
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStaticMeshActor::StaticClass(), Actors);
-	Actors.RemoveAll([&](AActor* Actor) {
-		if (!Actor)
-			return true;
-
-		// 範囲内
-		FVector ObjectLocation = Actor->GetActorLocation();
-		bool IsInRangeX = FMath::Abs(ObjectLocation.X - MyLocation.X) <= MaxDistance;
-		bool IsInRangeY = FMath::Abs(ObjectLocation.Y - MyLocation.Y) <= MaxDistance;
-		return !(IsInRangeX && IsInRangeY);
-	});
-	// 対象物を削除
-	while (Actors.Num() > 0)
+	// コインを削除
+	if (CoinSpawner)
 	{
-		AActor* Actor = Actors.Pop();
-		Actor->Destroy();
+		CoinSpawner->DestroyCoins();
 	}
 
 	// 動ける物を削除
+	FVector MyLocation = GetActorLocation();
+	const float MaxDistance = 15000.0f;
+	TArray<AActor*> Actors;
+	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), Actors);
 	Actors.RemoveAll([&](AActor* Actor) {
 		if (!Actor)
@@ -179,6 +170,7 @@ void ATile::DestroyAll()
 		AActor* Actor = Actors.Pop();
 		Actor->Destroy();
 	}
+	// 2025.09.06 ウー end
 
 	// 自分も削除
 	Destroy();

@@ -7,10 +7,12 @@
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "WuBranch/Bike/BikeComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 
 // Sets default values
 ACoin::ACoin()
-	: IsRotating(false)
+	: Maker(nullptr)
+	, IsRotating(false)
 	, MoveCnt(0.f)
 	, RotateTimeCnt(0.f)
 	, MoveDistanceForAnimation(0.f)
@@ -46,6 +48,11 @@ void ACoin::Tick(float DeltaTime)
 	PlayAnimation(DeltaTime);
 }
 
+void ACoin::Init(UCoinSpawnerComponent* Spawner)
+{
+	Maker = Spawner;
+}
+
 void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor)
@@ -60,6 +67,8 @@ void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 			if (PickupSound)
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
 
+			if(Maker)
+				Maker->DestroyCoin(this);
 			Destroy();
 		}
 	}

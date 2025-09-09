@@ -29,6 +29,11 @@ public:
 	/// </summary>
 	void StartSpawnEnvironmentalObject();
 
+	/// <summary>
+	/// 建物を削除
+	/// </summary>
+	void DestroyEnvironmental();
+
 private:
 
 	/// <summary>

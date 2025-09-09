@@ -58,6 +58,26 @@ public:
 	/// <param name="Amount">追加する量</param>
 	void AddCoins(int Amount);
 
+	/// <summary>
+	/// コインの高さを取得
+	/// </summary>
+	/// <returns>高さ</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetCoinHeight() const;
+
+	/// <summary>
+	/// コインの高さを設定
+	/// </summary>
+	/// <param name="Height">高さ</param>
+	UFUNCTION(BlueprintCallable)
+	void SetCoinHeight(float Height);
+
+	/// <summary>
+	/// コインの高さをリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetCoinHeight();
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinDelegate, int, Num);
 
 	/// <summary>
@@ -65,6 +85,15 @@ public:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FUpdateCoinDelegate OnUpdateCoin;
+
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinHeightDelegate, float, Height);
+
+	/// <summary>
+	/// コインの高さ更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateCoinHeightDelegate OnUpdateCoinHeight;
 
 private:
 
@@ -84,10 +113,19 @@ private:
 	void UpdateCoin();
 
 	/// <summary>
+	/// コインの高さを更新
+	/// </summary>
+	void UpdateCoinHeight();
+
+	/// <summary>
 	/// 持ってるコイン
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int Coins;
+
+	// コインの高さ
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CoinHeight;
 #pragma endregion
 	
 #pragma region ゲーム結果

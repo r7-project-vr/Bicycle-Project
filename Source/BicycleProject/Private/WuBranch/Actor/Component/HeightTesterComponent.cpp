@@ -3,9 +3,16 @@
 
 #include "WuBranch/Actor/Component/HeightTesterComponent.h"
 #include "WuBranch/MyGameInstance.h"
+#include "Components/SphereComponent.h"
+#include <Components/WidgetComponent.h>
 
 // Sets default values for this component's properties
 UHeightTesterComponent::UHeightTesterComponent()
+	: IsUseRight(true)
+	, IsUseLeft(true)
+	, TotalRecalibrationCount(10)
+	, CollectionInterval(0.5f)
+	, RecalibrationCount(0)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -22,7 +29,18 @@ void UHeightTesterComponent::BeginPlay()
 
 	// ...
 	GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	
+	LeftHand = GetOwner()->FindComponentByTag<USphereComponent>(FName("LeftHand"));
+	RightHand = GetOwner()->FindComponentByTag<USphereComponent>(FName("RightHand"));
+	UWidgetComponent* Widget = GetOwner()->FindComponentByTag<UWidgetComponent>(FName("SettingUI"));
+	if (Widget)
+	{
+		Widget->GetWidget();
+	}
+
+	RecalibrationOneTime.BindUFunction(this, "DoOneRecalibration");
+	RecalibrationParas.bLoop = false;
+
+	RecalibrationCount = 0;
 }
 
 
@@ -32,5 +50,75 @@ void UHeightTesterComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UHeightTesterComponent::StartRecalibration()
+{
+	Results.Empty();
+	GetWorld()->GetTimerManager().SetTimer(RecalibrationTimer, RecalibrationOneTime, CollectionInterval, RecalibrationParas);
+}
+
+void UHeightTesterComponent::SetUseHand(bool Left, bool Right)
+{
+	IsUseRight = Right;
+	IsUseLeft = Left;
+}
+
+void UHeightTesterComponent::GetUsedHand(bool& OutLeft, bool& OutRight)
+{
+	OutLeft = IsUseLeft;
+	OutRight = IsUseRight;
+}
+
+void UHeightTesterComponent::DoOneRecalibration()
+{
+	if (!LeftHand || !RightHand)
+	{
+		// 強制終了
+		FinishRecalibration();
+		return;
+	}
+
+	if (IsUseLeft)
+	{
+		FVector LeftHandLocation = LeftHand->GetComponentLocation();
+		Results.Add(LeftHandLocation.Z);
+	}
+
+	if (IsUseRight)
+	{
+		FVector RightHandLocation = RightHand->GetComponentLocation();
+		Results.Add(RightHandLocation.Z);
+	}
+
+	RecalibrationCount += 1;
+	if (RecalibrationCount >= TotalRecalibrationCount)
+	{
+		FinishRecalibration();
+	}
+}
+
+void UHeightTesterComponent::FinishRecalibration()
+{
+	float Avg = CaculateAvg();
+	UseResultInGame(Avg);
+}
+
+float UHeightTesterComponent::CaculateAvg()
+{
+	float Sum = 0.f;
+	for (float Result : Results)
+	{
+		Sum += Result;
+	}
+	return Sum / TotalRecalibrationCount;
+}
+
+void UHeightTesterComponent::UseResultInGame(float Avg)
+{
+	if (!GameInstance)
+		return;
+	
+	GameInstance->SetCoinHeight(Avg);
 }
 

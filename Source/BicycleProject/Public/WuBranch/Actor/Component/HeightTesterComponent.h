@@ -7,7 +7,7 @@
 #include "HeightTesterComponent.generated.h"
 
 class UMyGameInstance;
-class UWidgetInteractionComponent;
+class USphereComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UHeightTesterComponent : public USceneComponent
@@ -26,7 +26,48 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/// <summary>
+	/// 測定開始
+	/// </summary>
+	void StartRecalibration();
+
+	/// <summary>
+	/// 使う手を設定する, true: 使う, false: 使わない
+	/// </summary>
+	/// <param name="Left">左手</param>
+	/// <param name="Right">右手</param>
+	void SetUseHand(bool Left, bool Right);
+
+	/// <summary>
+	/// 使う手をゲット, true: 使う, false: 使わない
+	/// </summary>
+	/// <param name="OutLeft">左手</param>
+	/// <param name="OutRight">右手</param>
+	void GetUsedHand(bool& OutLeft, bool& OutRight);
+
 private:
+
+	/// <summary>
+	/// 一回の測定
+	/// </summary>
+	void DoOneRecalibration();
+
+	/// <summary>
+	/// 測定終了
+	/// </summary>
+	void FinishRecalibration();
+
+	/// <summary>
+	/// 平均計算
+	/// </summary>
+	/// <returns>平均値</returns>
+	float CaculateAvg();
+
+	/// <summary>
+	/// ゲーム内で新しいコインの高さを使用
+	/// </summary>
+	/// <param name="Avg"></param>
+	void UseResultInGame(float Avg);
 
 	/// <summary>
 	/// ゲームインスタンス
@@ -42,12 +83,55 @@ private:
 	/// <summary>
 	/// 右手
 	/// </summary>
-	UWidgetInteractionComponent* RightHand;
+	USphereComponent* RightHand;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	bool IsUseRight;
 
 	/// <summary>
 	/// 左手
 	/// </summary>
-	UWidgetInteractionComponent* LeftHand;
+	USphereComponent* LeftHand;
 
+	/// <summary>
+	/// 
+	/// </summary>
+	bool IsUseLeft;
 
+	/// <summary>
+	/// 測定回数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int TotalRecalibrationCount;
+
+	/// <summary>
+	/// 測定時間
+	/// </summary>
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//float RecalibrationTime;
+
+	/// <summary>
+	/// サンプルを採取間隔
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float CollectionInterval;
+
+	/// <summary>
+	/// 毎回の測定結果
+	/// </summary>
+	TArray<float> Results;
+
+	/// <summary>
+	/// 測定に必要な情報
+	/// </summary>
+	FTimerHandle RecalibrationTimer;
+	FTimerDynamicDelegate RecalibrationOneTime;
+	FTimerManagerTimerParameters RecalibrationParas;
+
+	/// <summary>
+	/// すでに測定した回数
+	/// </summary>
+	int RecalibrationCount;
 };

@@ -32,6 +32,7 @@ public:
 	/// 今のスピードをゲット
 	/// </summary>
 	/// <returns>スピード</returns>
+	UFUNCTION(BlueprintCallable)
 	float GetCurrentSpeed() const;
 
 	/// <summary>

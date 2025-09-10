@@ -50,13 +50,32 @@ void UMyGameInstance::AddCoins(int Amount)
 	UpdateCoin();
 }
 
+float UMyGameInstance::GetCoinHeight() const
+{
+	return CoinHeight;
+}
+
+void UMyGameInstance::SetCoinHeight(float Height)
+{
+	CoinHeight = Height;
+	UpdateCoinHeight();
+}
+
+void UMyGameInstance::ResetCoinHeight()
+{
+	CoinHeight = 475.f;
+	UpdateCoinHeight();
+}
+
 void UMyGameInstance::SaveCoinsToFile()
 {
+
 }
 
 void UMyGameInstance::ReadCoinFromFile()
 {
 	Coins = 0; // 初期化
+	CoinHeight = 475.f;
 }
 
 void UMyGameInstance::UpdateCoin()
@@ -64,6 +83,14 @@ void UMyGameInstance::UpdateCoin()
 	if (OnUpdateCoin.IsBound())
 	{
 		OnUpdateCoin.Broadcast(Coins);
+	}
+}
+
+void UMyGameInstance::UpdateCoinHeight()
+{
+	if (OnUpdateCoinHeight.IsBound())
+	{
+		OnUpdateCoinHeight.Broadcast(CoinHeight);
 	}
 }
 #pragma endregion

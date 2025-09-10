@@ -45,6 +45,10 @@
 		{
 			"Name": "AppleProResMedia",
 			"Enabled": true
+		},
+		{
+			"Name": "VisualStudioTools",
+			"Enabled": true
 		}
 	]
 }

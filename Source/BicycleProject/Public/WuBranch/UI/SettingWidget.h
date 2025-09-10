@@ -22,6 +22,9 @@ public:
 	/// <param name=""></param>
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartRecalibrationDelegate);
 
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FStartRecalibrationDelegate OnStartRecalibrationEvent;
+
+
 
 };

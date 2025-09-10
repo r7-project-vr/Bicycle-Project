@@ -29,6 +29,7 @@ public:
 	/// <summary>
 	/// 測定開始
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void StartRecalibration();
 
 	/// <summary>
@@ -44,6 +45,15 @@ public:
 	/// <param name="OutLeft">左手</param>
 	/// <param name="OutRight">右手</param>
 	void GetUsedHand(bool& OutLeft, bool& OutRight);
+
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRecalibrationCompletedDelegate);
+
+	/// <summary>
+	/// 測定終了の通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FRecalibrationCompletedDelegate OnRecalibrationCompleted;
 
 private:
 
@@ -70,6 +80,11 @@ private:
 	void UseResultInGame(float Avg);
 
 	/// <summary>
+	/// 測定終了を通知
+	/// </summary>
+	void NotifyRecalibrationCompleted();
+
+	/// <summary>
 	/// ゲームインスタンス
 	/// </summary>
 	UMyGameInstance* GameInstance;
@@ -86,7 +101,7 @@ private:
 	USphereComponent* RightHand;
 
 	/// <summary>
-	/// 
+	/// 右手を使う
 	/// </summary>
 	bool IsUseRight;
 
@@ -96,7 +111,7 @@ private:
 	USphereComponent* LeftHand;
 
 	/// <summary>
-	/// 
+	/// 左手を使う
 	/// </summary>
 	bool IsUseLeft;
 

@@ -5,6 +5,7 @@
 #include "WuBranch/MyGameInstance.h"
 #include "Components/SphereComponent.h"
 #include <Components/WidgetComponent.h>
+#include <WuBranch/UI/SettingWidget.h>
 
 // Sets default values for this component's properties
 UHeightTesterComponent::UHeightTesterComponent()
@@ -31,11 +32,6 @@ void UHeightTesterComponent::BeginPlay()
 	GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	LeftHand = GetOwner()->FindComponentByTag<USphereComponent>(FName("LeftHand"));
 	RightHand = GetOwner()->FindComponentByTag<USphereComponent>(FName("RightHand"));
-	UWidgetComponent* Widget = GetOwner()->FindComponentByTag<UWidgetComponent>(FName("SettingUI"));
-	if (Widget)
-	{
-		Widget->GetWidget();
-	}
 
 	RecalibrationOneTime.BindUFunction(this, "DoOneRecalibration");
 	RecalibrationParas.bLoop = false;
@@ -100,8 +96,13 @@ void UHeightTesterComponent::DoOneRecalibration()
 
 void UHeightTesterComponent::FinishRecalibration()
 {
+	// タイマー停止
+	GetWorld()->GetTimerManager().ClearTimer(RecalibrationTimer);
+	// 結果を計算
 	float Avg = CaculateAvg();
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Avg: %lf"), Avg));
 	UseResultInGame(Avg);
+	NotifyRecalibrationCompleted();
 }
 
 float UHeightTesterComponent::CaculateAvg()
@@ -111,7 +112,7 @@ float UHeightTesterComponent::CaculateAvg()
 	{
 		Sum += Result;
 	}
-	return Sum / TotalRecalibrationCount;
+	return Sum / Results.Num();
 }
 
 void UHeightTesterComponent::UseResultInGame(float Avg)
@@ -120,5 +121,13 @@ void UHeightTesterComponent::UseResultInGame(float Avg)
 		return;
 	
 	GameInstance->SetCoinHeight(Avg);
+}
+
+void UHeightTesterComponent::NotifyRecalibrationCompleted()
+{
+	if (OnRecalibrationCompleted.IsBound())
+	{
+		OnRecalibrationCompleted.Broadcast();
+	}
 }
 

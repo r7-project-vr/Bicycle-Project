@@ -5,6 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WuBranch/Interface/PauseInterface.h"
 #include "Animal.generated.h"
 
 class USkeletalMeshComponent;
@@ -12,7 +13,7 @@ class UCapsuleComponent;
 class UAnimalManagerComponent;
 
 UCLASS()
-class BICYCLEPROJECT_API AAnimal : public ACharacter
+class BICYCLEPROJECT_API AAnimal : public ACharacter, public IPauseInterface
 {
 	GENERATED_BODY()
 	
@@ -27,6 +28,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void Pause_Implementation() override;
+	void ReStart_Implementation() override;
+	bool IsPause_Implementation() override;
 
 	/// <summary>
 	/// 今のスピードをゲット
@@ -56,8 +61,37 @@ public:
 
 private:
 
+	enum BehaviorState
+	{
+		None,      // 何もしない
+		Chasing,   // 目標を追う
+		GivingUp,    // 諦めた
+	};
+
 	/// <summary>
-	/// 追う
+	/// 行動を決定
+	/// </summary>
+	void DecideBehavior();
+
+	/// <summary>
+	/// 行動する
+	/// </summary>
+	void Action(float DeltaTime);
+
+	/// <summary>
+	/// 目標の位置をゲット
+	/// </summary>
+	/// <returns></returns>
+	FVector GetTargetLocation();
+
+	/// <summary>
+	/// 偏移の位置をゲット
+	/// </summary>
+	/// <returns></returns>
+	FVector GetCurrentOffsetLocation();
+
+	/// <summary>
+	/// 偏移した目標を追う
 	/// </summary>
 	void Chase(float DeltaTime);
 
@@ -71,20 +105,19 @@ private:
 	/// <summary>
 	/// 追うのをあきらめた
 	/// </summary>
-	/// <returns>true: 諦めた, false: 続ける</returns>
-	bool GiveUp();
+	void GiveUp();
 
 	/// <summary>
 	/// 偏移を変えるカウントダウン
 	/// </summary>
 	/// <param name="DeltaTime"></param>
-	void CountDownChangeOffset(float DeltaTime);
+	//void CountDownChangeOffset(float DeltaTime);
 
 	/// <summary>
 	/// 次の変更時間を更新
 	/// </summary>
 	/// <returns>時間</returns>
-	float GetNextChangeOffsetTime();
+	//float GetNextChangeOffsetTime();
 
 	/// <summary>
 	/// 新しい偏移をゲット
@@ -102,6 +135,27 @@ private:
 	/// 管理者
 	/// </summary>
 	UAnimalManagerComponent* AnimalManager;
+
+	/// <summary>
+	/// 行動状態
+	/// </summary>
+	BehaviorState CurrentState;
+
+	/// <summary>
+	/// 目標を追うか
+	/// </summary>
+	bool IsChaseTarget;
+
+	/// <summary>
+	/// 追う位置
+	/// </summary>
+	FVector ChaseLocation;
+
+	/// <summary>
+	/// ターゲットを追う割合、0～0.99
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float TargetChaseRate;
 
 	/// <summary>
 	/// 追い始まる距離
@@ -122,11 +176,6 @@ private:
 	float Speed;
 
 	/// <summary>
-	/// さらに追えるか
-	/// </summary>
-	bool CanMoreChase;
-
-	/// <summary>
 	/// 対象との偏移
 	/// </summary>
 	FVector RelativeOffset;
@@ -134,19 +183,24 @@ private:
 	/// <summary>
 	/// 偏移量を変える経過時間
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float ChangeOffsetTime;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//float ChangeOffsetTime;
 
 	/// <summary>
 	/// ランダムの偏差
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float RandomDeviation;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//float RandomDeviation;
 
 	/// <summary>
 	/// 時間カウント
 	/// </summary>
-	float TimeCnt;
+	//float TimeCnt;
+
+	/// <summary>
+	/// 停止中か
+	/// </summary>
+	bool IsPaused;
 
 	/// <summary>
 	/// 走るサウンド

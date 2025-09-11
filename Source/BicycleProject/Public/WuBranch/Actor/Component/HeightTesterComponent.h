@@ -60,6 +60,7 @@ private:
 	/// <summary>
 	/// 一回の測定
 	/// </summary>
+	UFUNCTION()
 	void DoOneRecalibration();
 
 	/// <summary>
@@ -144,9 +145,4 @@ private:
 	FTimerHandle RecalibrationTimer;
 	FTimerDynamicDelegate RecalibrationOneTime;
 	FTimerManagerTimerParameters RecalibrationParas;
-
-	/// <summary>
-	/// すでに測定した回数
-	/// </summary>
-	int RecalibrationCount;
 };

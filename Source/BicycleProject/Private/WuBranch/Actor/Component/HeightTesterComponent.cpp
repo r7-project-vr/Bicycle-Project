@@ -10,10 +10,9 @@
 // Sets default values for this component's properties
 UHeightTesterComponent::UHeightTesterComponent()
 	: IsUseRight(true)
-	, IsUseLeft(true)
+	, IsUseLeft(false)
 	, TotalRecalibrationCount(10)
 	, CollectionInterval(0.5f)
-	, RecalibrationCount(0)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -34,9 +33,8 @@ void UHeightTesterComponent::BeginPlay()
 	RightHand = GetOwner()->FindComponentByTag<USphereComponent>(FName("RightHand"));
 
 	RecalibrationOneTime.BindUFunction(this, "DoOneRecalibration");
-	RecalibrationParas.bLoop = false;
+	RecalibrationParas.bLoop = true;
 
-	RecalibrationCount = 0;
 }
 
 
@@ -50,6 +48,7 @@ void UHeightTesterComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UHeightTesterComponent::StartRecalibration()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Start Recalibration"));
 	Results.Empty();
 	GetWorld()->GetTimerManager().SetTimer(RecalibrationTimer, RecalibrationOneTime, CollectionInterval, RecalibrationParas);
 }
@@ -68,7 +67,8 @@ void UHeightTesterComponent::GetUsedHand(bool& OutLeft, bool& OutRight)
 
 void UHeightTesterComponent::DoOneRecalibration()
 {
-	if (!LeftHand || !RightHand)
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("DoOneRecalibration time: %d"), Results.Num()));
+	if (!LeftHand && !RightHand)
 	{
 		// 強制終了
 		FinishRecalibration();
@@ -87,8 +87,7 @@ void UHeightTesterComponent::DoOneRecalibration()
 		Results.Add(RightHandLocation.Z);
 	}
 
-	RecalibrationCount += 1;
-	if (RecalibrationCount >= TotalRecalibrationCount)
+	if (Results.Num() >= TotalRecalibrationCount)
 	{
 		FinishRecalibration();
 	}

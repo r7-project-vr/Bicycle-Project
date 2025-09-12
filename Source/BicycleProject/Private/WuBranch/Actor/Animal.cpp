@@ -95,7 +95,7 @@ void AAnimal::DecideBehavior()
 		ChaseLocation = GetCurrentOffsetLocation();
 	// 追う目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("%s distance: %lf, target: %s"), *GetFName().ToString(), Distance, *ChaseLocation.ToString()));
+	
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
@@ -111,7 +111,6 @@ void AAnimal::DecideBehavior()
 		}
 		break;
 	case BehaviorState::Chasing:
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("In Chase")));
 		// 一定以上距離を離れたら追うのをやめる
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
@@ -135,11 +134,9 @@ void AAnimal::Action(float DeltaTime)
 	case BehaviorState::None:
 		break;
 	case BehaviorState::Chasing:
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("Do Chase")));
 		Chase(DeltaTime);
 		break;
 	case BehaviorState::GivingUp:
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("Do GiveUp")));
 		GiveUp();
 		break;
 	}

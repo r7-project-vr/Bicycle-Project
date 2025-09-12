@@ -114,7 +114,7 @@ void AAnimal::DecideBehavior()
 		// 一定以上距離を離れたら追うのをやめる
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
-		// 目標に着いたら
+		// 目標に着いたら(プレイヤー: 200以下、偏移座標: 20以下)
 		else if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 20.f))
 		{
 			// 新しい偏移を設置

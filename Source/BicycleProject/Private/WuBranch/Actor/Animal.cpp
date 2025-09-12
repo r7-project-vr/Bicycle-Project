@@ -115,7 +115,7 @@ void AAnimal::DecideBehavior()
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
 		// 目標に着いたら
-		else if (Distance <= 10.f)
+		else if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 20.f))
 		{
 			// 新しい偏移を設置
 			ChangeOffset(GetNewOffset());

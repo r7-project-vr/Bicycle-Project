@@ -57,6 +57,14 @@ public:
 	int GetWrongNumber() const;
 
 	/// <summary>
+	/// 答え済みか
+	/// </summary>
+	/// <param name="QuestionID">クイズID</param>
+	/// <returns>true: 回答済み, false: 未回答</returns>
+	UFUNCTION(BlueprintCallable)
+	bool IsAnswered(int32 QuestionID);
+
+	/// <summary>
 	/// ゲームオーバーのチェック
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>

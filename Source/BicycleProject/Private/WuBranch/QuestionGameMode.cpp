@@ -172,6 +172,18 @@ FQuestion* AQuestionGameMode::GetQuestion()
 	return nullptr;
 }
 
+bool AQuestionGameMode::IsAnswered(int32 QuestionID)
+{
+	FQuestion* Question = *_questions.FindByPredicate([QuestionID](const FQuestion* question) {
+		return question->ID == QuestionID;
+		});
+	if (Question)
+	{
+		return Question->PlayerAnswer != -1;
+	}
+	return false;
+}
+
 bool AQuestionGameMode::IsGameFailed() const
 {
 	return _wrongNum >= _failCondition;

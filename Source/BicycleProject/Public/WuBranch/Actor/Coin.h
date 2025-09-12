@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WuBranch/Interface/PauseInterface.h"
 #include "Coin.generated.h"
 
 class UBoxComponent;
@@ -11,7 +12,7 @@ class USoundBase;
 class UCoinSpawnerComponent;
 
 UCLASS()
-class BICYCLEPROJECT_API ACoin : public AActor
+class BICYCLEPROJECT_API ACoin : public AActor, public IPauseInterface
 {
 	GENERATED_BODY()
 	
@@ -32,6 +33,10 @@ public:
 	/// </summary>
 	/// <param name="Spawner">生成者</param>
 	void Init(UCoinSpawnerComponent* Spawner);
+
+	void Pause_Implementation() override;
+	void ReStart_Implementation() override;
+	bool IsPause_Implementation() override;
 
 private:
 
@@ -121,6 +126,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float MoveDistanceForAnimation;
+
+	/// <summary>
+	/// 停止中ですか
+	/// </summary>
+	bool IsPause;
 
 	/// <summary>
 	/// 拾った時のSE

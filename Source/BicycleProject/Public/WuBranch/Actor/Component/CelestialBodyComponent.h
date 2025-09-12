@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "WuBranch/Struct/MyTime.h"
+#include "WuBranch/Interface/PauseInterface.h"
 #include "CelestialBodyComponent.generated.h"
 
 class UDirectionalLightComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BICYCLEPROJECT_API UCelestialBodyComponent : public UActorComponent
+class BICYCLEPROJECT_API UCelestialBodyComponent : public UActorComponent, public IPauseInterface
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void Pause_Implementation() override;
+	void ReStart_Implementation() override;
+	bool IsPause_Implementation() override;
 
 	/// <summary>
 	/// 太陽の角度を取得
@@ -102,4 +107,9 @@ private:
 
 	UPROPERTY(EditInstanceOnly, meta = (AllowPrivateAccess = "true"));
 	float START_ANGLE = 210.0f;
+
+	/// <summary>
+	/// 停止中ですか
+	/// </summary>
+	bool IsPause;
 };

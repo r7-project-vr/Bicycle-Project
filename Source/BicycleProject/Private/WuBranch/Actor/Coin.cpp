@@ -16,11 +16,13 @@ ACoin::ACoin()
 	, MoveCnt(0.f)
 	, RotateTimeCnt(0.f)
 	, MoveDistanceForAnimation(0.f)
+	, IsPause(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	RootComponent = Collision;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -35,6 +37,7 @@ void ACoin::BeginPlay()
 	
 	MoveCnt = 0.f;
 	IsRotating = false;
+	IsPause = false;
 	OnActorBeginOverlap.AddDynamic(this, &ACoin::OnOverlapBegin);
 	BaseLocation = GetActorLocation();
 	BaseRotation = GetActorRotation();
@@ -43,6 +46,9 @@ void ACoin::BeginPlay()
 // Called every frame
 void ACoin::Tick(float DeltaTime)
 {
+	if (IsPause)
+		return;
+
 	Super::Tick(DeltaTime);
 
 	PlayAnimation(DeltaTime);
@@ -51,6 +57,23 @@ void ACoin::Tick(float DeltaTime)
 void ACoin::Init(UCoinSpawnerComponent* Spawner)
 {
 	Maker = Spawner;
+}
+
+void ACoin::Pause_Implementation()
+{
+	IsPause = true;
+	Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ACoin::ReStart_Implementation()
+{
+	IsPause = false;
+	Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+bool ACoin::IsPause_Implementation()
+{
+	return IsPause;
 }
 
 void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)

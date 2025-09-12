@@ -13,6 +13,7 @@ AAnimal::AAnimal()
 	, IsChaseTarget(false)
 	, StartChaseDistance(100.f)
 	, Speed(10.f)
+	, IsPaused(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,6 +28,7 @@ void AAnimal::BeginPlay()
 	CurrentState = BehaviorState::None;
 	ChaseLocation = GetActorLocation();
 	IsChaseTarget = false;
+	IsPaused = false;
 }
 
 // Called every frame
@@ -50,12 +52,14 @@ void AAnimal::Tick(float DeltaTime)
 void AAnimal::Pause_Implementation()
 {
 	IsPaused = true;
-	GetCharacterMovement()->StopActiveMovement();
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
 }
 
 void AAnimal::ReStart_Implementation()
 {
 	IsPaused = false;
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
 bool AAnimal::IsPause_Implementation()

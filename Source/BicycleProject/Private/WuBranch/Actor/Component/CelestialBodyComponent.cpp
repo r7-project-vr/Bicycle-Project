@@ -14,6 +14,7 @@ UCelestialBodyComponent::UCelestialBodyComponent()
 
 	// ...
 	Target = nullptr;
+	IsPause = false;
 }
 
 
@@ -24,6 +25,7 @@ void UCelestialBodyComponent::BeginPlay()
 
 	// ...
 	Time = 0.0f;
+	IsPause = false;
 	Target = GetOwner()->GetComponentByClass<UDirectionalLightComponent>();
 	OriginAngle = Target->GetRelativeRotation();
 	//Y: Pitch, Z: Yaw, X: Roll
@@ -34,6 +36,9 @@ void UCelestialBodyComponent::BeginPlay()
 // Called every frame
 void UCelestialBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	if (IsPause)
+		return;
+
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
@@ -44,6 +49,21 @@ void UCelestialBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	/*if (sunAngle >= 360) {
 		time -= 24 * 60 * 60;
 	}*/
+}
+
+void UCelestialBodyComponent::Pause_Implementation()
+{
+	IsPause = false;
+}
+
+void UCelestialBodyComponent::ReStart_Implementation()
+{
+	IsPause = true;
+}
+
+bool UCelestialBodyComponent::IsPause_Implementation()
+{
+	return IsPause;
 }
 
 float UCelestialBodyComponent::GetSunAngle() const

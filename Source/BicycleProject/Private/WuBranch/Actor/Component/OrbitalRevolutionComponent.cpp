@@ -1,12 +1,12 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WuBranch/Actor/Component/CelestialBodyComponent.h"
+#include "WuBranch/Actor/Component/OrbitalRevolutionComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values for this component's properties
-UCelestialBodyComponent::UCelestialBodyComponent()
+UOrbitalRevolutionComponent::UOrbitalRevolutionComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -19,7 +19,7 @@ UCelestialBodyComponent::UCelestialBodyComponent()
 
 
 // Called when the game starts
-void UCelestialBodyComponent::BeginPlay()
+void UOrbitalRevolutionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -34,7 +34,7 @@ void UCelestialBodyComponent::BeginPlay()
 
 
 // Called every frame
-void UCelestialBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UOrbitalRevolutionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	if (IsPause)
 		return;
@@ -51,44 +51,39 @@ void UCelestialBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	}*/
 }
 
-void UCelestialBodyComponent::Pause_Implementation()
-{
-	IsPause = false;
-}
-
-void UCelestialBodyComponent::ReStart_Implementation()
+void UOrbitalRevolutionComponent::Pause()
 {
 	IsPause = true;
 }
 
-bool UCelestialBodyComponent::IsPause_Implementation()
+void UOrbitalRevolutionComponent::ReStart()
 {
-	return IsPause;
+	IsPause = false;
 }
 
-float UCelestialBodyComponent::GetSunAngle() const
+float UOrbitalRevolutionComponent::GetSunAngle() const
 {
 	return SunAngle;
 }
 
-FMyTime UCelestialBodyComponent::GetTime()
+FMyTime UOrbitalRevolutionComponent::GetTime()
 {
 	return ConvertAngleToTime(SunAngle);
 }
 
-float UCelestialBodyComponent::GetTimeRatio()
+float UOrbitalRevolutionComponent::GetTimeRatio()
 {
 	return TIME_RATIO;
 }
 
-float UCelestialBodyComponent::CaculateSunAngle(float Sec) const
+float UOrbitalRevolutionComponent::CaculateSunAngle(float Sec) const
 {
 	// 180度 / 半日 => 180 / 12*60*60
 	// 経過した時間　*　180度 / 半日　*　ゲームと現実の時間の比率　+　開始の角度
 	return Sec * 180 / (12 * 60 * 60) * TIME_RATIO + START_ANGLE;
 }
 
-void UCelestialBodyComponent::ChangeSunAngle(float Angle)
+void UOrbitalRevolutionComponent::ChangeSunAngle(float Angle)
 {
 	SunAngle = Angle;
 
@@ -106,7 +101,7 @@ void UCelestialBodyComponent::ChangeSunAngle(float Angle)
 	OnUpdateTime.Broadcast(GetTime());
 }
 
-FMyTime UCelestialBodyComponent::ConvertAngleToTime(float Angle)
+FMyTime UOrbitalRevolutionComponent::ConvertAngleToTime(float Angle)
 {
 	// 時間調整
 	// ゲーム中の昼：180~360 夜:0~180のため、先に昼を0~180に転換して

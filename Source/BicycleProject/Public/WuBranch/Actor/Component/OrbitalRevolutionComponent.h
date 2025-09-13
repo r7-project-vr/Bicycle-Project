@@ -5,19 +5,18 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "WuBranch/Struct/MyTime.h"
-#include "WuBranch/Interface/PauseInterface.h"
-#include "CelestialBodyComponent.generated.h"
+#include "OrbitalRevolutionComponent.generated.h"
 
 class UDirectionalLightComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BICYCLEPROJECT_API UCelestialBodyComponent : public UActorComponent, public IPauseInterface
+class BICYCLEPROJECT_API UOrbitalRevolutionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UCelestialBodyComponent();
+	UOrbitalRevolutionComponent();
 
 protected:
 	// Called when the game starts
@@ -27,9 +26,15 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void Pause_Implementation() override;
-	void ReStart_Implementation() override;
-	bool IsPause_Implementation() override;
+	/// <summary>
+	/// 一時停止
+	/// </summary>
+	void Pause();
+
+	/// <summary>
+	/// 再開
+	/// </summary>
+	void ReStart();
 
 	/// <summary>
 	/// 太陽の角度を取得

@@ -7,7 +7,7 @@
 #include "PauseInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI)
+UINTERFACE(BlueprintType)
 class UPauseInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -26,19 +26,19 @@ public:
 	/// <summary>
 	/// 一時停止
 	/// </summary>
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Pause();
 
 	/// <summary>
 	/// 再開
 	/// </summary>
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void ReStart();
 
 	/// <summary>
 	/// 停止中ですか
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsPause();
 };

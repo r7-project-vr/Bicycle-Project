@@ -108,11 +108,16 @@ FVector UAnimalManagerComponent::GetRandomLocationNearPlayer(float ChaseDistance
 {
 	// 円形
 	// 今プレイヤーの正面は0度になっている
-	// ランダムな角度(30度 ~ 330度)
-	float Angle = RandomStream.FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
+	// ランダムな角度(30度 ~ 120度, 240度 ~ 330度)
+	float Angles[4] = { (float)1 / 4 , (float)2 / 3, (float)4 / 3, (float)7 / 4 };
+	// 左右をランダムで決める、左：［0, 0.5), 右: [0.5, 1)
+	int Side = FMath::RoundToInt(FMath::SRand());
+	float StartAngle = Angles[Side * 2];
+	float EndAngle = Angles[Side * 2 + 1];
+	float Angle = FMath::FRandRange(StartAngle * PI, EndAngle * PI);
 
-	// ランダムな距離（0～追う始まる距離）、均等分布のため sqrt を使う
-	float Distance = FMath::Sqrt(RandomStream.FRand()) * ChaseDistance;
+	// ランダムな距離（0～追う始まる距離の８割）、均等分布のため sqrt を使う
+	float Distance = FMath::Sqrt(RandomStream.FRand()) * ChaseDistance * 0.8;
 
 	float X = FMath::Cos(Angle) * Distance;
 	float Y = FMath::Sin(Angle) * Distance;

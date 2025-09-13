@@ -221,8 +221,13 @@ void AAnimal::GiveUp()
 FVector AAnimal::GetNewOffset()
 {
 	// 今プレイヤーの正面は0度になっている
-	// ランダムな角度(30度 ~ 330度)
-	float Angle = FMath::FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
+	// ランダムな角度(30度 ~ 120度, 240度 ~ 330度)
+	float Angles[4] = { (float)1 / 4 , (float) 2 / 3, (float) 4 / 3, (float) 7 / 4 };
+	// 左右をランダムで決める、左：［0, 0.5), 右: [0.5, 1)
+	int Side = FMath::RoundToInt(FMath::SRand());
+	float StartAngle = Angles[Side * 2];
+	float EndAngle = Angles[Side * 2 + 1];
+	float Angle = FMath::FRandRange(StartAngle * PI, EndAngle * PI);
 
 	// ランダムな距離（0～追い始まる距離の８割）、均等分布のため sqrt を使う
 	float Distance = FMath::Sqrt(FMath::RandRange(0.0f, 1.0f)) * StartChaseDistance * 0.8;

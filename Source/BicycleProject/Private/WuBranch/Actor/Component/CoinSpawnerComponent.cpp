@@ -4,6 +4,9 @@
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 #include "WuBranch/Actor/Coin.h"
 #include "UntakuBranch/Question.h"
+#include "WuBranch/MyGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UCoinSpawnerComponent::UCoinSpawnerComponent()
@@ -27,6 +30,13 @@ void UCoinSpawnerComponent::BeginPlay()
 
 	// ...
 	
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		GameInstance->OnUpdateCoinHeight.AddDynamic(this, &UCoinSpawnerComponent::UpdateCoinHeight);
+		// 最初の高さを設定
+		UpdateSpawnZoneHeight(GameInstance->GetCoinHeight());
+	}
 }
 
 
@@ -72,8 +82,19 @@ void UCoinSpawnerComponent::DestroyCoins()
 	}
 }
 
+void UCoinSpawnerComponent::CancelDelegate()
+{
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		GameInstance->OnUpdateCoinHeight.RemoveDynamic(this, &UCoinSpawnerComponent::UpdateCoinHeight);
+	}
+}
+
 void UCoinSpawnerComponent::Spawn(int Num)
 {
+	SpawnZone.Min.Z = 358.f;
+	SpawnZone.Max.Z = 358.f;
 	for (int Index = 0; Index < Num; Index++)
 	{
 		// 位置決定
@@ -86,5 +107,38 @@ void UCoinSpawnerComponent::Spawn(int Num)
 		Coin->Init(this);
 		Coins.Add(Coin);
 	}
+}
+
+void UCoinSpawnerComponent::UpdateCoinHeight(float NewHeight)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!Player)
+		return;
+
+	//
+	UpdateSpawnZoneHeight(NewHeight);
+	
+	// 生成したコインの高さも更新
+	for (ACoin* Coin : Coins)
+	{
+		if (Coin)
+		{
+			Coin->ChangeBaseHeight(SpawnZone.Min.Z);
+		}
+	}
+}
+
+void UCoinSpawnerComponent::UpdateSpawnZoneHeight(float NewHeight)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!Player)
+		return;
+
+	float PlayerZ = Player->GetActorLocation().Z;
+
+	// 生成範囲の高さを更新
+	SpawnZone.Max.Z = NewHeight + PlayerZ;
+	SpawnZone.Min.Z = NewHeight + PlayerZ;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Update Spawn Zone Height: %f"), SpawnZone.Min.Z));
 }
 

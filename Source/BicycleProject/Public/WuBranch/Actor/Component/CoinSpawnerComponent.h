@@ -49,6 +49,11 @@ public:
 	/// </summary>
 	void DestroyCoins();
 
+	/// <summary>
+	/// バインドしたものを解除
+	/// </summary>
+	void CancelDelegate();
+
 private:
 
 	/// <summary>
@@ -56,6 +61,19 @@ private:
 	/// </summary>
 	/// <param name="Num">数</param>
 	void Spawn(int Num);
+
+	/// <summary>
+	/// コインの高さを更新
+	/// </summary>
+	/// <param name="NewHeight">高さ</param>
+	UFUNCTION()
+	void UpdateCoinHeight(float NewHeight);
+
+	/// <summary>
+	/// コインを生成する区域の高さを更新
+	/// </summary>
+	/// <param name="NewHeight">高さ</param>
+	void UpdateSpawnZoneHeight(float NewHeight);
 
 	/// <summary>
 	/// コインのテンプレート

@@ -38,6 +38,12 @@ public:
 	void ReStart_Implementation() override;
 	bool IsPause_Implementation() override;
 
+	/// <summary>
+	/// 基本の高さを更新
+	/// </summary>
+	/// <param name="NewHeight">高さ</param>
+	void ChangeBaseHeight(float NewHeight);
+
 private:
 
 	UFUNCTION()

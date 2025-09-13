@@ -76,6 +76,13 @@ bool ACoin::IsPause_Implementation()
 	return IsPause;
 }
 
+void ACoin::ChangeBaseHeight(float NewHeight)
+{
+	// 基本の位置を更新
+	// さらにコリジョンの高さを考慮
+	BaseLocation.Z = NewHeight + Collision->GetScaledBoxExtent().Z;
+}
+
 void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor)

@@ -16,7 +16,7 @@ UHeightTesterComponent::UHeightTesterComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	//PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -39,16 +39,15 @@ void UHeightTesterComponent::BeginPlay()
 
 
 // Called every frame
-void UHeightTesterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
+//void UHeightTesterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//
+//	// ...
+//}
 
 void UHeightTesterComponent::StartRecalibration()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Start Recalibration"));
 	Results.Empty();
 	GetWorld()->GetTimerManager().SetTimer(RecalibrationTimer, RecalibrationOneTime, CollectionInterval, RecalibrationParas);
 }
@@ -67,7 +66,6 @@ void UHeightTesterComponent::GetUsedHand(bool& OutLeft, bool& OutRight)
 
 void UHeightTesterComponent::DoOneRecalibration()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("DoOneRecalibration time: %d"), Results.Num()));
 	if (!LeftHand && !RightHand)
 	{
 		// 強制終了
@@ -84,6 +82,7 @@ void UHeightTesterComponent::DoOneRecalibration()
 	if (IsUseRight)
 	{
 		FVector RightHandLocation = RightHand->GetComponentLocation();
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("RightHandLocation.Z: %lf"), RightHandLocation.Z));
 		Results.Add(RightHandLocation.Z);
 	}
 
@@ -99,8 +98,11 @@ void UHeightTesterComponent::FinishRecalibration()
 	GetWorld()->GetTimerManager().ClearTimer(RecalibrationTimer);
 	// 結果を計算
 	float Avg = CaculateAvg();
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Avg: %lf"), Avg));
-	UseResultInGame(Avg);
+
+	// 腕の長さを計算
+	float PlayerHiehgt = Avg - GetOwner()->GetActorLocation().Z;
+
+	UseResultInGame(PlayerHiehgt);
 	NotifyRecalibrationCompleted();
 }
 

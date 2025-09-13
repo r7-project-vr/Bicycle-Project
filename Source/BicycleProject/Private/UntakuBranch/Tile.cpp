@@ -146,6 +146,7 @@ void ATile::DestroyAll()
 	if (CoinSpawner)
 	{
 		CoinSpawner->DestroyCoins();
+		CoinSpawner->CancelDelegate();
 	}
 
 	// 動ける物を削除

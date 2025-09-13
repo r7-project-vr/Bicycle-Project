@@ -2,6 +2,7 @@
 
 
 #include "WuBranch/Actor/Animal.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -18,6 +19,8 @@ AAnimal::AAnimal()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
+	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
 }
 
 // Called when the game starts or when spawned
@@ -184,6 +187,8 @@ void AAnimal::Chase(float DeltaTime)
 
 void AAnimal::Move(float DeltaTime, FVector Direction)
 {
+	// 水平面のみ
+	Direction.Z = 0;
 	// 向き変更
 	FRotator TargetRotation = Direction.Rotation();
 	SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f));

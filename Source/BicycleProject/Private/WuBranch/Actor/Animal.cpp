@@ -97,7 +97,7 @@ void AAnimal::DecideBehavior()
 		ChaseLocation = GetCurrentOffsetLocation();
 	// 追う目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
-	
+
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
@@ -105,10 +105,13 @@ void AAnimal::DecideBehavior()
 			CurrentState = BehaviorState::GivingUp;
 		else if (Distance >= StartChaseDistance)
 		{
+			// 次の目標を決める
 			if (FMath::SRand() <= TargetChaseRate)
 				IsChaseTarget = true;
 			else
 				IsChaseTarget = false;
+			// 新しい偏移を設置
+			ChangeOffset(GetNewOffset());
 			CurrentState = BehaviorState::Chasing;
 		}
 		break;
@@ -116,13 +119,9 @@ void AAnimal::DecideBehavior()
 		// 一定以上距離を離れたら追うのをやめる
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
-		// 目標に着いたら(プレイヤー: 200以下、偏移座標: 20以下)
-		else if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 20.f))
-		{
-			// 新しい偏移を設置
-			ChangeOffset(GetNewOffset());
+		// 目標に着いたら(プレイヤー: 200以下、偏移座標: 10以下)
+		else if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 10.f))
 			CurrentState = BehaviorState::None;
-		}
 		break;
 	case BehaviorState::GivingUp:
 		break;

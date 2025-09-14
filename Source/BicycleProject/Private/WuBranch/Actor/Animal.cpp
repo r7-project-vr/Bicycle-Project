@@ -75,11 +75,6 @@ float AAnimal::GetCurrentSpeed() const
 	return GetCharacterMovement()->Velocity.Length();
 }
 
-float AAnimal::GetChaseDistance() const
-{
-	return StartChaseDistance;
-}
-
 void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager)
 {
 	CurrentTarget = Target;
@@ -234,8 +229,10 @@ FVector AAnimal::GetNewOffset()
 	float EndAngle = Angles[Side * 2 + 1];
 	float Angle = FMath::FRandRange(StartAngle * PI, EndAngle * PI);
 
-	// ランダムな距離（0～追い始まる距離の８割）、均等分布のため sqrt を使う
-	float Distance = FMath::Sqrt(FMath::RandRange(0.0f, 1.0f)) * StartChaseDistance * 0.8;
+	// ランダムな距離（0～800,道路の幅さ）、均等分布のため sqrt を使う
+	float Distance = FMath::Sqrt(FMath::RandRange(0.0f, 1.0f)) * 800;
+	// 最小距離200cm
+	Distance = Distance < 200.f ? 200.f : Distance;
 
 	return FVector(FMath::Cos(Angle) * Distance, FMath::Sin(Angle) * Distance, 0);
 }

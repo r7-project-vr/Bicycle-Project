@@ -41,12 +41,6 @@ public:
 	float GetCurrentSpeed() const;
 
 	/// <summary>
-	/// 追い始まる距離をゲット
-	/// </summary>
-	/// <returns>距離</returns>
-	float GetChaseDistance() const;
-
-	/// <summary>
 	/// 目標を設定
 	/// </summary>
 	/// <param name="Target">目標</param>

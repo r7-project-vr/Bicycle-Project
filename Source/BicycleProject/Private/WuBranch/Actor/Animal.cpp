@@ -15,6 +15,7 @@ AAnimal::AAnimal()
 	, StartChaseDistance(100.f)
 	, Speed(10.f)
 	, IsPaused(false)
+	, IsPlayedChirp(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -133,6 +134,7 @@ void AAnimal::Action(float DeltaTime)
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
+		IsPlayedChirp = false;
 		break;
 	case BehaviorState::Chasing:
 		Chase(DeltaTime);
@@ -170,11 +172,12 @@ void AAnimal::Chase(float DeltaTime)
 	Move(DeltaTime, Direction);
 
 	// 諦める前に鳴く, 距離の8割
-	if (Distance >= GiveUpDistance * 0.8)
+	if (!IsPlayedChirp && Distance >= GiveUpDistance * 0.8)
 	{
 		if (ChirpSE)
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
+			IsPlayedChirp = true;
 		}
 	}
 }

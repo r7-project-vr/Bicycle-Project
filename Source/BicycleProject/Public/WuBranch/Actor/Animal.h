@@ -213,4 +213,9 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	USoundBase* ChirpSE;
+
+	/// <summary>
+	/// すでに鳴いたか
+	/// </summary>
+	bool IsPlayedChirp;
 };

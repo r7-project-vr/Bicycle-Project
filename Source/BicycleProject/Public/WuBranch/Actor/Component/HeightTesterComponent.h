@@ -46,6 +46,19 @@ public:
 	/// <param name="OutRight">右手</param>
 	void GetUsedHand(bool& OutLeft, bool& OutRight);
 
+	/// <summary>
+	/// 測定すべき回数をゲット
+	/// </summary>
+	/// <returns></returns>
+	int GetTotalRecalibrationCount() const;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCalibrationProgressDelegate, int, CurrentProgress);
+
+	/// <summary>
+	/// 測定進捗の通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FCalibrationProgressDelegate OnCalibrationProgress;
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRecalibrationCompletedDelegate);
 
@@ -79,6 +92,12 @@ private:
 	/// </summary>
 	/// <param name="Avg"></param>
 	void UseResultInGame(float Avg);
+
+	/// <summary>
+	/// 測定の進捗を通知
+	/// </summary>
+	/// <param name="CurrentProgress">進捗</param>
+	void NotifyCalibrationProgress(int CurrentProgress);
 
 	/// <summary>
 	/// 測定終了を通知

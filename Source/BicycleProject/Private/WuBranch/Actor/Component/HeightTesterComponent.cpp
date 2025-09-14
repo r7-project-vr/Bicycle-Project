@@ -34,7 +34,7 @@ void UHeightTesterComponent::BeginPlay()
 
 	RecalibrationOneTime.BindUFunction(this, "DoOneRecalibration");
 	RecalibrationParas.bLoop = true;
-
+	RecalibrationParas.FirstDelay = 0.5f;
 }
 
 
@@ -64,6 +64,11 @@ void UHeightTesterComponent::GetUsedHand(bool& OutLeft, bool& OutRight)
 	OutRight = IsUseRight;
 }
 
+int UHeightTesterComponent::GetTotalRecalibrationCount() const
+{
+	return TotalRecalibrationCount;
+}
+
 void UHeightTesterComponent::DoOneRecalibration()
 {
 	if (!LeftHand && !RightHand)
@@ -85,6 +90,8 @@ void UHeightTesterComponent::DoOneRecalibration()
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("RightHandLocation.Z: %lf"), RightHandLocation.Z));
 		Results.Add(RightHandLocation.Z);
 	}
+
+	NotifyCalibrationProgress(Results.Num());
 
 	if (Results.Num() >= TotalRecalibrationCount)
 	{
@@ -122,6 +129,14 @@ void UHeightTesterComponent::UseResultInGame(float Avg)
 		return;
 	
 	GameInstance->SetCoinHeight(Avg);
+}
+
+void UHeightTesterComponent::NotifyCalibrationProgress(int CurrentProgress)
+{
+	if (OnCalibrationProgress.IsBound())
+	{
+		OnCalibrationProgress.Broadcast(CurrentProgress);
+	}
 }
 
 void UHeightTesterComponent::NotifyRecalibrationCompleted()

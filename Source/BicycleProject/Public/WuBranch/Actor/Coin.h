@@ -39,6 +39,12 @@ public:
 	bool IsPause_Implementation() override;
 
 	/// <summary>
+	/// コリジョーンを取得
+	/// </summary>
+	/// <returns>コリジョーン</returns>
+	UBoxComponent* GetCollision() const;
+
+	/// <summary>
 	/// 基本の高さを更新
 	/// </summary>
 	/// <param name="NewHeight">高さ</param>

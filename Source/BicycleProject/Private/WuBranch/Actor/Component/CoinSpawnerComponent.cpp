@@ -3,6 +3,7 @@
 
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 #include "WuBranch/Actor/Coin.h"
+#include "Components/BoxComponent.h"
 #include "UntakuBranch/Question.h"
 #include "WuBranch/MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
@@ -93,8 +94,6 @@ void UCoinSpawnerComponent::CancelDelegate()
 
 void UCoinSpawnerComponent::Spawn(int Num)
 {
-	SpawnZone.Min.Z = 358.f;
-	SpawnZone.Max.Z = 358.f;
 	for (int Index = 0; Index < Num; Index++)
 	{
 		// 位置決定
@@ -134,11 +133,22 @@ void UCoinSpawnerComponent::UpdateSpawnZoneHeight(float NewHeight)
 	if (!Player)
 		return;
 
+	// プレイヤーの高さを取得
 	float PlayerZ = Player->GetActorLocation().Z;
+	// コインのコリジョーン高さを取得
+	float CoinCollisionHieght = 0;
+	if (CoinTemplate)
+	{
+		ACoin* DefaultCoin = CoinTemplate->GetDefaultObject<ACoin>();
+		if (DefaultCoin && DefaultCoin->GetCollision())
+		{
+			CoinCollisionHieght = DefaultCoin->GetCollision()->GetScaledBoxExtent().Z;
+		}
+	}
 
-	// 生成範囲の高さを更新
-	SpawnZone.Max.Z = NewHeight + PlayerZ;
-	SpawnZone.Min.Z = NewHeight + PlayerZ;
+	// 生成範囲の高さを更新(プレイヤー座標 + 腕の長さ + コインのコリジョーン高さ)
+	SpawnZone.Max.Z = NewHeight + PlayerZ + CoinCollisionHieght;
+	SpawnZone.Min.Z = NewHeight + PlayerZ + CoinCollisionHieght;
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Update Spawn Zone Height: %f"), SpawnZone.Min.Z));
 }
 

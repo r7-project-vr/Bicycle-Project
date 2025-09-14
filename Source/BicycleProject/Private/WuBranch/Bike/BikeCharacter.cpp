@@ -102,7 +102,7 @@ void ABikeCharacter::Pause_Implementation()
 
 void ABikeCharacter::ReStart_Implementation()
 {
-	IsPause = true;
+	IsPause = false;
 	if (!_bike->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());

@@ -14,6 +14,7 @@
 #include "WuBranch/Actor/Component/EnvironmentalObjectComponent.h"
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 #include "UntakuBranch/Question.h"
+#include "WuBranch/Actor/Component/WildAnimalManagerComponent.h"
 
 // Sets default values
 ATile::ATile()
@@ -50,6 +51,11 @@ ATile::ATile()
 	CoinSpawner = CreateDefaultSubobject<UCoinSpawnerComponent>("Coin Spawner");
 	CoinSpawner->SetupAttachment(RootComponent);
 	// 2025.08.28 ウー end
+
+	// 2025.09.16 ウー start
+	WildAnimalManager = CreateDefaultSubobject<UWildAnimalManagerComponent>("Wild Animal Manager");
+	WildAnimalManager->SetupAttachment(RootComponent);
+	// 2025.09.16 ウー end
 }
 
 // 2025.08.01 ウー start
@@ -75,6 +81,9 @@ void ATile::SpawnEnvironmentals(int Seed)
 	{
 		Building->StartSpawnEnvironmentalObject();
 	}
+	// 野良動物
+	WildAnimalManager->SetSeed(Seed);
+	WildAnimalManager->StartSpawnAnimal();
 	// フォリッジ
 	FoliageSpawner->SetSeed(Seed);
 	FoliageSpawner->StartSpawnFoliage();
@@ -148,6 +157,12 @@ void ATile::DestroyAll()
 		CoinSpawner->DestroyCoins();
 		CoinSpawner->CancelDelegate();
 	}
+	
+	// 2025.09.16 ウー start
+	// 野良動物を削除
+	if (WildAnimalManager)
+		WildAnimalManager->DestroyAllAnimals();
+	// 2025.09.26 ウー end
 
 	// 動ける物を削除
 	FVector MyLocation = GetActorLocation();

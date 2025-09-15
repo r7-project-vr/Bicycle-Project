@@ -204,12 +204,12 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		_handlebarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
-		if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
-		{
+		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
+		//{
 			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 			UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 			deviceManager->EnableDefaultActions();
-		}
+		//}
 		return;
 	}
 

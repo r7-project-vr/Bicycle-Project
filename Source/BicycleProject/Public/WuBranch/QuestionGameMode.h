@@ -88,6 +88,13 @@ protected:
 
 private:
 
+	enum QuestionGameState
+	{
+		Playing,
+		Successed,
+		Failed,
+	};
+
 	/// <summary>
 	/// ゲーム中に使う全部の問題を一気にゲット
 	/// </summary>
@@ -130,7 +137,6 @@ private:
 	/// </summary>
 	class AQuestionManager* _questionManager;
 
-
 	/// <summary>
 	/// 問題
 	/// </summary>
@@ -167,6 +173,11 @@ private:
 	/// 間違ってる数
 	/// </summary>
 	int _wrongNum;
+
+	/// <summary>
+	/// 今のゲーム状態
+	/// </summary>
+	QuestionGameState CurrentState;
 
 	/// <summary>
 	/// クリアした後に行くマップ

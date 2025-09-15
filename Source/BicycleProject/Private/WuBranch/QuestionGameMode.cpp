@@ -31,6 +31,7 @@ void AQuestionGameMode::BeginPlay()
 	_correctNum = 0;
 	_wrongNum = 0;
 	_questionIndex = 0;
+	CurrentState = QuestionGameState::Playing;
 
 	GetAllQuestions();
 }
@@ -49,14 +50,19 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		}*/
 		_player->GetBikeComponent()->ReduceVelocityTo0();
 
+		if (CurrentState == QuestionGameState::Playing)
+			return;
+
 		// ゴールに到達したらゲームクリア
-		GameOver(true);
+		//GameOver(true);
 
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
 		FTimerDelegate timerDelegate;
-		//timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TitleMap");
-		timerDelegate.BindUFunction(this, "ChangeLevel", true);
+		if(CurrentState == QuestionGameState::Successed)
+			timerDelegate.BindUFunction(this, "ChangeLevel", true);
+		else if (CurrentState == QuestionGameState::Failed)
+			timerDelegate.BindUFunction(this, "ChangeLevel", false);
 		FTimerHandle timerHandle;
 		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
 	}
@@ -94,36 +100,37 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 
 	// UI更新
 	UpdateAnswerUI();
-	//UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
 
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// ゲームオーバー
 	if (IsGameFailed())
 	{
+		CurrentState = QuestionGameState::Failed;
 		// UIの表示
 		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
 		// デフォルト入力を無効
-		GameInstance->GetDeviceManager()->DisableDefaultActions();
-		GameInstance->GetDeviceManager()->DisConnectAllDevices();
+		//GameInstance->GetDeviceManager()->DisableDefaultActions();
+		//GameInstance->GetDeviceManager()->DisConnectAllDevices();
+		// すべての問題を無効にする
+		DisableAllQuestions();
 		// クイズを記録
 		GameInstance->SaveQuizsForResult(_questions);
 		// 結果を記録
 		GameInstance->SetGameResult(false);
-		// すべての問題を無効にする
-		DisableAllQuestions();
-
-		// 先にデバイスを切断
-
+		// ゴールをプレイヤーの進行先に置く
+		PlaceGoal(questionID);
+		
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
-		FTimerDelegate timerDelegate;
+		/*FTimerDelegate timerDelegate;
 		timerDelegate.BindUFunction(this, FName("ChangeLevel"), false);
 		FTimerHandle timerHandle;
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
 	}
 	// ゲームクリア
 	else if (IsGameClear())
 	{
+		CurrentState = QuestionGameState::Successed;
 		// ゲームクリア
 		UKismetSystemLibrary::PrintString(this, "GameClear!", true, false, FColor::Green, 10.f);
 		// すべての問題を無効にする
@@ -228,47 +235,46 @@ void AQuestionGameMode::DisableAllQuestions()
 void AQuestionGameMode::PlaceGoal(int32 questionID)
 {
 	// 地図上のゴールを探す
-	TArray<AActor*> goals;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), goals);
-	if (goals.Num() <= 0)
+	TArray<AActor*> Goals;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), Goals);
+	if (Goals.Num() <= 0)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Did not find Goal!!"));
 		return;
 	}
 
-	AActor* goal = goals[0];
+	AActor* Goal = Goals[0];
 	// 問題を特定
-	AQuestionUIActor* target = nullptr;
+	AQuestionUIActor* Target = nullptr;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-	for (AActor* actor : _questionActors)
+	for (AActor* Actor : _questionActors)
 	{
-		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
+		if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(Actor))
 		{
-			if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidgetComponent()->GetWidget()))
+			if (UOptionUIWidget* QuestionUI = Cast<UOptionUIWidget>(Question->GetWidgetComponent()->GetWidget()))
 			{
 				// UIからもらったquestionIDと比べて目標となっているアクターをゲット
-				if (questionUI->GetQuestionID() == questionID)
+				if (QuestionUI->GetQuestionID() == questionID)
 				{
-					target = question;
+					Target = Question;
 					break;
 				}
 			}
 		}
 	}
-	if (!target)
+	if (!Target)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Did not find Question Actor!!"));
 		return;
 	}
 	// 問題の出口の位置と向きをゲット
 	FVector startLocation, forward;
-	if (target->GetExitLocationAndForward(startLocation, forward))
+	if (Target->GetExitLocationAndForward(startLocation, forward))
 	{
 		// ゴールを進行先に置く
 		float distance = 5000.0f;
 		startLocation.Z = 100.f;
-		goal->SetActorLocation(startLocation + forward * distance);
-		goal->SetActorRotation((forward * -1).Rotation());
+		Goal->SetActorLocation(startLocation + forward * distance);
+		Goal->SetActorRotation((forward * -1).Rotation());
 	}
-
 }

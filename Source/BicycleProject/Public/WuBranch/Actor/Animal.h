@@ -53,7 +53,7 @@ public:
 	/// <param name="Offset">偏移量</param>
 	void ChangeOffset(FVector Offset);
 
-private:
+protected:
 
 	enum BehaviorState
 	{
@@ -65,12 +65,12 @@ private:
 	/// <summary>
 	/// 行動を決定
 	/// </summary>
-	void DecideBehavior();
+	virtual void DecideBehavior();
 
 	/// <summary>
 	/// 行動する
 	/// </summary>
-	void Action(float DeltaTime);
+	virtual void Action(float DeltaTime);
 
 	/// <summary>
 	/// 目標の位置をゲット
@@ -82,12 +82,7 @@ private:
 	/// 偏移の位置をゲット
 	/// </summary>
 	/// <returns></returns>
-	FVector GetCurrentOffsetLocation();
-
-	/// <summary>
-	/// 偏移した目標を追う
-	/// </summary>
-	void Chase(float DeltaTime);
+	FVector GetOffsetWorldLocation();
 
 	/// <summary>
 	/// 移動
@@ -100,24 +95,6 @@ private:
 	/// 追うのをあきらめた
 	/// </summary>
 	void GiveUp();
-
-	/// <summary>
-	/// 偏移を変えるカウントダウン
-	/// </summary>
-	/// <param name="DeltaTime"></param>
-	//void CountDownChangeOffset(float DeltaTime);
-
-	/// <summary>
-	/// 次の変更時間を更新
-	/// </summary>
-	/// <returns>時間</returns>
-	//float GetNextChangeOffsetTime();
-
-	/// <summary>
-	/// 新しい偏移をゲット
-	/// </summary>
-	/// <returns></returns>
-	FVector GetNewOffset();
 
 	/// <summary>
 	/// ついている目標
@@ -136,34 +113,6 @@ private:
 	BehaviorState CurrentState;
 
 	/// <summary>
-	/// 目標を追うか
-	/// </summary>
-	bool IsChaseTarget;
-
-	/// <summary>
-	/// 追う位置
-	/// </summary>
-	FVector ChaseLocation;
-
-	/// <summary>
-	/// ターゲットを追う割合、0～0.99
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float TargetChaseRate;
-
-	/// <summary>
-	/// 追い始まる距離
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float StartChaseDistance;
-
-	/// <summary>
-	/// 追わなくなる距離
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float GiveUpDistance;
-
-	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -175,47 +124,8 @@ private:
 	FVector RelativeOffset;
 
 	/// <summary>
-	/// 偏移量を変える経過時間
-	/// </summary>
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	//float ChangeOffsetTime;
-
-	/// <summary>
-	/// ランダムの偏差
-	/// </summary>
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	//float RandomDeviation;
-
-	/// <summary>
-	/// 時間カウント
-	/// </summary>
-	//float TimeCnt;
-
-	/// <summary>
 	/// 停止中か
 	/// </summary>
 	bool IsPaused;
 
-	/// <summary>
-	/// 走るサウンド
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USoundBase* RunSE;
-
-	/// <summary>
-	/// 歩くサウンド
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USoundBase* WalkSE;
-
-	/// <summary>
-	/// 鳴くサウンド
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USoundBase* ChirpSE;
-
-	/// <summary>
-	/// すでに鳴いたか
-	/// </summary>
-	bool IsPlayedChirp;
 };

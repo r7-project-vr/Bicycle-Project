@@ -32,7 +32,7 @@ void AWildAnimal::Action(float DeltaTime)
 		}
 	}
 
-	StareAtTarget();
+	StareAtTarget(DeltaTime);
 }
 
 bool AWildAnimal::IsTargetPassed()
@@ -45,19 +45,20 @@ bool AWildAnimal::IsTargetPassed()
 	// 今回の内積
 	ACharacter* Player = CurrentTarget.Get();
 	FVector PlayerLocation = Player->GetActorLocation();
-	float CurrentDot = FVector::DotProduct(Face, (PlayerLocation - GetActorLocation()).GetSafeNormal());
+	FVector CurrentCross = FVector::CrossProduct(Face, (PlayerLocation - GetActorLocation()).GetSafeNormal2D());
 	
 	// 前回と今回の結果を掛け算して負になったら通り過ぎた
-	if (PreviousDot * CurrentDot < 0.f)
+	if (PreviousCross.Z * CurrentCross.Z < 0.f)
 		Result = true;
 
 	// 今回の結果を保存
-	PreviousDot = CurrentDot;
+	if(PreviousCross != CurrentCross)
+		PreviousCross = CurrentCross;
 
 	return Result;
 }
 
-void AWildAnimal::StareAtTarget()
+void AWildAnimal::StareAtTarget(float DeltaTime)
 {
 	if (CurrentTarget.IsNull())
 		return;
@@ -68,12 +69,14 @@ void AWildAnimal::StareAtTarget()
 	FVector PlayerLocation = Player->GetActorLocation();
 	FVector Direction = (PlayerLocation - GetActorLocation());
 	Direction.Z = 0.f;
-	Direction.GetSafeNormal();
+	Direction = Direction.GetSafeNormal();
 	float Dot = FVector::DotProduct(Face, Direction);
-	
+
 	// +-60度以内なら目線で追う
-	if (Dot >= 0.5)
+	// cos(45度) = 0.707
+	if (Dot >= 0.707f)
 	{
-		SetActorRotation(Direction.Rotation());
+	    FRotator RotationPerFrame = FMath::RInterpTo(GetActorRotation(), Direction.Rotation(), DeltaTime, RotationSpeed);
+		SetActorRotation(RotationPerFrame);
 	}
 }

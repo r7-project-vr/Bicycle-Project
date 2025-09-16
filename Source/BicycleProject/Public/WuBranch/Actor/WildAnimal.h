@@ -37,7 +37,8 @@ private:
 	/// <summary>
 	/// ターゲットを注視
 	/// </summary>
-	void StareAtTarget();
+	/// <param name="DeltaTime"></param>
+	void StareAtTarget(float DeltaTime);
 
 	/// <summary>
 	/// 前方
@@ -45,9 +46,9 @@ private:
 	FVector Face;
 
 	/// <summary>
-	/// 前回の内積結果
+	/// 前回の外積結果
 	/// </summary>
-	float PreviousDot = 1.f;
+	FVector PreviousCross;
 	
 	/// <summary>
 	/// 鳴くサウンド
@@ -59,4 +60,10 @@ private:
 	/// 鳴くか
 	/// </summary>
 	bool NeedChirp;
+
+	/// <summary>
+	/// 回転スピード
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float RotationSpeed;
 };

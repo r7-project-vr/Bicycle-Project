@@ -47,8 +47,11 @@ void AEndPosition::OnOverlapBeginFinishLine(AActor* OverlappedActor, AActor* Oth
 		// 再びトリガーしないように
 		_finishLineCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-		//エフェクト
-		Fire();
+		if (_gameMode->IsGameClear())
+		{
+			//エフェクト
+			Fire();
+		}
 
 		if (_gameMode)
 		{

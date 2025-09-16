@@ -24,11 +24,12 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
 	/// 測定開始
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void StartRecalibration();
 
 	/// <summary>
@@ -45,11 +46,34 @@ public:
 	/// <param name="OutRight">右手</param>
 	void GetUsedHand(bool& OutLeft, bool& OutRight);
 
+	/// <summary>
+	/// 測定すべき回数をゲット
+	/// </summary>
+	/// <returns></returns>
+	int GetTotalRecalibrationCount() const;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCalibrationProgressDelegate, int, CurrentProgress);
+
+	/// <summary>
+	/// 測定進捗の通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FCalibrationProgressDelegate OnCalibrationProgress;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRecalibrationCompletedDelegate);
+
+	/// <summary>
+	/// 測定終了の通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FRecalibrationCompletedDelegate OnRecalibrationCompleted;
+
 private:
 
 	/// <summary>
 	/// 一回の測定
 	/// </summary>
+	UFUNCTION()
 	void DoOneRecalibration();
 
 	/// <summary>
@@ -70,6 +94,17 @@ private:
 	void UseResultInGame(float Avg);
 
 	/// <summary>
+	/// 測定の進捗を通知
+	/// </summary>
+	/// <param name="CurrentProgress">進捗</param>
+	void NotifyCalibrationProgress(int CurrentProgress);
+
+	/// <summary>
+	/// 測定終了を通知
+	/// </summary>
+	void NotifyRecalibrationCompleted();
+
+	/// <summary>
 	/// ゲームインスタンス
 	/// </summary>
 	UMyGameInstance* GameInstance;
@@ -86,7 +121,7 @@ private:
 	USphereComponent* RightHand;
 
 	/// <summary>
-	/// 
+	/// 右手を使う
 	/// </summary>
 	bool IsUseRight;
 
@@ -96,7 +131,7 @@ private:
 	USphereComponent* LeftHand;
 
 	/// <summary>
-	/// 
+	/// 左手を使う
 	/// </summary>
 	bool IsUseLeft;
 
@@ -129,9 +164,4 @@ private:
 	FTimerHandle RecalibrationTimer;
 	FTimerDynamicDelegate RecalibrationOneTime;
 	FTimerManagerTimerParameters RecalibrationParas;
-
-	/// <summary>
-	/// すでに測定した回数
-	/// </summary>
-	int RecalibrationCount;
 };

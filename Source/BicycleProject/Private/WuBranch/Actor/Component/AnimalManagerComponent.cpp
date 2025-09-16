@@ -66,7 +66,6 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 		// TSubclassOfからカプセルの高さの半分をゲット
 		float CapsuleHalfHeight = 0.0f;
 		float CapsuleRadius = 0.f;
-		float ChaseDistance = 0.f;
 		if (AnimalClass)
 		{
 			AAnimal* DefaultAnimal = AnimalClass->GetDefaultObject<AAnimal>();
@@ -74,7 +73,6 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 			{
 				CapsuleHalfHeight = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 				CapsuleRadius = DefaultAnimal->GetCapsuleComponent()->GetScaledCapsuleRadius();
-				ChaseDistance = DefaultAnimal->GetChaseDistance();
 			}
 		}
 
@@ -82,7 +80,7 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 		FVector GroundLocation;
 		bool bIsValidLocation = false;
 		do {
-			FVector NewLocation = GetRandomLocationNearPlayer(ChaseDistance);
+			FVector NewLocation = GetRandomLocationNearPlayer();
 			bIsValidLocation = CheckLocation(CapsuleRadius, NewLocation, GroundLocation);
 		} while (!bIsValidLocation);
 
@@ -104,15 +102,22 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 	}
 }
 
-FVector UAnimalManagerComponent::GetRandomLocationNearPlayer(float ChaseDistance)
+FVector UAnimalManagerComponent::GetRandomLocationNearPlayer()
 {
 	// 円形
 	// 今プレイヤーの正面は0度になっている
-	// ランダムな角度(30度 ~ 330度)
-	float Angle = RandomStream.FRandRange((float)1 / 4 * PI, (float)7 / 4 * PI);
+	// ランダムな角度(30度 ~ 120度, 240度 ~ 330度)
+	float Angles[4] = { (float)1 / 4 , (float)2 / 3, (float)4 / 3, (float)7 / 4 };
+	// 左右をランダムで決める、左：［0, 0.5), 右: [0.5, 1)
+	int Side = FMath::RoundToInt(FMath::SRand());
+	float StartAngle = Angles[Side * 2];
+	float EndAngle = Angles[Side * 2 + 1];
+	float Angle = RandomStream.FRandRange(StartAngle * PI, EndAngle * PI);
 
-	// ランダムな距離（0～追う始まる距離）、均等分布のため sqrt を使う
-	float Distance = FMath::Sqrt(RandomStream.FRand()) * ChaseDistance;
+	// ランダムな距離（200～800, 道路の幅さ）、均等分布のため sqrt を使う
+	float Distance = FMath::Sqrt(RandomStream.FRandRange(0.0f, 1.0f)) * 800;
+	// 最小距離200cm、最大800cm
+	Distance = Distance < 200.f ? 200.f : Distance;
 
 	float X = FMath::Cos(Angle) * Distance;
 	float Y = FMath::Sin(Angle) * Distance;

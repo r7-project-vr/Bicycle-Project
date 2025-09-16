@@ -57,6 +57,14 @@ public:
 	int GetWrongNumber() const;
 
 	/// <summary>
+	/// 答え済みか
+	/// </summary>
+	/// <param name="QuestionID">クイズID</param>
+	/// <returns>true: 回答済み, false: 未回答</returns>
+	UFUNCTION(BlueprintCallable)
+	bool IsAnswered(int32 QuestionID);
+
+	/// <summary>
 	/// ゲームオーバーのチェック
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
@@ -79,6 +87,13 @@ protected:
 	void GameOver(bool isFinish);
 
 private:
+
+	enum QuestionGameState
+	{
+		Playing,
+		Successed,
+		Failed,
+	};
 
 	/// <summary>
 	/// ゲーム中に使う全部の問題を一気にゲット
@@ -122,7 +137,6 @@ private:
 	/// </summary>
 	class AQuestionManager* _questionManager;
 
-
 	/// <summary>
 	/// 問題
 	/// </summary>
@@ -159,6 +173,11 @@ private:
 	/// 間違ってる数
 	/// </summary>
 	int _wrongNum;
+
+	/// <summary>
+	/// 今のゲーム状態
+	/// </summary>
+	QuestionGameState CurrentState;
 
 	/// <summary>
 	/// クリアした後に行くマップ

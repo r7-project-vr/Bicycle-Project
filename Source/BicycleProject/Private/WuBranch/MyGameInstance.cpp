@@ -174,7 +174,7 @@ void UMyGameInstance::RemoveAnimal(TSubclassOf<AAnimal> Animal)
 		return;
 
 	// 削除
-	Animals.Remove(Animal);
+	//Animals.Remove(Animal);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const

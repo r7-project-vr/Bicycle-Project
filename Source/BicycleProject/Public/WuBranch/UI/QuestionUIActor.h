@@ -45,7 +45,8 @@ public:
 	/// <summary>
 	/// 回答状況を取得
 	/// </summary>
-	/// <returns>true: はい, false: いいえ</returns>
+	/// <returns>true: 回答済み, false: 未回答</returns>
+	UFUNCTION(BlueprintCallable)
 	bool GetAnsweredStatus() const;
 
 	/// <summary>

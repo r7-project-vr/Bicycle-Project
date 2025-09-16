@@ -46,9 +46,8 @@ private:
 	/// <summary>
 	/// 対象の周りの位置をランダムで一つをとる
 	/// </summary>
-	/// <param name="ChaseDistance">追う始まる距離</param>
 	/// <returns>位置</returns>
-	FVector GetRandomLocationNearPlayer(float ChaseDistance);
+	FVector GetRandomLocationNearPlayer();
 
 	/// <summary>
 	/// 位置の確認、何かとぶつかるか

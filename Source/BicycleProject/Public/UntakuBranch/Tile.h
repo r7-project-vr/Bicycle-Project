@@ -11,6 +11,7 @@ class UBoxComponent;
 class URandomFoliageSpawner;
 class UEnvironmentalObjectComponent;
 class UCoinSpawnerComponent;
+class UWildAnimalManagerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ATile : public AActor
@@ -122,4 +123,14 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCoinSpawnerComponent* CoinSpawner;
 	// 2025.08.28 ウー end
+
+	// 2025.09.16 ウー start
+
+	/// <summary>
+	/// 野良動物生成者
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWildAnimalManagerComponent* WildAnimalManager;
+	
+	// 2025.09.16 ウー end
 };

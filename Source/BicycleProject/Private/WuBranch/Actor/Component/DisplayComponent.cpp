@@ -2,9 +2,9 @@
 
 
 #include "WuBranch/Actor/Component/DisplayComponent.h"
-#include "Engine/DirectionalLight.h"
+#include "WuBranch/Actor/Celestial.h"
 #include "Kismet/GameplayStatics.h"
-#include <WuBranch/Actor/Component/CelestialBodyComponent.h>
+#include <WuBranch/Actor/Component/OrbitalRevolutionComponent.h>
 
 // Sets default values for this component's properties
 UDisplayComponent::UDisplayComponent()
@@ -24,10 +24,10 @@ void UDisplayComponent::BeginPlay()
 
 	// ...
 	TArray<AActor*> Actors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ADirectionalLight::StaticClass(), FName("Sun"), Actors);
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), ACelestial::StaticClass(), FName("Sun"), Actors);
 	if (Actors.Num() > 0)
 	{
-		UCelestialBodyComponent* Celestial = Actors[0]->FindComponentByClass<UCelestialBodyComponent>();
+		UOrbitalRevolutionComponent* Celestial = Actors[0]->FindComponentByClass<UOrbitalRevolutionComponent>();
 		if (Celestial)
 		{
 			Celestial->OnUpdateTime.AddDynamic(this, &UDisplayComponent::UpdateTime);

@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WuBranch/Interface/PauseInterface.h"
 #include "BikeCharacter.generated.h"
 
 class UBikeComponent;
 class UAnimalManagerComponent;
 
 UCLASS()
-class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
+class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
 {
 	GENERATED_BODY()
 
@@ -28,6 +29,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void Pause_Implementation() override;
+	void ReStart_Implementation() override;
+	bool IsPause_Implementation() override;
 
 	/// <summary>
 	/// バイクのメッシュを変更
@@ -155,4 +160,9 @@ private:
 	/// 超速したか
 	/// </summary>
 	bool IsOverSpeed;
+
+	/// <summary>
+	/// 停止中ですか
+	/// </summary>
+	bool IsPause;
 };

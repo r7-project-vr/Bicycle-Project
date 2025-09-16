@@ -3,7 +3,11 @@
 
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
 #include "WuBranch/Actor/Coin.h"
+#include "Components/BoxComponent.h"
 #include "UntakuBranch/Question.h"
+#include "WuBranch/MyGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UCoinSpawnerComponent::UCoinSpawnerComponent()
@@ -27,6 +31,13 @@ void UCoinSpawnerComponent::BeginPlay()
 
 	// ...
 	
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		GameInstance->OnUpdateCoinHeight.AddDynamic(this, &UCoinSpawnerComponent::UpdateCoinHeight);
+		// 最初の高さを設定
+		UpdateSpawnZoneHeight(GameInstance->GetCoinHeight());
+	}
 }
 
 
@@ -72,6 +83,15 @@ void UCoinSpawnerComponent::DestroyCoins()
 	}
 }
 
+void UCoinSpawnerComponent::CancelDelegate()
+{
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		GameInstance->OnUpdateCoinHeight.RemoveDynamic(this, &UCoinSpawnerComponent::UpdateCoinHeight);
+	}
+}
+
 void UCoinSpawnerComponent::Spawn(int Num)
 {
 	for (int Index = 0; Index < Num; Index++)
@@ -86,5 +106,49 @@ void UCoinSpawnerComponent::Spawn(int Num)
 		Coin->Init(this);
 		Coins.Add(Coin);
 	}
+}
+
+void UCoinSpawnerComponent::UpdateCoinHeight(float NewHeight)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!Player)
+		return;
+
+	//
+	UpdateSpawnZoneHeight(NewHeight);
+	
+	// 生成したコインの高さも更新
+	for (ACoin* Coin : Coins)
+	{
+		if (Coin)
+		{
+			Coin->ChangeBaseHeight(SpawnZone.Min.Z);
+		}
+	}
+}
+
+void UCoinSpawnerComponent::UpdateSpawnZoneHeight(float NewHeight)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!Player)
+		return;
+
+	// プレイヤーの高さを取得
+	float PlayerZ = Player->GetActorLocation().Z;
+	// コインのコリジョーン高さを取得
+	float CoinCollisionHieght = 0;
+	if (CoinTemplate)
+	{
+		ACoin* DefaultCoin = CoinTemplate->GetDefaultObject<ACoin>();
+		if (DefaultCoin && DefaultCoin->GetCollision())
+		{
+			CoinCollisionHieght = DefaultCoin->GetCollision()->GetScaledBoxExtent().Z;
+		}
+	}
+
+	// 生成範囲の高さを更新(プレイヤー座標 + 腕の長さ + コインのコリジョーン高さ)
+	SpawnZone.Max.Z = NewHeight + PlayerZ + CoinCollisionHieght;
+	SpawnZone.Min.Z = NewHeight + PlayerZ + CoinCollisionHieght;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Update Spawn Zone Height: %f"), SpawnZone.Min.Z));
 }
 

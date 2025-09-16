@@ -58,7 +58,12 @@ void UWildAnimalManagerComponent::StartSpawnAnimal()
 		{
 			FVector Location = WildAnimalSpawnLocations[Index]->GetComponentLocation();
 			FRotator Rotation = WildAnimalSpawnLocations[Index]->GetComponentRotation();
-			CreateAnimal(Character, DecideAnimal(), Location, Rotation);
+			FVector OnwerLocation = GetOwner()->GetActorLocation();
+			FRotator OnwerRotation = GetOwner()->GetActorRotation();
+
+			FVector AdjustedLocation = OnwerRotation.RotateVector(Location) + OnwerLocation;
+			FRotator AdjustedRotation = OnwerRotation + Rotation;
+			CreateAnimal(Character, DecideAnimal(), AdjustedLocation, AdjustedRotation);
 		}
 	}
 }
@@ -100,8 +105,6 @@ void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassO
 		UE_LOG(LogTemp, Error, TEXT("Create Environmental Object Failed"));
 		return;
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Location: %s, Rotation: "), *Location.ToString(), *Rotation.ToString()));
 
 	AWildAnimal* Animal = GetWorld()->SpawnActor<AWildAnimal>(Target, Location, Rotation);
 	if (Animal)

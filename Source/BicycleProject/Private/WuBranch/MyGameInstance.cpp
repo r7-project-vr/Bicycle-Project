@@ -96,8 +96,6 @@ void UMyGameInstance::UpdateCoinHeight()
 #pragma endregion
 
 #pragma region ゲーム結果
-
-
 void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion*> Result)
 {
 	Quizs.Empty();
@@ -189,6 +187,18 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 
 void UMyGameInstance::SaveAnimalToFile()
 {
+}
+#pragma endregion
+
+#pragma region 自転車調整
+void UMyGameInstance::SetBikeOffset(FVector Offset)
+{
+	BikeOffset = Offset;
+}
+
+FVector UMyGameInstance::GetBikeOffset() const
+{
+	return BikeOffset;
 }
 #pragma endregion
 

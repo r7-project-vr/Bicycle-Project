@@ -221,7 +221,7 @@ private:
 	int StandardRPM;
 #pragma endregion
 	
-#pragma region 動物
+#pragma region ペット
 public:
 
 	/// <summary>
@@ -266,6 +266,29 @@ private:
 	/// 最大ついて来れる動物の数
 	/// </summary>
 	int MaxAnimalCount;
+#pragma endregion
+
+#pragma region 自転車調整
+public:
+
+	/// <summary>
+	/// 自転車の偏移量を設定
+	/// </summary>
+	/// <param name="Offset"></param>
+	void SetBikeOffset(FVector Offset);
+
+	/// <summary>
+	/// 自転車の偏移量をゲット
+	/// </summary>
+	/// <returns></returns>
+	FVector GetBikeOffset() const;
+
+private:
+
+	/// <summary>
+	/// 自転車の偏移量
+	/// </summary>
+	FVector BikeOffset;
 #pragma endregion
 
 #pragma region セーブ

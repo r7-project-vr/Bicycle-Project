@@ -51,4 +51,10 @@ private:
 	/// </summary>
 	/// <returns>true: はい / false: いいえ</returns>
 	bool IsVRConnect() const;
+	
+	/// <summary>
+	/// 射線
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* Line;
 };

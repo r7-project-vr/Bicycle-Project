@@ -58,7 +58,12 @@ void UWildAnimalManagerComponent::StartSpawnAnimal()
 		{
 			FVector Location = WildAnimalSpawnLocations[Index]->GetComponentLocation();
 			FRotator Rotation = WildAnimalSpawnLocations[Index]->GetComponentRotation();
-			CreateBuilding(Character, DecideAnimal(), Location, Rotation);
+			FVector OnwerLocation = GetOwner()->GetActorLocation();
+			FRotator OnwerRotation = GetOwner()->GetActorRotation();
+
+			FVector AdjustedLocation = OnwerRotation.RotateVector(Location) + OnwerLocation;
+			FRotator AdjustedRotation = OnwerRotation + Rotation;
+			CreateAnimal(Character, DecideAnimal(), AdjustedLocation, AdjustedRotation);
 		}
 	}
 }
@@ -93,7 +98,7 @@ void UWildAnimalManagerComponent::CaculateTotalProbility()
 	}
 }
 
-void UWildAnimalManagerComponent::CreateBuilding(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation)
+void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation)
 {
 	if (!Target)
 	{

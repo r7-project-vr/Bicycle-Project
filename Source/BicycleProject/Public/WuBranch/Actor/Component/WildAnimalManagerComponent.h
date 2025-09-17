@@ -56,7 +56,7 @@ private:
 	/// <param name="Target">生成する動物</param>
 	/// <param name="Location">座標</param>
 	/// <param name="Rotation">回転</param>
-	void CreateBuilding(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation);
+	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation);
 
 	/// <summary>
 	/// 実際生成する動物を決める

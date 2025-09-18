@@ -25,6 +25,19 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
+	/// 調整できるか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	UFUNCTION(BlueprintCallable)
+	bool CanAdjust() const;
+
+	/// <summary>
+	/// 調整開始
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void StartAdjustment();
+
+	/// <summary>
 	/// 高さを調整
 	/// </summary>
 	/// <param name="Amount">調整量</param>
@@ -32,11 +45,37 @@ public:
 	void SetHeight(float Amount);
 
 	/// <summary>
+	/// 高さをリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetHeightOffset();
+
+	/// <summary>
+	/// 高さをゲット
+	/// </summary>
+	/// <returns>高さ</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetHeight();
+
+	/// <summary>
 	/// 前後位置を調整
 	/// </summary>
 	/// <param name="Amount">調整量</param>
 	UFUNCTION(BlueprintCallable)
 	void SetForwardLocation(float Amount);
+
+	/// <summary>
+	/// 前後位置をリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetForwardOffset();
+
+	/// <summary>
+	/// 前後位置をゲット
+	/// </summary>
+	/// <returns>前後位置</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetForward();
 
 	/// <summary>
 	/// リセット
@@ -51,17 +90,10 @@ public:
 	FVector GetAdjustedLocation() const;
 
 	/// <summary>
-	/// 調整終了するときに隠すか
-	/// </summary>
-	/// <returns>true: はい, false: いいえ</returns>
-	UFUNCTION(BlueprintCallable)
-	bool GetNeedHideAfter() const;
-
-	/// <summary>
-	/// 自転車の偏移を保存
+	/// 調整完了
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-	void SaveBikeOffset();
+	void FinishAdjustment();
 
 private:
 
@@ -71,10 +103,31 @@ private:
 	FVector LoadBikeOffset();
 
 	/// <summary>
+	/// 自転車の位置を更新
+	/// </summary>
+	void UpdateBikeLocation();
+
+	/// <summary>
+	/// 調整終了するときに隠すか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool GetNeedHideAfter() const;
+
+	/// <summary>
+	/// 自転車の偏移を保存
+	/// </summary>
+	void SaveBikeOffset();
+
+	/// <summary>
 	/// 自転車のタグ、メッシュを探すために使う
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FName BikeTag;
+
+	/// <summary>
+	/// 調整対象
+	/// </summary>
+	USceneComponent* Target;
 
 	/// <summary>
 	/// 基本座標(相対位置)

@@ -25,11 +25,11 @@ void UBikeAdjusterComponent::BeginPlay()
 
 	// ...
 	Offset = LoadBikeOffset();
-	USceneComponent* SceneComp = GetOwner()->FindComponentByTag<USceneComponent>(BikeTag);
-	if (!SceneComp)
+	Target = GetOwner()->FindComponentByTag<USceneComponent>(BikeTag);
+	if (!Target)
 		return;
-	BaseLocation = SceneComp->GetRelativeLocation();
-	IsNeedHide = SceneComp->bHiddenInGame;
+	BaseLocation = Target->GetRelativeLocation();
+	IsNeedHide = Target->bHiddenInGame;
 }
 
 // Called every frame
@@ -40,24 +40,91 @@ void UBikeAdjusterComponent::BeginPlay()
 //	// ...
 //}
 
+bool UBikeAdjusterComponent::CanAdjust() const
+{
+	return Target != nullptr;
+}
+
+void UBikeAdjusterComponent::StartAdjustment()
+{
+	if (Target)
+	{
+		Target->SetHiddenInGame(false);
+	}
+}
+
 void UBikeAdjusterComponent::SetHeight(float Amount)
 {
 	Offset.Z += Amount;
+	UpdateBikeLocation();
+}
+
+void UBikeAdjusterComponent::ResetHeightOffset()
+{
+	Offset.Z = 0;
+	UpdateBikeLocation();
+}
+
+float UBikeAdjusterComponent::GetHeight()
+{
+	return Offset.Z;
 }
 
 void UBikeAdjusterComponent::SetForwardLocation(float Amount)
 {
 	Offset.X += Amount;
+	UpdateBikeLocation();
+}
+
+void UBikeAdjusterComponent::ResetForwardOffset()
+{
+	Offset.X = 0;
+	UpdateBikeLocation();
+}
+
+float UBikeAdjusterComponent::GetForward()
+{
+	return Offset.X;
 }
 
 void UBikeAdjusterComponent::ResetOffset()
 {
 	Offset = FVector::ZeroVector;
+	UpdateBikeLocation();
 }
 
 FVector UBikeAdjusterComponent::GetAdjustedLocation() const
 {
 	return BaseLocation + Offset;
+}
+
+void UBikeAdjusterComponent::FinishAdjustment()
+{
+	SaveBikeOffset();
+	if (Target)
+	{
+		if (GetNeedHideAfter())
+		{
+			Target->SetHiddenInGame(true);
+		}
+	}
+}
+
+FVector UBikeAdjusterComponent::LoadBikeOffset()
+{
+	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	if (!GameInstance)
+		return FVector::ZeroVector;
+
+	return GameInstance->GetBikeOffset();
+}
+
+void UBikeAdjusterComponent::UpdateBikeLocation()
+{
+	if (Target)
+	{
+		Target->SetRelativeLocation(BaseLocation + Offset);
+	}
 }
 
 bool UBikeAdjusterComponent::GetNeedHideAfter() const
@@ -72,13 +139,4 @@ void UBikeAdjusterComponent::SaveBikeOffset()
 		return;
 
 	GameInstance->SetBikeOffset(Offset);
-}
-
-FVector UBikeAdjusterComponent::LoadBikeOffset()
-{
-	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
-	if (!GameInstance)
-		return FVector::ZeroVector;
-
-	return GameInstance->GetBikeOffset();
 }

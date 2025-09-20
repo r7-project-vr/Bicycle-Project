@@ -152,7 +152,10 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
 	// 破棄してACharacterのCharacterMovementを利用します
 	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+	// 入力した方向をキャラクターの向きに合わせる
+	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
 	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);
 

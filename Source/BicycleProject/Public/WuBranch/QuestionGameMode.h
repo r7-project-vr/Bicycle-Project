@@ -38,8 +38,9 @@ public:
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">解答</param>
+	/// <returns>true: 正解, false: 不正解</returns>
 	UFUNCTION(BlueprintCallable)
-	void CheckAnswer(int32 questionID, int32 answer);
+	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
 	/// 正解した答えの数をゲット
@@ -56,6 +57,14 @@ public:
 	int GetWrongNumber() const;
 
 	/// <summary>
+	/// 答え済みか
+	/// </summary>
+	/// <param name="QuestionID">クイズID</param>
+	/// <returns>true: 回答済み, false: 未回答</returns>
+	UFUNCTION(BlueprintCallable)
+	bool IsAnswered(int32 QuestionID);
+
+	/// <summary>
 	/// ゲームオーバーのチェック
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
@@ -70,7 +79,7 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
 	
 	UPROPERTY(BlueprintAssignable)
-	FUpdateAnswerRateUIDelegate onUpdateAnswerUIDelegate;
+	FUpdateAnswerRateUIDelegate OnUpdateAnswerUIDelegate;
 
 protected:
 
@@ -78,6 +87,13 @@ protected:
 	void GameOver(bool isFinish);
 
 private:
+
+	enum QuestionGameState
+	{
+		Playing,
+		Successed,
+		Failed,
+	};
 
 	/// <summary>
 	/// ゲーム中に使う全部の問題を一気にゲット
@@ -92,8 +108,9 @@ private:
 	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
-	/// <param name="levelName">レベル名</param>
-	void ChangeLevel(FString levelName = "");
+	/// <param name="IsSucc">クリアしたか</param>
+	UFUNCTION()
+	void ChangeLevel(bool IsSucc);
 
 	/// <summary>
 	/// すべての問題を無効にする
@@ -120,11 +137,10 @@ private:
 	/// </summary>
 	class AQuestionManager* _questionManager;
 
-
 	/// <summary>
 	/// 問題
 	/// </summary>
-	TArray<FQuestion> _questions;
+	TArray<FQuestion*> _questions;
 
 	/// <summary>
 	/// 問題のインデックス
@@ -157,4 +173,33 @@ private:
 	/// 間違ってる数
 	/// </summary>
 	int _wrongNum;
+
+	/// <summary>
+	/// 今のゲーム状態
+	/// </summary>
+	QuestionGameState CurrentState;
+
+	/// <summary>
+	/// クリアした後に行くマップ
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<UWorld> LoadSuccLevel;
+
+	/// <summary>
+	/// 失敗した後に行くマップ
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSoftObjectPtr<UWorld> LoadFailLevel;
+
+	/// <summary>
+	/// 正解のSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USoundBase* CorrectSound;
+
+	/// <summary>
+	/// 間違ったのSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	USoundBase* WrongSound;
 };

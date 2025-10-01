@@ -9,15 +9,19 @@
 #include <WuBranch/Bike/BikeComponent.h>
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 #include <WuBranch/QuestionGameMode.h>
+#include "WuBranch/Actor/Component/AnimalManagerComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
+	: IsOverSpeed(false)
+	, IsPause(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
-	AddInstanceComponent(_bike);
+
+	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -39,14 +43,24 @@ void ABikeCharacter::BeginPlay()
 	//_isRotate = false;
 	_targetRotator = FRotator::ZeroRotator;
 	//_handlebarsAngle = 0.0f;
+	IsOverSpeed = false;
+	IsPause = false;
 }
 
 // Called every frame
 void ABikeCharacter::Tick(float DeltaTime)
 {
+	if (IsPause)
+		return;
+
 	Super::Tick(DeltaTime);
 	
 	RotateBike(DeltaTime);
+
+	if (CheckOverSpeed())
+	{
+		IsOverSpeed = true;
+	}
 }
 
 // Called to bind functionality to input
@@ -54,19 +68,57 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
-	if (!gameInstance)
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	if (!GameInstance)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
 	}
 	else
 	{
-		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-		deviceManager->ChangeDevice(EDeviceType::UESupportDevice);
-		deviceManager->BindMoveEvent(_bike, "OnMove");
-		deviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
-		deviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
+		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
+		DeviceManager->CreateAllDevices();
+		DeviceManager->BindMoveEvent(_bike, "OnMove");
+		DeviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
+		DeviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
 	}
+}
+
+void ABikeCharacter::Pause_Implementation()
+{
+	IsPause = true;
+	if (!_bike->GetIsAutoPlay())
+	{
+		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		if (GameInstance)
+		{
+			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
+			{
+				DeviceManager->DisableDefaultActions();
+			}
+		}
+		_bike->ReduceVelocityTo0();
+	}
+}
+
+void ABikeCharacter::ReStart_Implementation()
+{
+	IsPause = false;
+	if (!_bike->GetIsAutoPlay())
+	{
+		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		if (GameInstance)
+		{
+			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
+			{
+				DeviceManager->EnableDefaultActions();
+			}
+		}
+	}
+}
+
+bool ABikeCharacter::IsPause_Implementation()
+{
+	return IsPause;
 }
 
 void ABikeCharacter::ChangeBikeMesh()
@@ -109,6 +161,16 @@ UBikeComponent* ABikeCharacter::GetBikeComponent()
 	return _bike;
 }
 
+bool ABikeCharacter::HasOverSpeed() const
+{
+	return IsOverSpeed;
+}
+
+void ABikeCharacter::ResetOverSpeed()
+{
+	IsOverSpeed = false;
+}
+
 void ABikeCharacter::LoadBikeMesh()
 {	
 	if (_bikeSkeletalNeedLoad)
@@ -142,12 +204,12 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		_handlebarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
-		if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
-		{
+		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
+		//{
 			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 			UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 			deviceManager->EnableDefaultActions();
-		}
+		//}
 		return;
 	}
 
@@ -159,3 +221,8 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	_handlebarsAngle = FMath::FInterpTo(_handlebarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
 }
 
+bool ABikeCharacter::CheckOverSpeed() const
+{
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
+}

@@ -26,13 +26,12 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-
 	_questionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
 
 	_correctNum = 0;
 	_wrongNum = 0;
 	_questionIndex = 0;
+	CurrentState = QuestionGameState::Playing;
 
 	GetAllQuestions();
 }
@@ -42,77 +41,108 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 	if (_player && passedActor == _player)
 	{
 		// 自転車への制御を強制的にオフにする
-		if (_playerController)
+		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		GameInstance->GetDeviceManager()->DisableDefaultActions();
+		GameInstance->GetDeviceManager()->DisConnectAllDevices();
+		/*if (_playerController)
 		{
 			_playerController->SetPlayerEnabledState(false);
-		}
+		}*/
 		_player->GetBikeComponent()->ReduceVelocityTo0();
 
+		if (CurrentState == QuestionGameState::Playing)
+			return;
+
 		// ゴールに到達したらゲームクリア
-		GameOver(true);
+		//GameOver(true);
 
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
-		/*FTimerDelegate timerDelegate;
-		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		FTimerDelegate timerDelegate;
+		if(CurrentState == QuestionGameState::Successed)
+			timerDelegate.BindUFunction(this, "ChangeLevel", true);
+		else if (CurrentState == QuestionGameState::Failed)
+			timerDelegate.BindUFunction(this, "ChangeLevel", false);
 		FTimerHandle timerHandle;
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
 	}
 }
 
-void AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
+bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
-	bool result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
-	// 正解と不正解の数を計算
-	if (result)
+	bool Result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
+	
+	if (Result)
+	{
+		// 正解の数を計算
 		_correctNum++;
+		// SE
+		UGameplayStatics::PlaySound2D(GetWorld(), CorrectSound);
+	}
 	else
+	{
+		// 不正解の数を計算
 		_wrongNum++;
-
+		// SE
+		UGameplayStatics::PlaySound2D(GetWorld(), WrongSound);
+	}
+	
 	// 答えを保存
 	// 問題IDがquestionIDの問題を見つける
-	FQuestion* question = _questions.FindByPredicate([questionID](const FQuestion& question) {
-		return question.ID == questionID;
+	FQuestion* Question = *_questions.FindByPredicate([questionID](const FQuestion* question) {
+		return question->ID == questionID;
 	});
-	if (question)
+	if (Question)
 	{
-		question->PlayerAnswer = answer;
+		Question->PlayerAnswer = answer;
 	}
 
 	// UI更新
 	UpdateAnswerUI();
-	//UKismetSystemLibrary::PrintString(this, "correct: " + FString::FromInt(_correctNum) + ", wrong: " + FString::FromInt(_wrongNum), true, false, FColor::Blue, 10.f);
 
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// ゲームオーバー
 	if (IsGameFailed())
 	{
+		CurrentState = QuestionGameState::Failed;
 		// UIの表示
 		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
 		// デフォルト入力を無効
-		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-		gameInstance->GetDeviceManager()->DisableDefaultActions();
+		//GameInstance->GetDeviceManager()->DisableDefaultActions();
+		//GameInstance->GetDeviceManager()->DisConnectAllDevices();
 		// すべての問題を無効にする
 		DisableAllQuestions();
-		// エフェクト
-
+		// クイズを記録
+		GameInstance->SaveQuizsForResult(_questions);
+		// 結果を記録
+		GameInstance->SetGameResult(false);
+		// ゴールをプレイヤーの進行先に置く
+		PlaceGoal(questionID);
+		
 		//5秒後に次の世界に行く
 		// 注意!!レベル名は間違わないように!!
 		/*FTimerDelegate timerDelegate;
-		timerDelegate.BindUFunction(this, FName("ChangeLevel"), "TestMap");
+		timerDelegate.BindUFunction(this, FName("ChangeLevel"), false);
 		FTimerHandle timerHandle;
 		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);*/
 	}
 	// ゲームクリア
 	else if (IsGameClear())
 	{
+		CurrentState = QuestionGameState::Successed;
 		// ゲームクリア
 		UKismetSystemLibrary::PrintString(this, "GameClear!", true, false, FColor::Green, 10.f);
 		// すべての問題を無効にする
 		DisableAllQuestions();
+		// クイズを記録
+		GameInstance->SaveQuizsForResult(_questions);
+		// 結果を記録
+		GameInstance->SetGameResult(true);
 		// ゴールをプレイヤーの進行先に置く
 		PlaceGoal(questionID);
 	}
+	return Result;
 }
 
 int AQuestionGameMode::GetCurrectNumber() const
@@ -135,7 +165,7 @@ void AQuestionGameMode::GetAllQuestions()
 	}
 
 	// 問題の総数はゲームオーバーになる不正解数とゲームクリアになる正解数の合計
-	_questions = _questionManager->GetRandomQuestions(_failCondition + _successCondition);
+	_questions = _questionManager->GetQuizs(_failCondition + _successCondition);
 	if (_questions.Num() <= 0)
 		UE_LOG(LogTemp, Error, TEXT("Get questions failed!!"));
 }
@@ -144,9 +174,21 @@ FQuestion* AQuestionGameMode::GetQuestion()
 {
 	if (_questions.Num() > 0)
 	{
-		return &_questions[_questionIndex++];
+		return _questions[_questionIndex++];
 	}
 	return nullptr;
+}
+
+bool AQuestionGameMode::IsAnswered(int32 QuestionID)
+{
+	FQuestion* Question = *_questions.FindByPredicate([QuestionID](const FQuestion* question) {
+		return question->ID == QuestionID;
+		});
+	if (Question)
+	{
+		return Question->PlayerAnswer != -1;
+	}
+	return false;
 }
 
 bool AQuestionGameMode::IsGameFailed() const
@@ -161,26 +203,31 @@ bool AQuestionGameMode::IsGameClear() const
 
 void AQuestionGameMode::UpdateAnswerUI()
 {
-	onUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
+	OnUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
 }
 
-void AQuestionGameMode::ChangeLevel(FString levelName)
+void AQuestionGameMode::ChangeLevel(bool IsSucc)
 {
-	// 今の世界を再読み込み
-	if (levelName.Len() != 0)
+	// クリア
+	if (IsSucc)
 	{
-		// レベルが存在するかどうかをチェック
-		UGameplayStatics::OpenLevel(GetWorld(), FName(levelName));
+		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadSuccLevel);
+	}
+	// 失敗
+	else
+	{
+		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadFailLevel);
 	}
 }
 
 void AQuestionGameMode::DisableAllQuestions()
 {
-	for (AActor* actor : _questionActors)
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
+	for (AActor* Actor : _questionActors)
 	{
-		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
+		if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(Actor))
 		{
-			question->DisableFeature();
+			Question->DisableFeature();
 		}
 	}
 }
@@ -188,48 +235,46 @@ void AQuestionGameMode::DisableAllQuestions()
 void AQuestionGameMode::PlaceGoal(int32 questionID)
 {
 	// 地図上のゴールを探す
-	TArray<AActor*> goals;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), goals);
-	if (goals.Num() <= 0)
+	TArray<AActor*> Goals;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEndPosition::StaticClass(), Goals);
+	if (Goals.Num() <= 0)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Did not find Goal!!"));
 		return;
 	}
-		
 
-	AActor* goal = goals[0];
+	AActor* Goal = Goals[0];
 	// 問題を特定
-	AQuestionUIActor* target = nullptr;
+	AQuestionUIActor* Target = nullptr;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AQuestionUIActor::StaticClass(), _questionActors);
-	for (AActor* actor : _questionActors)
+	for (AActor* Actor : _questionActors)
 	{
-		if (AQuestionUIActor* question = Cast<AQuestionUIActor>(actor))
+		if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(Actor))
 		{
-			if (UOptionUIWidget* questionUI = Cast<UOptionUIWidget>(question->GetWidgetComponent()->GetWidget()))
+			if (UOptionUIWidget* QuestionUI = Cast<UOptionUIWidget>(Question->GetWidgetComponent()->GetWidget()))
 			{
 				// UIからもらったquestionIDと比べて目標となっているアクターをゲット
-				if (questionUI->GetQuestionID() == questionID)
+				if (QuestionUI->GetQuestionID() == questionID)
 				{
-					target = question;
+					Target = Question;
 					break;
 				}
 			}
 		}
 	}
-	if (!target)
+	if (!Target)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Did not find Question Actor!!"));
 		return;
 	}
 	// 問題の出口の位置と向きをゲット
 	FVector startLocation, forward;
-	if (target->GetExitLocationAndForward(startLocation, forward))
+	if (Target->GetExitLocationAndForward(startLocation, forward))
 	{
 		// ゴールを進行先に置く
 		float distance = 5000.0f;
-		startLocation.Z = 0.f;
-		goal->SetActorLocation(startLocation + forward * distance);
-		goal->SetActorRotation(forward.Rotation());
+		startLocation.Z = 100.f;
+		Goal->SetActorLocation(startLocation + forward * distance);
+		Goal->SetActorRotation((forward * -1).Rotation());
 	}
-
 }

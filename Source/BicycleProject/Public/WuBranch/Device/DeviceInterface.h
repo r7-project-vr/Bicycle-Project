@@ -81,7 +81,7 @@ public:
 	/// <summary>
 	/// デバイスとの接続状態を取得
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>接続状態</returns>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	EDeviceConnectType GetConnectState();
 

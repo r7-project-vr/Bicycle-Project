@@ -78,6 +78,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAutoPlay() const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateAutoPlayDelegate, bool, IsAutoPlay);
+	/// <summary>
+	/// オートプレイ
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateAutoPlayDelegate OnUpdateAutoPlayEvent;
+
+	/// <summary>
+	/// オートプレイの際に指定された位置についたの通知
+	/// </summary>
+	/// <param name=""></param>
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArriveLocationDelegate, UBikeComponent*, Bike);
+	FArriveLocationDelegate OnArrivedLocationEvent;
+
 	/// <summary>
 	/// オートプレイする時同期したい座標
 	/// </summary>
@@ -89,6 +103,12 @@ public:
 	/// </summary>
 	/// <param name="dir">曲がりたい方向</param>
 	void HandleSelectAnswer(FRotator dir);
+
+	/// <summary>
+	/// コインを手に入れた
+	/// </summary>
+	/// <param name="Amount">数</param>
+	void AddCoins(int Amount);
 
 private:
 
@@ -119,6 +139,18 @@ private:
 	/// 今踏んでいるマップを探す
 	/// </summary>
 	ATile* FindCurrentTile();
+
+	/// <summary>
+	/// コインの処理
+	/// </summary>
+	/// <param name="Result">クイズの結果</param>
+	/// <param name="NeedBonus">ボーナスを加算するか</param>
+	void HandleCoin(bool Result, bool NeedBonus);
+
+	/// <summary>
+	/// オートプレイの更新を通知
+	/// </summary>
+	void NotifyAutoPlay();
 
 	/// <summary>
 	/// スピード
@@ -156,4 +188,15 @@ private:
 	/// 問題アクター
 	/// </summary>
 	AQuestionUIActor* _questionActor;
+
+	/// <summary>
+	/// クイズごと手に入れたコイン
+	/// </summary>
+	int CoinsOfQuiz;
+
+	/// <summary>
+	/// ボーナスコイン
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int BonusCoin;
 };

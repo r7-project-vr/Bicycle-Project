@@ -16,6 +16,7 @@
 
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
+	: CoinsOfQuiz(0)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -36,6 +37,7 @@ void UBikeComponent::BeginPlay()
 	// ...
 
 	_isAutoPlay = false;
+	CoinsOfQuiz = 0;
 }
 
 // Called every frame
@@ -47,8 +49,17 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (_isAutoPlay)
 	{
-		FVector deltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
-		GetOwner()->SetActorLocation(deltaPos);
+		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
+		{
+			// 目標地点についたら通知
+			OnArrivedLocationEvent.Broadcast(this);
+		}
+		else
+		{
+			// 目標地点に移動
+			FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+			GetOwner()->SetActorLocation(DeltaPos);
+		}
 	}
 	else
 	{
@@ -70,12 +81,14 @@ void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
 	_isAutoPlay = true;
 	_questionActor = actor;
+	NotifyAutoPlay();
 }
 
 void UBikeComponent::DisableAutoPlay()
 {
 	_isAutoPlay = false;
 	_questionActor = nullptr;
+	NotifyAutoPlay();
 }
 
 bool UBikeComponent::GetIsAutoPlay() const
@@ -90,16 +103,21 @@ void UBikeComponent::SetSynchPos(FVector pos)
 
 void UBikeComponent::HandleSelectAnswer(FRotator dir)
 {
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	// 曲がる
-	Cast<ABikeCharacter>(GetOwner())->SetTurningAngle(dir);
+	Character->SetTurningAngle(dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswerAction();
 	// UI補助線を表示しない
-	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	if (character)
+	if (Character)
 	{
-		character->DisableHintLine();
+		Character->DisableHintLine();
 	}
+}
+
+void UBikeComponent::AddCoins(int Amount)
+{
+	CoinsOfQuiz += Amount;
 }
 
 void UBikeComponent::HandleInertia(float DeltaTime)
@@ -118,23 +136,28 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
-	//UKismetSystemLibrary::PrintString(this, "Recieve Move input: " + direction.ToString(), true, false, FColor::Green, 10.f);
-
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
 	FVector dir = FVector::ZeroVector;
 	// バックさせない
-	FVector2D bikeDir = direction;
-	if (bikeDir.X < 0)
-		bikeDir.X = 0;
-	dir = actorForward * bikeDir.X + actorRight * bikeDir.Y;
+	FVector BikeDir = FVector(direction.X, direction.Y, 0.f);
+	if (BikeDir.X < 0)
+		BikeDir.X = 0;
+	dir = actorForward * BikeDir.X + actorRight * BikeDir.Y;
+
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 
 	// 移動
-	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので破棄してACharacterのCharacterMovementを利用します
-	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	character->AddMovementInput(actorForward, bikeDir.X);
-	character->AddMovementInput(actorRight, bikeDir.Y);
+	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
+	// 破棄してACharacterのCharacterMovementを利用します
+	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+	// 入力した方向をキャラクターの向きに合わせる
+	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
+	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
+	//Character->AddMovementInput(actorForward, BikeDir.X);
+	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * _speed;
@@ -152,8 +175,15 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	//出口まで誘導
 	_questionActor->UseLeftExit();
 	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(questionID, answer);
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// 正解か不正解を表示
+	_questionActor->SetResult(0, Result);
+	// コインの処理
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+	HandleCoin(Result, !Character->HasOverSpeed());
+	// 超速の記録をリセット
+	Character->ResetOverSpeed();
 	// マップの生成
 	SpawnMap(true);
 }
@@ -166,20 +196,26 @@ void UBikeComponent::OnSelectRightAnswer()
 
 void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 {
-	
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
 	_questionActor->UseRightExit();
 	//答え合わせ
-	AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	gameMode->CheckAnswer(questionID, answer);
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	bool Result = GameMode->CheckAnswer(questionID, answer);
+	// 正解か不正解を表示
+	_questionActor->SetResult(1, Result);
+	// コインの処理
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+	HandleCoin(Result, !Character->HasOverSpeed());
+	// 超速の記録をリセット
+	Character->ResetOverSpeed();
 	// マップの生成
 	SpawnMap(false);
 }
 
 void UBikeComponent::DisableSelectAnswerAction()
 {
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
+	UMyGameInstance* gameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
 	deviceManager->DisableSelectAnswerActions();
 }
@@ -214,3 +250,23 @@ ATile* UBikeComponent::FindCurrentTile()
 	return nullptr;
 }
 
+void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
+{
+	// クイズを正解した褒美
+	if (Result)
+		AddCoins(1);
+	// ボーナス
+	if (NeedBonus)
+		AddCoins(BonusCoin);
+	// 保存
+	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+		GameInstance->AddCoins(CoinsOfQuiz);
+	// リセット
+	CoinsOfQuiz = 0;
+}
+
+void UBikeComponent::NotifyAutoPlay()
+{
+	OnUpdateAutoPlayEvent.Broadcast(_isAutoPlay);
+}

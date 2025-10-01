@@ -11,7 +11,8 @@ class UInputAction;
 struct FInputActionValue;
 
 /**
- * 
+ * キーボードの入力なので、プラットフォームがウィンドウズの場合、既に繋がっている状態がデフォルトとして認識します
+ * 他のプラットフォームだったら、有線か無線で繋がっているかどうかの判断が必要です
  */
 UCLASS()
 class BICYCLEPROJECT_API UKeyboardDevice : public UDevice
@@ -24,13 +25,17 @@ public:
 
 	virtual void Init() override;
 
-	void EnableDefaultActions_Implementation() override;
+	virtual bool Connect() override;
 
-	void DisableDefaultActions_Implementation() override;
+	virtual bool Disconnect() override;
 
-	void EnableSelectAnswerActions_Implementation() override;
+	void EnableMoveAction_Implementation() override;
 
-	void DisableSelectAnswerActions_Implementation() override;
+	void DisableMoveAction_Implementation() override;
+
+	void EnableSelectAnswerAction_Implementation() override;
+
+	void DisableSelectAnswerAction_Implementation() override;
 
 private:
 
@@ -60,30 +65,30 @@ private:
 	/// <summary>
 	/// プレイヤーコントローラー
 	/// </summary>
-	APlayerController* _controller;
+	APlayerController* Controller;
 
 	/// <summary>
 	/// デフォルトアクションマップ
 	/// </summary>
-	UInputMappingContext* _defaultMap;
+	UInputMappingContext* DefualtMap;
 
 	/// <summary>
 	/// 答えを選択するアクションマップ
 	/// </summary>
-	UInputMappingContext* _answerSelectMap;
+	UInputMappingContext* AnswerSelectMap;
 
 	/// <summary>
 	/// 移動アクション
 	/// </summary>
-	UInputAction* _moveAction;
+	UInputAction* MoveAction;
 
 	/// <summary>
 	/// 左の答えを選択するアクション
 	/// </summary>
-	UInputAction* _selectLeftAction;
+	UInputAction* SelectLeftAction;
 
 	/// <summary>
 	/// 右の答えを選択するアクション
 	/// </summary>
-	UInputAction* _selectRightAction;
+	UInputAction* SelectRightAction;
 };

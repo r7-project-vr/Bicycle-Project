@@ -8,6 +8,10 @@
 
 class ATileManager;
 class UBoxComponent;
+class URandomFoliageSpawner;
+class UEnvironmentalObjectComponent;
+class UCoinSpawnerComponent;
+class UWildAnimalManagerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ATile : public AActor
@@ -49,6 +53,14 @@ public:
 	void DestroyAll();
 	// 2025.08.01 ウー end
 
+	// 2025.08.19 ウー start
+	/// <summary>
+	/// 環境物の生成を開始する
+	/// </summary>
+	/// <param name="Seed">フォリッジのランダムシード</param>
+	void SpawnEnvironmentals(int Seed);
+	// 2025.08.19 ウー end
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -60,7 +72,6 @@ private:
 		AActor* Other, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep,
 		const FHitResult& Sweep);
-
 
 	UPROPERTY()
 	ATileManager* TileManager = nullptr;
@@ -89,4 +100,37 @@ private:
 	AQuestionUIActor* QuestionUI;
 	// 2025.08.01 ウー end
 
+	// 2025.08.18 ウー start
+	
+	/// <summary>
+	/// フォリッジ生成者
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	URandomFoliageSpawner* FoliageSpawner = nullptr;
+
+	/// <summary>
+	/// 建物
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<UEnvironmentalObjectComponent*> Buildings;
+	// 2025.08.18 ウー end
+
+	// 2025.08.28 ウー start
+	
+	/// <summary>
+	/// コイン生成者
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCoinSpawnerComponent* CoinSpawner;
+	// 2025.08.28 ウー end
+
+	// 2025.09.16 ウー start
+
+	/// <summary>
+	/// 野良動物生成者
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWildAnimalManagerComponent* WildAnimalManager;
+	
+	// 2025.09.16 ウー end
 };

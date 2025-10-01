@@ -9,6 +9,8 @@
 
 class UBikeComponent;
 class USplineComponent;
+struct FQuestion;
+class UBoxComponent;
 
 /**
  * 
@@ -31,11 +33,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/// <summary>
-	/// 問題資料を設置
-	/// </summary>
-	void SetProblem();
-
-	/// <summary>
 	/// 左出口から出る
 	/// </summary>
 	void UseLeftExit();
@@ -48,7 +45,8 @@ public:
 	/// <summary>
 	/// 回答状況を取得
 	/// </summary>
-	/// <returns>true: はい, false: いいえ</returns>
+	/// <returns>true: 回答済み, false: 未回答</returns>
+	UFUNCTION(BlueprintCallable)
 	bool GetAnsweredStatus() const;
 
 	/// <summary>
@@ -70,13 +68,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Snap")
 	USceneComponent* SnapPoint;
 
-	struct FQuestion* GetNowQuestion();
+	/// <summary>
+	/// クイズをもらう
+	/// </summary>
+	void GetQuestionFromManger();
+
+	/// <summary>
+	/// クイズをゲット
+	/// </summary>
+	/// <returns></returns>
+	FQuestion* GetNowQuestion();
 
 	FVector GetSnapLocation() const;
 	FRotator GetSnapRotation() const;
 
 	virtual FVector GetSnapLocation_Implementation() const override;
 	virtual FRotator GetSnapRotation_Implementation() const override;
+
+	/// <summary>
+	/// 結果を設定
+	/// </summary>
+	/// <param name="AnswerIndex">答えのインデックス</param>
+	/// <param name="Result">結果</param>
+	void SetResult(int AnswerIndex, bool Result);
 
 private:
 
@@ -95,6 +109,23 @@ private:
 		const FHitResult& SweepResult);
 
 	/// <summary>
+	/// 停車エリアを出たら
+	/// </summary>
+	UFUNCTION()
+	void OnOverlapEndParkingArea(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	/// <summary>
+	/// クイズUIにデータを渡す
+	/// </summary>
+	void SetQuiz();
+
+	/// <summary>
+	/// クイズの入り口についた
+	/// </summary>
+	UFUNCTION()
+	void OnArrivedEnterLocation(UBikeComponent* Bike);
+
+	/// <summary>
 	/// オートプレイ対象を一旦記録して
 	/// </summary>
 	/// <param name="target"></param>
@@ -106,11 +137,6 @@ private:
 	void LeadToExit(float DeltaTime);
 
 	/// <summary>
-	/// 状況を更新する
-	/// </summary>
-	void UpdateStatus();
-
-	/// <summary>
 	/// コリジョンを無効
 	/// </summary>
 	void DisableCollision();
@@ -118,7 +144,14 @@ private:
 	/// <summary>
 	/// 一時停車領域
 	/// </summary>
-	class UBoxComponent* _temporaryParkingArea;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* _temporaryParkingArea;
+
+	/// <summary>
+	/// 掲示板
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* MessageBoard;
 
 	/// <summary>
 	/// オートプレイ対象
@@ -165,9 +198,7 @@ private:
 	bool _isAnswered;
 
 	/// <summary>
-	/// ゲーム終了したか
+	/// クイズ
 	/// </summary>
-	bool _isGameFinished;
-
-	FQuestion* _questionTmp;
+	FQuestion* Question;
 };

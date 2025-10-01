@@ -57,5 +57,10 @@ private:
 
 	void SpawnTileAtSocket(ATile* BaseTile, FName DirSocket);
 	
-
+	// 2025.08.18 ウー start
+	/// <summary>
+	/// Tileの数
+	/// </summary>
+	int TileCount;
+	// 2025.08.18 ウー end
 };

@@ -3,13 +3,16 @@
 
 #include "WuBranch/Actor/Component/EnvironmentalObjectComponent.h"
 #include "Engine/StaticMeshActor.h"
+#include "Engine/AssetManager.h"
+#include <Engine/StreamableManager.h>
 
 // Sets default values for this component's properties
 UEnvironmentalObjectComponent::UEnvironmentalObjectComponent()
+	: EnvironmentalObject(nullptr)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	//PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -21,17 +24,29 @@ void UEnvironmentalObjectComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	CaculateTotalProbility();
-	CreateMesh(DecideMesh());
 }
 
 
 // Called every frame
-void UEnvironmentalObjectComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//void UEnvironmentalObjectComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//
+//	// ...
+//}
 
-	// ...
+void UEnvironmentalObjectComponent::StartSpawnEnvironmentalObject()
+{
+	CaculateTotalProbility();
+	LoadResource(DecideMesh());
+}
+
+void UEnvironmentalObjectComponent::DestroyEnvironmental()
+{
+	if (EnvironmentalObject)
+	{
+		EnvironmentalObject->Destroy();
+	}
 }
 
 void UEnvironmentalObjectComponent::CaculateTotalProbility()
@@ -52,7 +67,25 @@ void UEnvironmentalObjectComponent::CaculateTotalProbility()
 	}
 }
 
-void UEnvironmentalObjectComponent::CreateMesh(UStaticMesh* Target)
+void UEnvironmentalObjectComponent::LoadResource(TSoftObjectPtr<UStaticMesh> Target)
+{
+	if (Target.IsPending())
+	{
+		FStreamableManager& Streamable = UAssetManager::Get().GetStreamableManager();
+		Streamable.RequestAsyncLoad(Target.ToSoftObjectPath(), [this, Target]()
+			{
+				if (UStaticMesh* Building = Target.Get())
+					CreateBuilding(Building);
+			});
+	}
+	else
+	{
+		if(UStaticMesh* Building = Target.Get())
+			CreateBuilding(Building);
+	}
+}
+
+void UEnvironmentalObjectComponent::CreateBuilding(UStaticMesh* Target)
 {
 	if (!Target)
 	{
@@ -60,7 +93,6 @@ void UEnvironmentalObjectComponent::CreateMesh(UStaticMesh* Target)
 		return;
 	}
 
-	//GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Orange, FString::Printf(TEXT("Position: %s"), *GetComponentTransform().ToString()));
 	EnvironmentalObject = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), GetComponentTransform());
 	EnvironmentalObject->SetMobility(EComponentMobility::Stationary);
 	if (UStaticMeshComponent* MeshComp = EnvironmentalObject->GetStaticMeshComponent())
@@ -69,14 +101,14 @@ void UEnvironmentalObjectComponent::CreateMesh(UStaticMesh* Target)
 	}
 }
 
-UStaticMesh* UEnvironmentalObjectComponent::DecideMesh()
+TSoftObjectPtr<UStaticMesh> UEnvironmentalObjectComponent::DecideMesh()
 {
 	// １から合計確率までランダムで数値をゲット
 	int Target = FMath::RandRange(1, TotalProbility);
 	// 
 	auto ObjectsArray = EnvironmentalList.Array();
 	int Sum = 0;
-	UStaticMesh* Object = nullptr;
+	TSoftObjectPtr<UStaticMesh> Object = nullptr;
 	for (const auto& ObjectType : ObjectsArray)
 	{
 		Sum += ObjectType.Value;

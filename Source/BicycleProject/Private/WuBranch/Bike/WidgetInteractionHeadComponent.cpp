@@ -16,6 +16,9 @@ UWidgetInteractionHeadComponent::UWidgetInteractionHeadComponent(const FObjectIn
 	// 基本設定
 	TraceChannel = ECC_GameTraceChannel1;
 	InteractionDistance = 2000.0f;
+
+	Line = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Line"));
+	Line->SetupAttachment(this);
 }
 
 void UWidgetInteractionHeadComponent::BeginPlay()
@@ -23,6 +26,7 @@ void UWidgetInteractionHeadComponent::BeginPlay()
 	Super::BeginPlay();
 
 	OnHoveredWidgetChanged.AddDynamic(this, &UWidgetInteractionHeadComponent::OnHoverWidget);
+	DisableHintLine();
 }
 
 void UWidgetInteractionHeadComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -33,11 +37,13 @@ void UWidgetInteractionHeadComponent::TickComponent(float DeltaTime, ELevelTick 
 void UWidgetInteractionHeadComponent::EnableHintLine()
 {
 	bShowDebug = true;
+	Line->SetHiddenInGame(false);
 }
 
 void UWidgetInteractionHeadComponent::DisableHintLine()
 {
 	bShowDebug = false;
+	Line->SetHiddenInGame(true);
 }
 
 void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent)
@@ -61,7 +67,7 @@ void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComp
 		if (Question) {
 			if (!Question->GetAnsweredStatus())
 			{
-				Question->DisplayUI();	
+				Question->DisplayUI();
 				EnableHintLine();
 			}
 		}

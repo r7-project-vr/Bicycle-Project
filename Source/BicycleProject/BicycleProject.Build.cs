@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -7,10 +7,19 @@ public class BicycleProject : ModuleRules
 	public BicycleProject(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		// 共通
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "Foliage", "AIModule" });
+
+		// Windowsだけ
+        if (Target.Platform == UnrealTargetPlatform.Win64)
+			PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
+		// Androidだけ
+		else if(Target.Platform == UnrealTargetPlatform.Android)
+            PublicDependencyModuleNames.AddRange(new string[] { });
+			
+
+        PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

@@ -60,7 +60,8 @@ private:
 	/// 指定された数を生成
 	/// </summary>
 	/// <param name="Num">数</param>
-	void Spawn(int Num);
+	/// <param name="StartLocation">開始位置</param>
+	void Spawn(int Num, float StartLocation);
 
 	/// <summary>
 	/// コインの高さを更新
@@ -93,10 +94,22 @@ private:
 	FBox SpawnZone;
 
 	/// <summary>
-	/// 生成数
+	/// 生成始まる位置
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<EQuestionLevel, float> SpawnStartLocations;
+
+	/// <summary>
+	/// 各難易度の生成コイン数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TMap<EQuestionLevel, int> Amount;
+
+	/// <summary>
+	/// 生成回数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int SpawnTimes;
 
 	/// <summary>
 	/// 生成したコイン

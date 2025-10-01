@@ -141,17 +141,23 @@ void UBikeComponent::OnMove(FVector2D direction)
 	FVector actorRight = GetOwner()->GetActorRightVector();
 	FVector dir = FVector::ZeroVector;
 	// バックさせない
-	FVector2D bikeDir = direction;
-	if (bikeDir.X < 0)
-		bikeDir.X = 0;
-	dir = actorForward * bikeDir.X + actorRight * bikeDir.Y;
+	FVector BikeDir = FVector(direction.X, direction.Y, 0.f);
+	if (BikeDir.X < 0)
+		BikeDir.X = 0;
+	dir = actorForward * BikeDir.X + actorRight * BikeDir.Y;
+
+	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
 	// 破棄してACharacterのCharacterMovementを利用します
-	ABikeCharacter* character = Cast<ABikeCharacter>(GetOwner());
-	character->AddMovementInput(actorForward, bikeDir.X);
-	character->AddMovementInput(actorRight, bikeDir.Y);
+	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+	// 入力した方向をキャラクターの向きに合わせる
+	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
+	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
+	//Character->AddMovementInput(actorForward, BikeDir.X);
+	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
 	// 慣性を設定
 	_inertiaVelocity = dir.GetSafeNormal() * _speed;

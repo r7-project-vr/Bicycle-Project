@@ -30,7 +30,7 @@ void UCoinSpawnerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
@@ -60,7 +60,8 @@ void UCoinSpawnerComponent::Spawn(EQuestionLevel Level)
 		return;
 
 	int* Num = Amount.Find(Level);
-	Spawn(*Num);
+	float* StartLocation = SpawnStartLocations.Find(Level);
+	Spawn(*Num, *StartLocation);
 }
 
 void UCoinSpawnerComponent::DestroyCoin(ACoin* Coin)
@@ -92,19 +93,32 @@ void UCoinSpawnerComponent::CancelDelegate()
 	}
 }
 
-void UCoinSpawnerComponent::Spawn(int Num)
+void UCoinSpawnerComponent::Spawn(int Num, float StartLocation)
 {
+	if (!CoinTemplate)
+	{
+		return;
+	}
+	
 	for (int Index = 0; Index < Num; Index++)
 	{
-		// 位置決定
-		FVector LocalLocation = RandomStream.RandPointInBox(SpawnZone);
+		for(int Times = 0; Times < SpawnTimes; Times++)
+		{
+			// 位置決定
+			//FVector LocalLocation = RandomStream.RandPointInBox(SpawnZone);
+			FVector LocalLocation = FVector(0.f, 0.f, SpawnZone.Min.Z);
+			LocalLocation.X = StartLocation - Index * 2000.f - Times * 500.f;
 
-		// Locationは相対位置なので、アクターの位置と回転に
-		FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(LocalLocation);
+			// Locationは相対位置なので、アクターの位置と回転に
+			FVector WorldLocation = GetOwner()->GetActorTransform().TransformPosition(LocalLocation);
 
-		ACoin* Coin = GetWorld()->SpawnActor<ACoin>(CoinTemplate, WorldLocation, FRotator::ZeroRotator);
-		Coin->Init(this);
-		Coins.Add(Coin);
+			ACoin* Coin = GetWorld()->SpawnActor<ACoin>(CoinTemplate, WorldLocation, FRotator::ZeroRotator);
+			if (Coin)
+			{
+				Coin->Init(this);
+				Coins.Add(Coin);
+			}
+		}
 	}
 }
 

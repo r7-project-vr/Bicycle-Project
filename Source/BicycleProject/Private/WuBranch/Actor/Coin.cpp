@@ -39,8 +39,10 @@ void ACoin::BeginPlay()
 	IsRotating = false;
 	IsPause = false;
 	OnActorBeginOverlap.AddDynamic(this, &ACoin::OnOverlapBegin);
-	BaseLocation = GetActorLocation();
-	BaseRotation = GetActorRotation();
+	//BaseLocation = GetActorLocation();
+	//BaseRotation = GetActorRotation();
+	BaseLocation = Mesh->GetRelativeLocation();
+	BaseRotation = Mesh->GetRelativeRotation();
 }
 
 // Called every frame
@@ -121,7 +123,8 @@ void ACoin::PlayMoveAnimation(float DeltaTime)
 {
 	MoveCnt += DeltaTime;
 	FVector DeltaMove = FVector(0.f, 0.f, MoveDistanceForAnimation * FMath::Sin(MoveCnt));
-	SetActorLocation(BaseLocation + DeltaMove);
+	//SetActorLocation(BaseLocation + DeltaMove);
+	Mesh->SetRelativeLocation(BaseLocation + DeltaMove);
 }
 
 void ACoin::PlayRotateAnimation(float DeltaTime)
@@ -129,9 +132,10 @@ void ACoin::PlayRotateAnimation(float DeltaTime)
 	if (IsRotating)
 	{
 		RotateTimeCnt += DeltaTime;
-		float per = FMath::Clamp(RotateTimeCnt / RotationTime, 0.f, 1.f);
-		int Angle = FMath::Lerp(0, 360, per);
-		SetActorRotation(BaseRotation + FRotator(0, Angle, 0));
+		float Per = FMath::Clamp(RotateTimeCnt / RotationTime, 0.f, 1.f);
+		int Angle = FMath::Lerp(0, 360, Per);
+		Mesh->SetRelativeRotation(BaseRotation + FRotator(0, Angle, 0));
+		//SetActorRotation(BaseRotation + FRotator(0, Angle, 0));
 		if (Angle >= 360)
 		{
 			RotateTimeCnt = FMath::RandRange(RotationDelay.X, RotationDelay.Y);

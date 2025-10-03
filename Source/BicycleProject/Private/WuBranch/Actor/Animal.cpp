@@ -18,6 +18,8 @@ AAnimal::AAnimal()
 
 	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
 	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel4);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Block);
 }
 
 // Called when the game starts or when spawned

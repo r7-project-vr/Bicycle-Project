@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -26,29 +26,29 @@ class BICYCLEPROJECT_API IChoiceProvider
 public:
 
 	/// <summary>
-	/// ¶‚Ì“š‚¦‚ğ‘I‚ÔƒCƒxƒ“ƒg‚ğƒoƒCƒ“ƒh‚·‚é
+	/// å·¦ã®ç­”ãˆã‚’é¸ã¶ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
 	/// </summary>
-	/// <param name="object">ƒoƒCƒ“ƒh‚³‚ê‚½‚¢ŠÖ”‚ª‚ ‚éƒIƒuƒWƒFƒNƒg</param>
-	/// <param name="functionName">ŠÖ”–¼</param>
+	/// <param name="object">ãƒã‚¤ãƒ³ãƒ‰ã•ã‚ŒãŸã„é–¢æ•°ãŒã‚ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+	/// <param name="functionName">é–¢æ•°å</param>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	void BindSelectLeftEvent(UObject* object, FName functionName);
 
 	/// <summary>
-	/// ‰E‚Ì“š‚¦‚ğ‘I‚ÔƒCƒxƒ“ƒg‚ğƒoƒCƒ“ƒh‚·‚é
+	/// å³ã®ç­”ãˆã‚’é¸ã¶ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
 	/// </summary>
-	/// <param name="object">ƒoƒCƒ“ƒh‚³‚ê‚½‚¢ŠÖ”‚ª‚ ‚éƒIƒuƒWƒFƒNƒg</param>
-	/// <param name="functionName">ŠÖ”–¼</param>
+	/// <param name="object">ãƒã‚¤ãƒ³ãƒ‰ã•ã‚ŒãŸã„é–¢æ•°ãŒã‚ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ</param>
+	/// <param name="functionName">é–¢æ•°å</param>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	void BindSelectRightEvent(UObject* object, FName functionName);
 
 	/// <summary>
-	/// “š‚¦‚ğ‘I‚×‚é‚æ‚¤‚É‚·‚é
+	/// ç­”ãˆã‚’é¸ã¹ã‚‹ã‚ˆã†ã«ã™ã‚‹
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	void EnableSelectAnswerAction();
 
 	/// <summary>
-	/// “š‚¦‚ğ‘I‚×‚È‚¢‚æ‚¤‚É‚·‚é
+	/// ç­”ãˆã‚’é¸ã¹ãªã„ã‚ˆã†ã«ã™ã‚‹
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Device Interface")
 	void DisableSelectAnswerAction();

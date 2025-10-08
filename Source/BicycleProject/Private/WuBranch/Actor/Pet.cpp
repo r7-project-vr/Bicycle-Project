@@ -2,6 +2,7 @@
 
 
 #include "WuBranch/Actor/Pet.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include <Kismet/GameplayStatics.h>
 
 APet::APet()
@@ -35,18 +36,21 @@ void APet::DecideBehavior()
 	// 追う目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
 
+	float TargetVelocity = CurrentTarget.Get()->GetCharacterMovement()->Velocity.Length();
+
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
-		else if (Distance >= StartChaseDistance)
+		//else if (Distance >= StartChaseDistance)
+		else if(TargetVelocity > 0.f)
 		{
 			// 次の目標を決める
-			if (FMath::SRand() <= TargetChaseRate)
+			/*if (FMath::SRand() <= TargetChaseRate)
 				IsChaseTarget = true;
 			else
-				IsChaseTarget = false;
+				IsChaseTarget = false;*/
 			// 新しい偏移を設置
 			ChangeOffset(GetNewOffset());
 			CurrentState = BehaviorState::Chasing;

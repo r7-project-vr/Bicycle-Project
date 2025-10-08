@@ -3,7 +3,6 @@
 
 #include "WuBranch/Actor/Animal.h"
 #include "Components/CapsuleComponent.h"
-#include "WuBranch/Bike/BikeCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
 

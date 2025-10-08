@@ -40,11 +40,14 @@ namespace ASerialDataStruct {
 /**
  * 
  */
+ // 2025.08.06 ウー start
+//class ASerialPacket {
 UCLASS(BlueprintType)
 class ASERIALCOM_API UASerialPacket : public UObject
 {
     GENERATED_BODY()
 
+// 2025.08.06 end
 public:
     //===public定数===
     static const uint8_t MODE_DEVICE = 0;                   //デバイスモード

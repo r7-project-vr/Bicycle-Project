@@ -33,3 +33,6 @@ Icon?
 Content/WuBranch/Bike/Type3/Mesh/GigantRoad.fbx
 Content/Stylized_PBR_Nature/Maps/Asset_Scene.umap
 /Content/Stylized_PBR_Nature/Maps
+
+# Package file from Unreal
+Builds/

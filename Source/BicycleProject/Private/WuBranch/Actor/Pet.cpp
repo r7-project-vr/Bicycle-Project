@@ -2,6 +2,7 @@
 
 
 #include "WuBranch/Actor/Pet.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include <Kismet/GameplayStatics.h>
 
 APet::APet()
@@ -35,18 +36,21 @@ void APet::DecideBehavior()
 	// 追う目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
 
+	float TargetVelocity = CurrentTarget.Get()->GetCharacterMovement()->Velocity.Length();
+
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
 		if (Distance >= GiveUpDistance)
 			CurrentState = BehaviorState::GivingUp;
-		else if (Distance >= StartChaseDistance)
+		//else if (Distance >= StartChaseDistance)
+		else if(TargetVelocity > 0.f)
 		{
 			// 次の目標を決める
-			if (FMath::SRand() <= TargetChaseRate)
+			/*if (FMath::SRand() <= TargetChaseRate)
 				IsChaseTarget = true;
 			else
-				IsChaseTarget = false;
+				IsChaseTarget = false;*/
 			// 新しい偏移を設置
 			ChangeOffset(GetNewOffset());
 			CurrentState = BehaviorState::Chasing;
@@ -103,7 +107,7 @@ FVector APet::GetNewOffset()
 {
 	// 今プレイヤーの正面は0度になっている
 	// ランダムな角度(30度 ~ 120度, 240度 ~ 330度)
-	float Angles[4] = { (float)1 / 4 , (float)2 / 3, (float)4 / 3, (float)7 / 4 };
+	float Angles[4] = { (float)1 / 6, (float)5 / 12, (float)19 / 12, (float)11 / 6 };
 	// 左右をランダムで決める、左：［0, 0.5), 右: [0.5, 1)
 	int Side = FMath::RoundToInt(FMath::SRand());
 	float StartAngle = Angles[Side * 2];

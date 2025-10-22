@@ -11,6 +11,8 @@ UMyGameInstance::UMyGameInstance()
 	, IsClear(false)
 	, MaxRPM(100)
 	, StandardRPM(50)
+	, CenterRPM(50)
+	, RPMAcceptableRange(10)
 {
 	DeviceManager = nullptr;
 }
@@ -137,6 +139,12 @@ void UMyGameInstance::ResetStandardRPM()
 {
 	StandardRPM = 50;
 	NotifyUpdateStandardRPM();
+}
+
+void UMyGameInstance::AdjustCenterRPM(int Value)
+{
+	if(CenterRPM < MaxCenterRPM)
+		CenterRPM += Value;
 }
 
 void UMyGameInstance::NotifyUpdateStandardRPM()

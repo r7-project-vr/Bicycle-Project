@@ -203,6 +203,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FUpdateStandardRPMDelegate OnUpdateStandardRPM;
 
+	UFUNCTION(BlueprintCallable)
+	void AdjustCenterRPM(int Value);
+
 private:
 
 	/// <summary>
@@ -219,6 +222,22 @@ private:
 	/// 回転数の標準値
 	/// </summary>
 	int StandardRPM;
+
+	/// <summary>
+	/// 回転数の中央値
+	/// </summary>
+	int CenterRPM;
+
+	/// <summary>
+	/// 回転数の中央値の最大値
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int MaxCenterRPM;
+
+	/// <summary>
+	/// 許容範囲
+	/// </summary>
+	int RPMAcceptableRange;
 #pragma endregion
 	
 #pragma region ペット

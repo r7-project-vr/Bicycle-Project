@@ -144,5 +144,5 @@ private:
 	/// <summary>
 	/// 有線デバイスのバージョン
 	/// </summary>
-	int WiredDeviceVer = 0x01;
+	int WiredDeviceVer = 0x03;
 };

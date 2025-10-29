@@ -23,9 +23,10 @@ UBikeComponent::UBikeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	_speed = 50.0f;
+	Speed = 50.0f;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
+	bHasMovInput = false;
 }
 
 
@@ -61,11 +62,12 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			GetOwner()->SetActorLocation(DeltaPos);
 		}
 	}
-	else
+	else if(!bHasMovInput)
 	{
 		HandleInertia(DeltaTime);
 	}
 
+	bHasMovInput = false;
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
@@ -160,7 +162,8 @@ void UBikeComponent::OnMove(FVector2D direction)
 	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
 	// 慣性を設定
-	_inertiaVelocity = dir.GetSafeNormal() * _speed;
+	_inertiaVelocity = dir.GetSafeNormal() * Speed;
+	bHasMovInput = true;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()

@@ -120,6 +120,16 @@ private:
 	uint8_t RPSCmd = 0x22;
 
 	/// <summary>
+	/// 回転数コマンド
+	/// </summary>
+	uint8_t RevolutionsCmd = 0x24;
+
+	/// <summary>
+	/// 回転数をリゼットするコマンド
+	/// </summary>
+	uint8_t RevolutionsResetCmd = 0x25;
+
+	/// <summary>
 	/// RPMコマンドを送ったか
 	/// </summary>
 	bool HasSendRPMCmd = false;

@@ -17,12 +17,16 @@ UWidgetInteractionHeadComponent::UWidgetInteractionHeadComponent(const FObjectIn
 	TraceChannel = ECC_GameTraceChannel1;
 	InteractionDistance = 2000.0f;
 
-	OnHoveredWidgetChanged.AddDynamic(this, &UWidgetInteractionHeadComponent::OnHoverWidget);
+	Line = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Line"));
+	Line->SetupAttachment(this);
 }
 
 void UWidgetInteractionHeadComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnHoveredWidgetChanged.AddDynamic(this, &UWidgetInteractionHeadComponent::OnHoverWidget);
+	DisableHintLine();
 }
 
 void UWidgetInteractionHeadComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -33,36 +37,37 @@ void UWidgetInteractionHeadComponent::TickComponent(float DeltaTime, ELevelTick 
 void UWidgetInteractionHeadComponent::EnableHintLine()
 {
 	bShowDebug = true;
+	Line->SetHiddenInGame(false);
 }
 
 void UWidgetInteractionHeadComponent::DisableHintLine()
 {
 	bShowDebug = false;
+	Line->SetHiddenInGame(true);
 }
 
 void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent)
 {
 	// ゲーム終了した場合何もしない
-	AQuestionGameMode* questionGameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
+	AQuestionGameMode* QuestionGameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
 	// 2025.6.27 start tokumaru questionGameModeのnull参照対策
-	if (questionGameMode) {
+	if (QuestionGameMode) {
 	
-		if (questionGameMode->IsGameFailed() || questionGameMode->IsGameClear())
+		if (QuestionGameMode->IsGameFailed() || QuestionGameMode->IsGameClear())
 			return;
 	}
 	// 2025.6.27 end 
-
+	
 	// 前に隠しているウィジェットがあれば、表示させる
 	if(WidgetComponent)
 	{
 		//未回答の問題だけ表示する
-		AQuestionUIActor* question = Cast<AQuestionUIActor>(WidgetComponent->GetOwner());
+		AQuestionUIActor* Question = Cast<AQuestionUIActor>(WidgetComponent->GetOwner());
 		// 2025.6.27 start tokumaru questionGameModeのnull参照対策
-		if (question) {
-			if (!question->GetAnsweredStatus())
+		if (Question) {
+			if (!Question->GetAnsweredStatus())
 			{
-				UUserWidget* Widget = WidgetComponent->GetWidget();
-				Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				Question->DisplayUI();
 				EnableHintLine();
 			}
 		}

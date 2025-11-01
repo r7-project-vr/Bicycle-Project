@@ -1,12 +1,14 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#if PLATFORM_WINDOWS
 
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
 #include "HAL/RunnableThread.h"
 #include "ASerialLibControllerWin.h"
 #include "Containers/Queue.h"
+
 
 /**
  * 
@@ -142,3 +144,5 @@ private:
 	/// </summary>
 	bool NeedCheck = true;
 };
+
+#endif

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/TileManager.h"
@@ -8,6 +8,7 @@
 
 // Sets default values
 ATileManager::ATileManager()
+	: TileCount(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -19,17 +20,16 @@ void ATileManager::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("[TileManager] BeginPlay"));
-		
-	
-	
+	TileCount = 0;
 	if (StartingTile && TileClass)
 	{
 		// Pin the Start tile
 		VisitedTiles.Add(StartingTile);
 		StartingTile->SetManager(this);
+		StartingTile->SpawnEnvironmentals(TileCount);
 		//Create Left Right tiles
-		const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
-		SpawnTileAtSocket(StartingTile, DirSocket);
+		//const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+		//SpawnTileAtSocket(StartingTile, DirSocket);
 	}
 	
 }
@@ -38,18 +38,31 @@ void ATileManager::OnPlayerSteppedOnTile(ATile* NewTile)
 {
 	if (VisitedTiles.Contains(NewTile)) return;
 
+	// 2025.08.01 ウー start
 	VisitedTiles.Add(NewTile);
-	NewTile->SetManager(this);
+	//NewTile->SetManager(this);
 
-	const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
-	SpawnTileAtSocket(NewTile, DirSocket);
+	//const FName DirSocket = (PlayerChoice == 0 ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+	//SpawnTileAtSocket(NewTile, DirSocket);
+	// 2025.08.01 ウー end
 
 	if (VisitedTiles.Num() >= 3)
 	{
 		ATile* ToDelete = VisitedTiles[VisitedTiles.Num() - 3];
-		if (ToDelete) ToDelete->Destroy();
+		// 2025.08.07 ウー start
+		//if (ToDelete) ToDelete->Destroy();
+		if (ToDelete) ToDelete->DestroyAll();
+		// 2025.08.07 ウー end
 	}
 }
+
+// 2025.08.01 ウー start
+void ATileManager::SpawnNextMap(ATile* BaseTile, bool IsLeft)
+{
+	const FName DirSocket = (IsLeft ? TEXT("Socket_Left") : TEXT("Socket_Right"));
+	SpawnTileAtSocket(BaseTile, DirSocket);
+}
+// 2025.08.01 ウー end
 
 void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 {
@@ -62,17 +75,33 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	ATile* Temp = W->SpawnActor<ATile>(TileClass, FTransform::Identity, Params);
-	if (!Temp) return;
 
-	const FTransform BottomLocal = Temp->TileMesh
-	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);
-	Temp->Destroy();
+	// 2025.08.04 ウー start
+	// BaseSocketWTのLocationやRotationは世界位置と世界角度
+	FTransform Transform;
+	Transform.SetLocation(BaseSocketWT.GetLocation() + BaseSocketWT.GetRotation().GetForwardVector() * 15000);
+	Transform.SetRotation(BaseSocketWT.GetRotation());
+	Transform.SetScale3D(FVector(1.f, 1.f, 1.f));
+	
+	// Tileの数をカウント
+	TileCount++;
 
-	FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
+	ATile* NewTile = W->SpawnActor<ATile>(TileClass, Transform, Params);
+
+	if (!NewTile) 
+		return;
+
+	NewTile->SetManager(this);
+	NewTile->SpawnEnvironmentals(TileCount);
+
+	/*const FTransform BottomLocal = Temp->TileMesh
+	->GetSocketTransform(TEXT("Socket_Bottom"), ERelativeTransformSpace::RTS_Component);*/
+	//Temp->Destroy();
+
+	/*FTransform SpawnXF = BaseSocketWT * BottomLocal.Inverse();
 
 	{
-		const float AngleDeg = (DirSocket == TEXT("Socket_LEft"))? -90.0f : +90.0f;
+		const float AngleDeg = (DirSocket == TEXT("Socket_LEft")) ? -90.0f : +90.0f;
 		const FQuat DeltaQ = FQuat(FVector::UpVector, FMath::DegreesToRadians(AngleDeg));
 
 		const FVector Pivot = BaseSocketWT.GetLocation();
@@ -97,8 +126,8 @@ void ATileManager::SpawnTileAtSocket(ATile* BaseTile, FName DirSocket)
 			*NewTile->GetName(),
 			*NewTile->GetActorLocation().ToString(),
 			*NewTile->GetActorRotation().ToCompactString());
-	}
-	
+	}*/
+	// 2025.08.04 ウー end
 }
 
 

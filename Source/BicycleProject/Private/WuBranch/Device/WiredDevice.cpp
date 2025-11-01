@@ -3,7 +3,9 @@
 
 #include "WuBranch/Device/WiredDevice.h"
 #include "WuBranch/Device/DeviceCmdSender.h"
+#include <WuBranch/MyGameInstance.h>
 
+#if PLATFORM_WINDOWS
 UWiredDevice::UWiredDevice()
 	: MoveSwitch(false)
 	, Device(nullptr)
@@ -27,9 +29,13 @@ UWiredDevice::~UWiredDevice()
 
 void UWiredDevice::Init(int DeviceID, int DeviceVer)
 {
+	// デバイス
 	Device = NewObject<UASerialLibControllerWin>();
 	Device->Initialize(DeviceID, DeviceVer);
 	Device->SetInterfacePt(new WindowsSerial());
+	// RPM
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	MaxRPM = GameInstance->GetMaxRPM();
 }
 
 void UWiredDevice::Tick(float DeltaTime)
@@ -158,8 +164,9 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 {
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
 	uint16 RPM = TransformDataToInt<uint16>(RPMData.data, RPMData.data_num);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d"), RPM));
-	FVector2D MoveVector(RPM, 0);
+	float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
+	FVector2D MoveVector(InputVelocity, 0);
 	NotifyMoveEvent(MoveVector);
 }
 
@@ -191,3 +198,81 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
 }
+
+#elif PLATFORM_ANDROID
+
+UWiredDevice::UWiredDevice()
+	: MoveSwitch(false)
+{
+}
+
+UWiredDevice::~UWiredDevice()
+{
+}
+
+void UWiredDevice::Init(int DeviceID, int DeviceVer)
+{
+}
+
+void UWiredDevice::Tick(float DeltaTime)
+{
+}
+
+TStatId UWiredDevice::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UWiredDevice, STATGROUP_Tickables);
+}
+
+bool UWiredDevice::IsTickableInEditor() const
+{
+	return false;
+}
+
+bool UWiredDevice::Connect()
+{
+	return false;
+}
+
+bool UWiredDevice::Disconnect()
+{
+	return false;
+
+}
+
+void UWiredDevice::EnableMoveAction_Implementation()
+{
+}
+
+void UWiredDevice::DisableMoveAction_Implementation()
+{
+}
+
+void UWiredDevice::EnableSelectAnswerAction_Implementation()
+{
+
+}
+
+void UWiredDevice::DisableSelectAnswerAction_Implementation()
+{
+
+}
+
+bool UWiredDevice::CheckDevice()
+{
+	return true;
+}
+
+void UWiredDevice::GetMoveDataFromDevice()
+{
+}
+
+void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveEvent.IsBound())
+		OnMoveEvent.Broadcast(MoveData);
+}
+#endif

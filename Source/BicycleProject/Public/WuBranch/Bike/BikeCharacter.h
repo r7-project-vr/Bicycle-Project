@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WuBranch/Interface/PauseInterface.h"
 #include "BikeCharacter.generated.h"
 
 class UBikeComponent;
+class UAnimalManagerComponent;
 
 UCLASS()
-class BICYCLEPROJECT_API ABikeCharacter : public ACharacter
+class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
 {
 	GENERATED_BODY()
 
@@ -27,6 +29,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void Pause_Implementation() override;
+	void ReStart_Implementation() override;
+	bool IsPause_Implementation() override;
 
 	/// <summary>
 	/// バイクのメッシュを変更
@@ -65,6 +71,17 @@ public:
 	/// <returns></returns>
 	UBikeComponent* GetBikeComponent();
 
+	/// <summary>
+	/// 超速したか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool HasOverSpeed() const;
+
+	/// <summary>
+	/// 超速の状態をリセット
+	/// </summary>
+	void ResetOverSpeed();
+
 private:
 
 	/// <summary>
@@ -83,6 +100,12 @@ private:
 	void RotateBike(float DeltaTime);
 
 	/// <summary>
+	/// 速すぎたかのチェック
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool CheckOverSpeed() const;
+
+	/// <summary>
 	/// ロード先の自転車メッシュ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -91,7 +114,14 @@ private:
 	/// <summary>
 	/// 自転車の機能
 	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBikeComponent* _bike;
+
+	/// <summary>
+	/// 動物管理者
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UAnimalManagerComponent* AnimalManager;
 
 	/// <summary>
 	/// UI操作用のヒントライン
@@ -125,4 +155,14 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
 	float _handlebarCenteringSpeed;
+
+	/// <summary>
+	/// 超速したか
+	/// </summary>
+	bool IsOverSpeed;
+
+	/// <summary>
+	/// 停止中ですか
+	/// </summary>
+	bool IsPause;
 };

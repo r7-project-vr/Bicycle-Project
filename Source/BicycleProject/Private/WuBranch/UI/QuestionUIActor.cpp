@@ -23,15 +23,13 @@ AQuestionUIActor::AQuestionUIActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SnapPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPoint"));
-	SnapPoint->SetupAttachment(RootComponent);
+	//SnapPoint->SetupAttachment(RootComponent);
 	RootComponent = SnapPoint;
 
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
 	_temporaryParkingArea->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 	_temporaryParkingArea->InitBoxExtent(FVector(100.0f, 32.0f, 5.0f));
-	_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
-	AddInstanceComponent(_temporaryParkingArea);
 
 	_autoPlayStart = CreateDefaultSubobject<USplineComponent>(FName("AutoPlayStart"));
 	_autoPlayStart->SetupAttachment(RootComponent);
@@ -50,7 +48,10 @@ AQuestionUIActor::AQuestionUIActor()
 
 	_autoPlayMoveSpeed = 10.0f;
 
+	MessageBoard = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Message board"));
+	MessageBoard->SetupAttachment(RootComponent);
 
+	Widget->SetupAttachment(RootComponent);
 }
 
 FVector AQuestionUIActor::GetSnapLocation() const
@@ -71,7 +72,11 @@ void AQuestionUIActor::BeginPlay()
 	_exitTarget = nullptr;
 	_movedDistance = 0.0f;
 	_isAnswered = false;
-	_isGameFinished = false;
+	if (_temporaryParkingArea)
+	{
+		_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
+		_temporaryParkingArea->OnComponentEndOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapEndParkingArea);
+	}
 
 	NotDisplayUI();
 }
@@ -81,10 +86,6 @@ void AQuestionUIActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	LeadToExit(DeltaTime);
-}
-
-void AQuestionUIActor::SetProblem()
-{
 }
 
 void AQuestionUIActor::UseLeftExit()
@@ -99,8 +100,6 @@ void AQuestionUIActor::UseLeftExit()
 		// 左の出口スプラインを渡して、建物生成を依頼する
 		Generator->GenerateBuildingsAlongPath(_exitLeft);
 	}
-
-	UpdateStatus();
 }
 
 void AQuestionUIActor::UseRightExit()
@@ -115,8 +114,6 @@ void AQuestionUIActor::UseRightExit()
 		// 右の出口スプラインを渡して、建物生成を依頼する
 		Generator->GenerateBuildingsAlongPath(_exitRight);
 	}
-
-	UpdateStatus();
 }
 
 bool AQuestionUIActor::GetAnsweredStatus() const
@@ -126,7 +123,6 @@ bool AQuestionUIActor::GetAnsweredStatus() const
 
 void AQuestionUIActor::DisableFeature()
 {
-	_isGameFinished = true;
 	// UI
 	NotDisplayUI();
 	// コリジョン
@@ -148,58 +144,75 @@ bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oF
 	return false;
 }
 
-FQuestion* AQuestionUIActor::GetNowQuestion()
+void AQuestionUIActor::GetQuestionFromManger()
 {
-	return _questionTmp;
+	if (AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode()))
+		Question = GameMode->GetQuestion();
 }
 
-void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* bike)
+FQuestion* AQuestionUIActor::GetNowQuestion()
 {
-	UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	return Question;
+}
+
+void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
+{
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// デフォルトアクションを機能させない
-	gameInstance->GetDeviceManager()->DisableDefaultActions();
+	GameInstance->GetDeviceManager()->DisableDefaultActions();
 	// プレイヤーに答えを選べるようにする
-	gameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+	GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
 
 	// 自転車のスピードを強制的に0まで下げる
-	bike->ReduceVelocityTo0();
+	Bike->ReduceVelocityTo0();
 
 	// オートプレイのスタート地点へ誘導
-	bike->EnableAutoPlay(this);
-	FVector pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
-	bike->SetSynchPos(pos);
+	Bike->EnableAutoPlay(this);
+	Bike->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+	FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
+	Bike->SetSynchPos(Pos);
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!_isGameFinished && OtherActor->ActorHasTag("Player"))
+	if (!_isAnswered && OtherActor->ActorHasTag("Player"))
 	{
-		UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
-
-		// 問題内容をゲット
-		AQuestionGameMode* gameMode = Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode());
-		FQuestion* question = gameMode->GetQuestion();
-		_questionTmp = question;
-		// 問題UIにデータを渡す
-		if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(_widget->GetWidget()))
-		{
-			UI->SetQuestionAndAnswer(*question);
-		}
+		//UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
+		
+		SetQuiz();
 
 		// オートプレイ対象の設置
-		UBikeComponent* bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		SetTarget(bike);
-		HandlePlayerEnterArea(bike);
-
-		DisableCollision();
+		UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
+		SetTarget(Bike);
+		HandlePlayerEnterArea(Bike);
 	}
-
-
 }
 
-void AQuestionUIActor::SetTarget(UBikeComponent* target)
+void AQuestionUIActor::OnOverlapEndParkingArea(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	_autoPlayTarget = target;
+	if (_isAnswered && OtherActor->ActorHasTag("Player"))
+	{
+		DisableFeature();
+	}
+}
+
+void AQuestionUIActor::SetQuiz()
+{
+	if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
+	{
+		UI->SetQuestionAndAnswer(*Question);
+	}
+}
+
+void AQuestionUIActor::OnArrivedEnterLocation(UBikeComponent* Bike)
+{
+	DisplayUI();
+	Bike->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+}
+
+void AQuestionUIActor::SetTarget(UBikeComponent* Target)
+{
+	_autoPlayTarget = Target;
 }
 
 void AQuestionUIActor::LeadToExit(float DeltaTime)
@@ -225,15 +238,6 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 			// オートプレイ解除
 			_autoPlayTarget->DisableAutoPlay();
 		}
-	}
-}
-
-void AQuestionUIActor::UpdateStatus()
-{
-	//回答済み
-	if (_isAnswered)
-	{
-		DisableFeature();
 	}
 }
 
@@ -268,4 +272,12 @@ FRotator AQuestionUIActor::GetSnapRotation_Implementation() const
 
 	// アクター自身の向きを返す
 	return GetActorRotation();
+}
+
+void AQuestionUIActor::SetResult(int AnswerIndex, bool Result)
+{
+	if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
+	{
+		UI->SetResult(AnswerIndex, Result);
+	}
 }

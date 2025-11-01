@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -32,8 +32,14 @@ public:
 	//When player step into the tile, and the tile calling this
 	void OnPlayerSteppedOnTile(ATile* NewTile);
 	
-
-	
+	// 2025.08.01 ウー start
+	/// <summary>
+	/// マップを生成
+	/// </summary>
+	/// <param name="BaseTile"></param>
+	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
+	void SpawnNextMap(ATile* BaseTile, bool IsLeft);
+	// 2025.08.01 ウー end
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,5 +57,10 @@ private:
 
 	void SpawnTileAtSocket(ATile* BaseTile, FName DirSocket);
 	
-
+	// 2025.08.18 ウー start
+	/// <summary>
+	/// Tileの数
+	/// </summary>
+	int TileCount;
+	// 2025.08.18 ウー end
 };

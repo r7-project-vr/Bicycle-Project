@@ -15,14 +15,11 @@ AEndPosition::AEndPosition()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	_finishLineCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("EndLineCollision"));
-	_finishLineCollision->OnComponentBeginOverlap.AddDynamic(this, &AEndPosition::OnOverlapBeginFinishLine);
-	AddInstanceComponent(_finishLineCollision);
-	RootComponent = _finishLineCollision;
-
 	_mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	_mesh->SetupAttachment(RootComponent);
-	AddInstanceComponent(_mesh);
+	RootComponent = _mesh;
+
+	_finishLineCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("EndLineCollision"));
+	_finishLineCollision->SetupAttachment(RootComponent);
 
 	CreateFirework();
 }
@@ -33,6 +30,7 @@ void AEndPosition::BeginPlay()
 	Super::BeginPlay();
 	
 	_gameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	OnActorBeginOverlap.AddDynamic(this, &AEndPosition::OnOverlapBeginFinishLine);
 }
 
 // Called every frame
@@ -42,15 +40,18 @@ void AEndPosition::Tick(float DeltaTime)
 
 }
 
-void AEndPosition::OnOverlapBeginFinishLine(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AEndPosition::OnOverlapBeginFinishLine(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{
 		// 再びトリガーしないように
 		_finishLineCollision->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-		//エフェクト
-		Fire();
+		if (_gameMode->IsGameClear())
+		{
+			//エフェクト
+			Fire();
+		}
 
 		if (_gameMode)
 		{
@@ -116,6 +117,11 @@ void AEndPosition::Fire()
 	if (!_fireworkEffect6->IsActive())
 	{
 		_fireworkEffect6->Activate(true);
+	}
+
+	if (FireworkSE)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireworkSE, GetActorLocation());
 	}
 }
 

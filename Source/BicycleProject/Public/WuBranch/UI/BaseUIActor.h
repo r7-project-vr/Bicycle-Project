@@ -47,5 +47,5 @@ protected:
 	/// UIを表示させるもの
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* _widget;
+	UWidgetComponent* Widget;
 };

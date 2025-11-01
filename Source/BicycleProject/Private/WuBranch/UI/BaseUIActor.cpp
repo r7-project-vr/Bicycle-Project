@@ -11,12 +11,9 @@ ABaseUIActor::ABaseUIActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(FName("Root"));
-	AddInstanceComponent(RootComponent);
+	//RootComponent = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 
-	_widget = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
-	_widget->SetupAttachment(RootComponent);
-	AddInstanceComponent(_widget);
+	Widget = CreateDefaultSubobject<UWidgetComponent>(FName("widget"));
 
 }
 
@@ -35,16 +32,16 @@ void ABaseUIActor::Tick(float DeltaTime)
 
 void ABaseUIActor::DisplayUI()
 {
-	_widget->GetWidget()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	Widget->GetWidget()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 void ABaseUIActor::NotDisplayUI()
 {
-	_widget->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
+	Widget->GetWidget()->SetVisibility(ESlateVisibility::Hidden);
 }
 
 UWidgetComponent* ABaseUIActor::GetWidgetComponent()
 {
-	return _widget;
+	return Widget;
 }
 

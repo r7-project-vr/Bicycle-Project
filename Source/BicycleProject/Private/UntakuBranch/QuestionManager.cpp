@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/QuestionManager.h"
@@ -26,8 +26,11 @@ void AQuestionManager::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("BeginPlay triggered!"));
 	Super::BeginPlay();
 
+	// 2025.09.07 ウー start
+	LoadQuestionsData();
+	// 2025.09.07 ウー end
 	//TestRandomQuestions();
-	
+
 }
 
 TArray<FQuestion> AQuestionManager::GetRandomQuestions(int32 NumQuestions)
@@ -61,6 +64,38 @@ TArray<FQuestion> AQuestionManager::GetRandomQuestions(int32 NumQuestions)
 	return Result;
 }
 
+// 2025.09.07 ウー start
+TArray<FQuestion*> AQuestionManager::GetQuizs(int32 NeedAmount)
+{
+	TArray<FQuestion*> Result;
+	// 各難易度の取得すべき数を計算
+	// 基本、イージーとハードを先に計算し、ノーマルは残りの数
+	int NeedEasyNum = FMath::RoundToInt((*DifficultyQuizRatio.Find(EQuestionLevel::Easy)) * NeedAmount);
+	int NeedHardNum = FMath::RoundToInt((*DifficultyQuizRatio.Find(EQuestionLevel::Hard)) * NeedAmount);
+	int NeedNormalNum = NeedAmount - NeedEasyNum - NeedHardNum;
+
+	// 問題数が足りない場合、他の難易度から補充する、優先順位はノーマル > イージー > ハード
+	// 各難易度の足りない数
+	int LackSum = 0;
+	ClampNeedNum(NormalQuizs.Num(), NeedNormalNum, LackSum);
+	ClampNeedNum(EasyQuizs.Num(), NeedEasyNum, LackSum);
+	ClampNeedNum(HardQuizs.Num(), NeedHardNum, LackSum);
+
+	// 補充する
+	ReplenishQuiz(LackSum, NormalQuizs.Num(), NeedNormalNum);
+	ReplenishQuiz(LackSum, EasyQuizs.Num(), NeedEasyNum);
+	ReplenishQuiz(LackSum, HardQuizs.Num(), NeedHardNum);
+
+	// 必要な数に応じて抽選
+	Result.Append(GetRandomQuizsWithNum(EasyQuizs, NeedEasyNum));
+	Result.Append(GetRandomQuizsWithNum(NormalQuizs, NeedNormalNum));
+	Result.Append(GetRandomQuizsWithNum(HardQuizs, NeedHardNum));
+
+	QuizsInGame = Result;
+
+	return Result;
+}
+// 2025.09.07 ウー end
 
 void AQuestionManager::TestRandomQuestions()
 {
@@ -71,30 +106,28 @@ void AQuestionManager::TestRandomQuestions()
 
 	for (const FQuestion& Q : RandomQuestions)
 	{
-		GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
-			FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
+		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
+		//	FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
 
 		for (int32 i = 0; i < Q.AnswerContents.Num(); ++i)
 		{
 			TCHAR OptionChar = 'A' + i;
-			FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
-			GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
+			//FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
+			//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
 		}
 
-		GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
-			FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
+		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
+		//	FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
 	}
-
-	
 }
 
 bool AQuestionManager::CheckPlayerAnswerInLastRandom(int32 QuestionID, int32 PlayerAnswer)
 {
-	for (const FQuestion& Q : LastRandomQuestions)
+	for (const FQuestion* Q : QuizsInGame)
 	{
-		if (Q.ID == QuestionID)
+		if (Q->ID == QuestionID)
 		{
-			bool bIsCorrect = (Q.Correct == PlayerAnswer);
+			bool bIsCorrect = (Q->Correct == PlayerAnswer);
 			UE_LOG(LogTemp, Log, TEXT("Check Last Random Question ID %d: %s"),
 				QuestionID, bIsCorrect ? TEXT("Correct") : TEXT("Wrong"));
 				return bIsCorrect;
@@ -104,3 +137,90 @@ bool AQuestionManager::CheckPlayerAnswerInLastRandom(int32 QuestionID, int32 Pla
 	UE_LOG(LogTemp, Warning, TEXT("Check Last Random Question ID %d: Not Found!"), QuestionID);
 	return false;
 }
+
+// 2025.09.07 ウー start
+void AQuestionManager::LoadQuestionsData()
+{
+	// 検査
+	if (!QuestionDataTable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("QuestionDataTable is null!"));
+		return;
+	}
+
+	// クイズデーターを読み込む
+	TArray<FQuestion*> Quizs;
+	QuestionDataTable->GetAllRows<FQuestion>(TEXT(""), Quizs);
+
+	// 難易度によって分類
+	for (FQuestion* Quiz : Quizs)
+	{
+		if (Quiz->Level == EQuestionLevel::Easy)
+		{
+			EasyQuizs.Add(Quiz);
+		}
+		else if (Quiz->Level == EQuestionLevel::Normal)
+		{
+			NormalQuizs.Add(Quiz);
+		}
+		else if (Quiz->Level == EQuestionLevel::Hard)
+		{
+			HardQuizs.Add(Quiz);
+		}
+	}
+}
+
+void AQuestionManager::ClampNeedNum(const int& QuizNum, int& NeedNum, int& LackSum)
+{
+	if (NeedNum > QuizNum)
+	{
+		int Over = NeedNum - QuizNum;
+		NeedNum = QuizNum;
+		LackSum += Over;
+	}
+}
+
+void AQuestionManager::ReplenishQuiz(int& LackSum, const int& QuizNum, int& NeedNum)
+{
+	if (LackSum > 0)
+	{
+		// 残り問題数
+		int Remain = FMath::Max(0, QuizNum - NeedNum);
+		// 補充いらない
+		if (Remain == 0)
+			return;
+
+		// 補充する数
+		int ReplenishCount = FMath::Min(Remain, LackSum);
+		NeedNum += ReplenishCount;
+		LackSum -= ReplenishCount;
+	}
+}
+
+TArray<FQuestion*> AQuestionManager::GetRandomQuizsWithNum(TArray<FQuestion*> Quizs, int Num)
+{
+	TArray<FQuestion*> Result;
+
+	TArray<int> QuizIndexs;
+	// クイズの数が足りない場合
+	if (Quizs.Num() <= Num)
+	{
+		return Quizs;
+	}
+	else
+	{
+		for (int Cnt = 0; Cnt < Num; Cnt++)
+		{
+			int QuizIndex;
+			do {
+				QuizIndex = FMath::RandRange(0, Quizs.Num() - 1);
+			} while (QuizIndexs.Contains(QuizIndex));
+			
+			Result.Add(Quizs[QuizIndex]);
+			QuizIndexs.Add(QuizIndex);
+		}
+	}
+	return Result;
+}
+
+// 2025.09.07 ウー end

@@ -30,6 +30,11 @@ public:
 	void CreateAllDevices();
 
 	/// <summary>
+	/// すべでのデバイスとのリンクを断つ
+	/// </summary>
+	void DisConnectAllDevices();
+
+	/// <summary>
 	/// リストにデバイスを追加
 	/// </summary>
 	/// <param name="Part">デバイスをつける部位</param>
@@ -47,6 +52,7 @@ public:
 	/// </summary>
 	/// <param name="Part">取得したいデバイスのタイプ</param>
 	/// <returns>デバイス</returns>
+	UFUNCTION(BlueprintCallable)
 	UDevice* GetDevice(EDevicePart Part);
 
 //-----------------------------------------------------------------------------
@@ -70,21 +76,25 @@ public:
 	/// <summary>
 	/// デフォルトアクションを機能させる
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void EnableDefaultActions();
 
 	/// <summary>
 	/// デフォルトアクションを機能させない
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void DisableDefaultActions();
 
 	/// <summary>
 	/// 答えを選べるようにする
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void EnableSelectAnswerActions();
 
 	/// <summary>
 	/// 答えを選べないようにする
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void DisableSelectAnswerActions();
 
 	/// <summary>
@@ -145,4 +155,5 @@ private:
 	/// 有線デバイスのバージョン
 	/// </summary>
 	int WiredDeviceVer = 0x03;
+
 };

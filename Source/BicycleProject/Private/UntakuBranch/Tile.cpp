@@ -1,11 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "UntakuBranch/Tile.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "Components/BoxComponent.h"
 #include "UntakuBranch/TileManager.h"
-#include "GameFramework/Character.h"
+#include "WuBranch/Bike/BikeCharacter.h"
+#include <WuBranch/Bike/BikeComponent.h>
+#include <WuBranch/UI/QuestionUIActor.h>
+#include <Kismet/GameplayStatics.h>
+#include "WuBranch/Actor/Component/RandomFoliageSpawner.h"
+#include "WuBranch/Actor/Component/EnvironmentalObjectComponent.h"
+#include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
+#include "UntakuBranch/Question.h"
+#include "WuBranch/Actor/Component/WildAnimalManagerComponent.h"
 
 // Sets default values
 ATile::ATile()
@@ -23,16 +32,76 @@ ATile::ATile()
 	//Turn on the Overlap event
 	TriggerVolume->SetGenerateOverlapEvents(true);
 	
+	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
+	QuestionSpawnLocation->SetupAttachment(RootComponent);
 
+	for (int Index = 0; Index < 34; Index++)
+	{
+		UEnvironmentalObjectComponent* Building = CreateDefaultSubobject<UEnvironmentalObjectComponent>(FName("Building_" + FString::FromInt(Index)));
+		Building->SetupAttachment(RootComponent);
+		Buildings.Add(Building);
+	}
+
+	// 2025.08.18 ウー start
+	FoliageSpawner = CreateDefaultSubobject<URandomFoliageSpawner>("Foliage Spawner");
+	FoliageSpawner->SetupAttachment(RootComponent);
+	// 2025.08.18 ウー end
+
+	// 2025.08.28 ウー start
+	CoinSpawner = CreateDefaultSubobject<UCoinSpawnerComponent>("Coin Spawner");
+	CoinSpawner->SetupAttachment(RootComponent);
+	// 2025.08.28 ウー end
+
+	// 2025.09.16 ウー start
+	WildAnimalManager = CreateDefaultSubobject<UWildAnimalManagerComponent>("Wild Animal Manager");
+	WildAnimalManager->SetupAttachment(RootComponent);
+	// 2025.09.16 ウー end
 }
+
+// 2025.08.01 ウー start
+void ATile::SpawnMap(bool IsLeft)
+{
+	TileManager->SpawnNextMap(this, IsLeft);
+}
+
+void ATile::AdjustUI(FVector DeltaLocation, FRotator DeltaRotation)
+{
+	QuestionUI->AddActorLocalOffset(DeltaLocation);
+	QuestionUI->AddActorLocalRotation(DeltaRotation);
+}
+// 2025.08.01 ウー end
+
+// 2025.08.19 ウー start
+void ATile::SpawnEnvironmentals(int Seed)
+{
+	// クイズUI
+	CreateQuestionUI();
+	// 建物
+	for (UEnvironmentalObjectComponent* Building : Buildings)
+	{
+		Building->StartSpawnEnvironmentalObject();
+	}
+	// 野良動物
+	WildAnimalManager->SetSeed(Seed);
+	WildAnimalManager->StartSpawnAnimal();
+	// フォリッジ
+	FoliageSpawner->SetSeed(Seed);
+	FoliageSpawner->StartSpawnFoliage();
+	// コイン
+	FTimerHandle CreateCoinHandle;
+	GetWorld()->GetTimerManager().SetTimer(CreateCoinHandle, FTimerDelegate::CreateWeakLambda(this, [this, Seed]() {
+		QuestionUI->GetQuestionFromManger();
+		CoinSpawner->SetSeed(Seed);
+		CoinSpawner->Spawn(QuestionUI->GetNowQuestion()->Level);
+	}), 0.5f, false);
+}
+// 2025.08.19 ウー end
 
 // Called when the game starts or when spawned
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
-	
-	
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
@@ -41,8 +110,85 @@ void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
 	const FHitResult& Sweep)
 {
 	//Only player step in to Triggering
-	if (Other->IsA(ACharacter::StaticClass()) && TileManager)
+	if (Other->IsA(ABikeCharacter::StaticClass()) && TileManager)
 	{
 		TileManager->OnPlayerSteppedOnTile(this);
 	}
 }
+
+// 2025.08.01 ウー start
+void ATile::CreateQuestionUI()
+{
+	if (!QuestionActor)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Question Actor did not set!"));
+		return;
+	}
+		
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	QuestionUI = GetWorld()->SpawnActor<AQuestionUIActor>(QuestionActor, QuestionSpawnLocation->GetComponentTransform(), Params);
+}
+
+void ATile::DestroyAll()
+{
+	// 2025.08.19 ウー start
+	// 問題UIを削除
+	if(QuestionUI)
+	{
+		QuestionUI->Destroy();
+	}
+
+	// フォリッジを削除
+	if (FoliageSpawner)
+	{
+		FoliageSpawner->RemoveFoliageInstances();
+	}
+	// 2025.08.19 ウー end
+
+	// 2025.09.06 ウー start
+	// 建物を削除
+	for (UEnvironmentalObjectComponent* Building : Buildings)
+		Building->DestroyEnvironmental();
+
+	// コインを削除
+	if (CoinSpawner)
+	{
+		CoinSpawner->DestroyCoins();
+		CoinSpawner->CancelDelegate();
+	}
+	
+	// 2025.09.16 ウー start
+	// 野良動物を削除
+	if (WildAnimalManager)
+		WildAnimalManager->DestroyAllAnimals();
+	// 2025.09.26 ウー end
+
+	// 動ける物を削除
+	FVector MyLocation = GetActorLocation();
+	const float MaxDistance = 15000.0f;
+	TArray<AActor*> Actors;
+	
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), Actors);
+	Actors.RemoveAll([&](AActor* Actor) {
+		if (!Actor)
+			return true;
+
+		// 範囲内
+		FVector ObjectLocation = Actor->GetActorLocation();
+		bool IsInRangeX = FMath::Abs(ObjectLocation.X - MyLocation.X) <= MaxDistance;
+		bool IsInRangeY = FMath::Abs(ObjectLocation.Y - MyLocation.Y) <= MaxDistance;
+		return !(IsInRangeX && IsInRangeY);
+		});
+	// 対象物を削除
+	while (Actors.Num() > 0)
+	{
+		AActor* Actor = Actors.Pop();
+		Actor->Destroy();
+	}
+	// 2025.09.06 ウー end
+
+	// 自分も削除
+	Destroy();
+}
+// 2025.08.01 ウー end

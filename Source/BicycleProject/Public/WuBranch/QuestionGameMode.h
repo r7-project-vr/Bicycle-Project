@@ -43,6 +43,11 @@ public:
 	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
+	/// 問題に答えた
+	/// </summary>
+	void AnsweredQuestion();
+
+	/// <summary>
 	/// 正解した答えの数をゲット
 	/// </summary>
 	/// <returns></returns>
@@ -75,6 +80,20 @@ public:
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
 	bool IsGameClear() const;
+
+	/// <summary>
+	/// 成功条件(セット数)をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetSuccessCondition() const;
+
+	/// <summary>
+	/// 成功条件(セット数)をセット
+	/// </summary>
+	/// <param name="Num">新しい成功数</param>
+	UFUNCTION(BlueprintCallable)
+	void SetSuccessCondition(int32 Num);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
 	
@@ -135,7 +154,7 @@ private:
 	/// <summary>
 	/// 問題の管理者
 	/// </summary>
-	class AQuestionManager* _questionManager;
+	class AQuestionManager* QuestionManager;
 
 	/// <summary>
 	/// 問題
@@ -145,7 +164,7 @@ private:
 	/// <summary>
 	/// 問題のインデックス
 	/// </summary>
-	int _questionIndex;
+	int QuestionIndex;
 
 	/// <summary>
 	/// すべての問題Actor
@@ -156,23 +175,23 @@ private:
 	/// 何問間違ったらゲームオーバー
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-	int _failCondition;
+	int FailCondition;
 
 	/// <summary>
 	/// 何問正解したらゲームクリア
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-	int _successCondition;
+	int SuccessCondition;
 
 	/// <summary>
 	/// 正解の数
 	/// </summary>
-	int _correctNum;
+	int CorrectNum;
 
 	/// <summary>
 	/// 間違ってる数
 	/// </summary>
-	int _wrongNum;
+	int WrongNum;
 
 	/// <summary>
 	/// 今のゲーム状態

@@ -26,11 +26,13 @@ void AQuestionGameMode::BeginPlay()
 
 	_playerController = Cast<ABikePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	_questionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
+	QuestionManager = Cast<AQuestionManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AQuestionManager::StaticClass()));
 
-	_correctNum = 0;
-	_wrongNum = 0;
-	_questionIndex = 0;
+	CorrectNum = 0;
+	WrongNum = 0;
+	QuestionIndex = 0;
+	FailCondition = 0;
+	SuccessCondition = 4;
 	CurrentState = QuestionGameState::Playing;
 
 	GetAllQuestions();
@@ -71,19 +73,19 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 {
 	// 問題システムに問題IDと解答を送って答えをもらう
-	bool Result = _questionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
+	bool Result = QuestionManager->CheckPlayerAnswerInLastRandom(questionID, answer);
 	
 	if (Result)
 	{
 		// 正解の数を計算
-		_correctNum++;
+		CorrectNum++;
 		// SE
 		UGameplayStatics::PlaySound2D(GetWorld(), CorrectSound);
 	}
 	else
 	{
 		// 不正解の数を計算
-		_wrongNum++;
+		WrongNum++;
 		// SE
 		UGameplayStatics::PlaySound2D(GetWorld(), WrongSound);
 	}
@@ -145,27 +147,33 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	return Result;
 }
 
+void AQuestionGameMode::AnsweredQuestion()
+{
+	CorrectNum++;
+	UpdateAnswerUI();
+}
+
 int AQuestionGameMode::GetCurrectNumber() const
 {
-	return _correctNum;
+	return CorrectNum;
 }
 
 int AQuestionGameMode::GetWrongNumber() const
 {
-	return _wrongNum;
+	return WrongNum;
 }
 
 void AQuestionGameMode::GetAllQuestions()
 {
 	// 問題管理者から問題をゲット
-	if (!_questionManager)
+	if (!QuestionManager)
 	{
 		UE_LOG(LogTemp, Error, TEXT("question Manager is not found!!"));
 		return;
 	}
 
 	// 問題の総数はゲームオーバーになる不正解数とゲームクリアになる正解数の合計
-	_questions = _questionManager->GetQuizs(_failCondition + _successCondition);
+	_questions = QuestionManager->GetQuizs(FailCondition + SuccessCondition);
 	if (_questions.Num() <= 0)
 		UE_LOG(LogTemp, Error, TEXT("Get questions failed!!"));
 }
@@ -174,7 +182,7 @@ FQuestion* AQuestionGameMode::GetQuestion()
 {
 	if (_questions.Num() > 0)
 	{
-		return _questions[_questionIndex++];
+		return _questions[QuestionIndex++];
 	}
 	return nullptr;
 }
@@ -193,17 +201,31 @@ bool AQuestionGameMode::IsAnswered(int32 QuestionID)
 
 bool AQuestionGameMode::IsGameFailed() const
 {
-	return _wrongNum >= _failCondition;
+	if(FailCondition <= 0)
+		return false;
+	return WrongNum >= FailCondition;
 }
 
 bool AQuestionGameMode::IsGameClear() const
 {
-	return _correctNum >= _successCondition;
+	if(SuccessCondition <= 0)
+		return false;
+	return CorrectNum >= SuccessCondition;
+}
+
+int AQuestionGameMode::GetSuccessCondition() const
+{
+	return SuccessCondition;
+}
+
+void AQuestionGameMode::SetSuccessCondition(int32 Num)
+{
+	SuccessCondition = Num;
 }
 
 void AQuestionGameMode::UpdateAnswerUI()
 {
-	OnUpdateAnswerUIDelegate.Broadcast(_correctNum, _wrongNum);
+	OnUpdateAnswerUIDelegate.Broadcast(CorrectNum, WrongNum);
 }
 
 void AQuestionGameMode::ChangeLevel(bool IsSucc)

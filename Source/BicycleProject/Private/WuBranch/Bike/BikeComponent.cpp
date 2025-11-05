@@ -176,8 +176,9 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	_questionActor->UseLeftExit();
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
-	//AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	//bool Result = GameMode->CheckAnswer(questionID, answer);
+	GameMode->AnsweredQuestion();
 	// 正解か不正解を表示
 	//_questionActor->SetResult(0, Result);
 	// コインの処理
@@ -204,8 +205,9 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	_questionActor->UseRightExit();
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
-	//AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	//bool Result = GameMode->CheckAnswer(questionID, answer);
+	GameMode->AnsweredQuestion();
 	// 正解か不正解を表示
 	//_questionActor->SetResult(1, Result);
 	// コインの処理

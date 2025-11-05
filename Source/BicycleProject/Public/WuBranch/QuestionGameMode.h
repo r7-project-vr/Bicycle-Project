@@ -7,6 +7,7 @@
 #include "QuestionGameMode.generated.h"
 
 struct FQuestion;
+class AQuestionUIActor;
 
 /**
  * 
@@ -43,7 +44,7 @@ public:
 	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
-	/// 問題に答えた
+	/// 問題に答えた, クイズなしのバージョン
 	/// </summary>
 	void AnsweredQuestion();
 
@@ -125,6 +126,23 @@ private:
 	void UpdateAnswerUI();
 
 	/// <summary>
+	/// ゲーム終了の処理, クイズなしのバージョン
+	/// </summary>
+	/// <param name="GameResult">true: クリア, false: 失敗</param>
+	void EndGame(bool GameResult);
+
+	/// <summary>
+	/// ゲームクリアの処理
+	/// </summary>
+	/// <param name="questionID">新しい成功数</param>
+	void HandleGameSuccess(int32 questionID);
+
+	/// <summary>
+	/// ゲーム失敗の処理
+	/// </summary>
+	void HandleGameFailed(int32 questionID);
+
+	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
 	/// <param name="IsSucc">クリアしたか</param>
@@ -139,7 +157,20 @@ private:
 	/// <summary>
 	/// ゴールを設置
 	/// </summary>
-	void PlaceGoal(int32 questionID);
+	void PlaceGoal(int32 QuestionID = -1);
+
+	/// <summary>
+	/// ゴールを見つかる
+	/// </summary>
+	/// <returns></returns>
+	AActor* FindGoal();
+
+	/// <summary>
+	/// クイズのIDでクイズを探す
+	/// </summary>
+	/// <param name="QuestionID">クイズのID</param>
+	AQuestionUIActor* FindQuestion(int32 QuestionID);
+	AQuestionUIActor* FindQuestion();
 
 	/// <summary>
 	/// プレイヤー
@@ -165,11 +196,6 @@ private:
 	/// 問題のインデックス
 	/// </summary>
 	int QuestionIndex;
-
-	/// <summary>
-	/// すべての問題Actor
-	/// </summary>
-	TArray<class AActor*> _questionActors;
 
 	/// <summary>
 	/// 何問間違ったらゲームオーバー

@@ -203,8 +203,39 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FUpdateStandardRPMDelegate OnUpdateStandardRPM;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateMaxRPMDelegate, int, Value);
+
+	/// <summary>
+	/// 最大回転数の更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateMaxRPMDelegate OnUpdateMaxRPM;
+
+	/// <summary>
+	/// RPMの中央値を調整
+	/// </summary>
+	/// <param name="Value">調整値</param>
 	UFUNCTION(BlueprintCallable)
 	void AdjustCenterRPM(int Value);
+
+	/// <summary>
+	/// RPMの調整値を変更
+	/// </summary>
+	/// <param name="Value">新しい調整値</param>
+	UFUNCTION(BlueprintCallable)
+	void SetAdjustVal(float Value);
+
+	/// <summary>
+	/// RPMの調整値をゲット
+	/// </summary>
+	/// <returns>調整値</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetAdjustVal() const;
+
+	/// <summary>
+	/// RPMの調整値をリセット
+	/// </summary>
+	void ResetAdjustVal();
 
 private:
 
@@ -212,6 +243,11 @@ private:
 	/// 標準回転数が変わったのを通知する
 	/// </summary>
 	void NotifyUpdateStandardRPM();
+
+	/// <summary>
+	/// 最大回転数が変わったことを通知する
+	/// </summary>
+	void NotifyUpdateMaxRPM();
 
 	/// <summary>
 	/// 最大回転数
@@ -235,9 +271,9 @@ private:
 	int MaxCenterRPM;
 
 	/// <summary>
-	/// 許容範囲
+	/// RPMの調整値
 	/// </summary>
-	int RPMAcceptableRange;
+	int RPMAdjustValue;
 #pragma endregion
 	
 #pragma region ペット

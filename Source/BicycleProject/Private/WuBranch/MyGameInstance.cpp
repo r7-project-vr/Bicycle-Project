@@ -12,7 +12,7 @@ UMyGameInstance::UMyGameInstance()
 	, MaxRPM(100)
 	, StandardRPM(50)
 	, CenterRPM(50)
-	, RPMAcceptableRange(10)
+	, RPMAdjustValue(10)
 {
 	DeviceManager = nullptr;
 }
@@ -116,7 +116,10 @@ void UMyGameInstance::SetGameResult(bool Result)
 #pragma region RPM
 int UMyGameInstance::GetMaxRPM() const
 {
-	return MaxRPM;
+	// 2025.11.06 ウー start クイズをなく
+	//return MaxRPM;
+	return CenterRPM + RPMAdjustValue;
+	// 2025.11.06 ウー end
 }
 
 void UMyGameInstance::SetMaxRPM(int Value)
@@ -143,14 +146,35 @@ void UMyGameInstance::ResetStandardRPM()
 
 void UMyGameInstance::AdjustCenterRPM(int Value)
 {
-	if(CenterRPM < MaxCenterRPM)
-		CenterRPM += Value;
+	CenterRPM = FMath::Min(CenterRPM + Value * RPMAdjustValue, MaxCenterRPM);
+	NotifyUpdateMaxRPM();
+}
+
+void UMyGameInstance::SetAdjustVal(float Value)
+{
+	RPMAdjustValue = Value;
+}
+
+float UMyGameInstance::GetAdjustVal() const
+{
+	return RPMAdjustValue;
+}
+
+void UMyGameInstance::ResetAdjustVal()
+{
+	RPMAdjustValue = 10;
 }
 
 void UMyGameInstance::NotifyUpdateStandardRPM()
 {
 	if (OnUpdateStandardRPM.IsBound())
 		OnUpdateStandardRPM.Broadcast(StandardRPM);
+}
+
+void UMyGameInstance::NotifyUpdateMaxRPM()
+{
+	if (OnUpdateMaxRPM.IsBound())
+		OnUpdateMaxRPM.Broadcast(GetMaxRPM());
 }
 #pragma endregion
 

@@ -29,7 +29,7 @@ AQuestionUIActor::AQuestionUIActor()
 	_temporaryParkingArea = CreateDefaultSubobject<UBoxComponent>(FName("parkingArea"));
 	_temporaryParkingArea->SetupAttachment(RootComponent);
 	_temporaryParkingArea->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
-	_temporaryParkingArea->InitBoxExtent(FVector(100.0f, 32.0f, 5.0f));
+	_temporaryParkingArea->InitBoxExtent(FVector(100.0f, 64.0f, 5.0f));
 
 	_autoPlayStart = CreateDefaultSubobject<USplineComponent>(FName("AutoPlayStart"));
 	_autoPlayStart->SetupAttachment(RootComponent);

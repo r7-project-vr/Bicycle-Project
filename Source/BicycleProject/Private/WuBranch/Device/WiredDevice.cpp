@@ -35,6 +35,7 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	Device->SetInterfacePt(new WindowsSerial());
 	// RPM
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	GameInstance->OnUpdateMaxRPM.AddDynamic(this, &UWiredDevice::UpdateMaxRPM);
 	MaxRPM = GameInstance->GetMaxRPM();
 }
 
@@ -175,6 +176,11 @@ void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
 	FVector2D MoveVector((float)RPS / 100.f, 0);
 	NotifyMoveEvent(MoveVector);
+}
+
+void UWiredDevice::UpdateMaxRPM(int Value)
+{
+	MaxRPM = Value;
 }
 
 template<typename T>

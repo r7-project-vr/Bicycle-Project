@@ -7,6 +7,7 @@
 #include "QuestionGameMode.generated.h"
 
 struct FQuestion;
+class AQuestionUIActor;
 
 /**
  * 
@@ -43,6 +44,11 @@ public:
 	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
+	/// 問題に答えた, クイズなしのバージョン
+	/// </summary>
+	void AnsweredQuestion();
+
+	/// <summary>
 	/// 正解した答えの数をゲット
 	/// </summary>
 	/// <returns></returns>
@@ -76,6 +82,20 @@ public:
 	/// <returns>true: はい, false: いいえ</returns>
 	bool IsGameClear() const;
 
+	/// <summary>
+	/// 成功条件(セット数)をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetSuccessCondition() const;
+
+	/// <summary>
+	/// 成功条件(セット数)をセット
+	/// </summary>
+	/// <param name="Num">新しい成功数</param>
+	UFUNCTION(BlueprintCallable)
+	void SetSuccessCondition(int32 Num);
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnswerRateUIDelegate, int, correct, int, wrong);
 	
 	UPROPERTY(BlueprintAssignable)
@@ -106,6 +126,23 @@ private:
 	void UpdateAnswerUI();
 
 	/// <summary>
+	/// ゲーム終了の処理, クイズなしのバージョン
+	/// </summary>
+	/// <param name="GameResult">true: クリア, false: 失敗</param>
+	void EndGame(bool GameResult);
+
+	/// <summary>
+	/// ゲームクリアの処理
+	/// </summary>
+	/// <param name="questionID">新しい成功数</param>
+	void HandleGameSuccess(int32 questionID);
+
+	/// <summary>
+	/// ゲーム失敗の処理
+	/// </summary>
+	void HandleGameFailed(int32 questionID);
+
+	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
 	/// <param name="IsSucc">クリアしたか</param>
@@ -120,7 +157,20 @@ private:
 	/// <summary>
 	/// ゴールを設置
 	/// </summary>
-	void PlaceGoal(int32 questionID);
+	void PlaceGoal(int32 QuestionID = -1);
+
+	/// <summary>
+	/// ゴールを見つかる
+	/// </summary>
+	/// <returns></returns>
+	AActor* FindGoal();
+
+	/// <summary>
+	/// クイズのIDでクイズを探す
+	/// </summary>
+	/// <param name="QuestionID">クイズのID</param>
+	AQuestionUIActor* FindQuestion(int32 QuestionID);
+	AQuestionUIActor* FindQuestion();
 
 	/// <summary>
 	/// プレイヤー
@@ -135,7 +185,7 @@ private:
 	/// <summary>
 	/// 問題の管理者
 	/// </summary>
-	class AQuestionManager* _questionManager;
+	class AQuestionManager* QuestionManager;
 
 	/// <summary>
 	/// 問題
@@ -145,34 +195,29 @@ private:
 	/// <summary>
 	/// 問題のインデックス
 	/// </summary>
-	int _questionIndex;
-
-	/// <summary>
-	/// すべての問題Actor
-	/// </summary>
-	TArray<class AActor*> _questionActors;
+	int QuestionIndex;
 
 	/// <summary>
 	/// 何問間違ったらゲームオーバー
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-	int _failCondition;
+	int FailCondition;
 
 	/// <summary>
 	/// 何問正解したらゲームクリア
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-	int _successCondition;
+	int SuccessCondition;
 
 	/// <summary>
 	/// 正解の数
 	/// </summary>
-	int _correctNum;
+	int CorrectNum;
 
 	/// <summary>
 	/// 間違ってる数
 	/// </summary>
-	int _wrongNum;
+	int WrongNum;
 
 	/// <summary>
 	/// 今のゲーム状態

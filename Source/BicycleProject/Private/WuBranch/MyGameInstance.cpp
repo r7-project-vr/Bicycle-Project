@@ -9,10 +9,9 @@
 UMyGameInstance::UMyGameInstance()
 	: Coins(0)
 	, IsClear(false)
-	, MaxRPM(100)
 	, StandardRPM(50)
-	, CenterRPM(50)
-	, RPMAdjustValue(10)
+	, RPMThreshold(10)
+	, MaxStandardRPM(60)
 {
 	DeviceManager = nullptr;
 }
@@ -114,17 +113,10 @@ void UMyGameInstance::SetGameResult(bool Result)
 #pragma endregion
 
 #pragma region RPM
-int UMyGameInstance::GetMaxRPM() const
+void UMyGameInstance::SetStandardRPM(int Value)
 {
-	// 2025.11.06 ウー start クイズをなく
-	//return MaxRPM;
-	return CenterRPM + RPMAdjustValue;
-	// 2025.11.06 ウー end
-}
-
-void UMyGameInstance::SetMaxRPM(int Value)
-{
-	MaxRPM = Value;
+	StandardRPM = FMath::Clamp(StandardRPM + Value * RPMThreshold, 0, MaxStandardRPM);
+	NotifyUpdateRPM();
 }
 
 int UMyGameInstance::GetStandardRPM() const
@@ -132,49 +124,48 @@ int UMyGameInstance::GetStandardRPM() const
 	return StandardRPM;
 }
 
-void UMyGameInstance::SetStandardRPM(int Value)
-{
-	StandardRPM = Value;
-	NotifyUpdateStandardRPM();
-}
-
 void UMyGameInstance::ResetStandardRPM()
 {
 	StandardRPM = 50;
-	NotifyUpdateStandardRPM();
+	NotifyUpdateRPM();
 }
 
-void UMyGameInstance::AdjustCenterRPM(int Value)
+void UMyGameInstance::AdjustThreshold(int Value)
 {
-	CenterRPM = FMath::Min(CenterRPM + Value * RPMAdjustValue, MaxCenterRPM);
-	NotifyUpdateMaxRPM();
+	RPMThreshold += Value;
+	NotifyUpdateRPM();
 }
 
-void UMyGameInstance::SetAdjustVal(float Value)
+int UMyGameInstance::GetThreshold() const
 {
-	RPMAdjustValue = Value;
+	return RPMThreshold;
 }
 
-float UMyGameInstance::GetAdjustVal() const
+void UMyGameInstance::ResetThreshold()
 {
-	return RPMAdjustValue;
+	RPMThreshold = 10;
+	NotifyUpdateRPM();
 }
 
-void UMyGameInstance::ResetAdjustVal()
+int UMyGameInstance::GetDangerRPM() const
 {
-	RPMAdjustValue = 10;
+	return StandardRPM + RPMThreshold;
 }
 
-void UMyGameInstance::NotifyUpdateStandardRPM()
+int UMyGameInstance::GetSafeRPM() const
 {
-	if (OnUpdateStandardRPM.IsBound())
-		OnUpdateStandardRPM.Broadcast(StandardRPM);
+	return StandardRPM - RPMThreshold;
 }
 
-void UMyGameInstance::NotifyUpdateMaxRPM()
+int UMyGameInstance::GetMaxRPM() const
 {
-	if (OnUpdateMaxRPM.IsBound())
-		OnUpdateMaxRPM.Broadcast(GetMaxRPM());
+	return MaxStandardRPM;
+}
+
+void UMyGameInstance::NotifyUpdateRPM()
+{
+	if (OnUpdateRPM.IsBound())
+		OnUpdateRPM.Broadcast(GetStandardRPM(), GetDangerRPM(), GetSafeRPM());
 }
 #pragma endregion
 

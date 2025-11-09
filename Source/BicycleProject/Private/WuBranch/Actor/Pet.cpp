@@ -30,7 +30,7 @@ void APet::DecideBehavior()
 	FVector MyLocation = GetActorLocation();
 	//
 	if (IsChaseTarget)
-		ChaseLocation = GetTargetLocation();
+		ChaseLocation = GetMyTargetLocation();
 	else
 		ChaseLocation = GetOffsetWorldLocation();
 	// 追う目標との距離

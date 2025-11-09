@@ -156,12 +156,12 @@ private:
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
-	float _speed;
+	float Speed;
 
 	/// <summary>
-	/// 単位速度
+	/// 移動の入力あるか
 	/// </summary>
-	const float _unitSpeed = 1;
+	bool bHasMovInput;
 
 	/// <summary>
 	/// 慣性の速度

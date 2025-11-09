@@ -110,12 +110,6 @@ private:
 	UMyGameInstance* GameInstance;
 
 	/// <summary>
-	/// 生成物
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	AActor* Product;
-
-	/// <summary>
 	/// 右手
 	/// </summary>
 	USphereComponent* RightHand;

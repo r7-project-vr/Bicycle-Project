@@ -74,11 +74,13 @@ private:
 	void HandleRPSData(const ASerialDataStruct::ASerialData& RPSData);
 
 	/// <summary>
-	/// 最大回転数を更新
+	/// 回転数を更新
 	/// </summary>
-	/// <param name="Value">最大回転数</param>
+	/// <param name="Standard">標準値</param>
+	/// <param name="Danger">危険値</param>
+	/// <param name="Safe">安全値</param>
 	UFUNCTION()
-	void UpdateMaxRPM(int Value);
+	void UpdateMaxRPM(int Standard, int Danger, int Safe);
 
 	/// <summary>
 	/// 貰ったデータから必要な数値に変換

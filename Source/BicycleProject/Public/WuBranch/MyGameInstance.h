@@ -162,32 +162,18 @@ private:
 public:
 
 	/// <summary>
-	/// 最大回転数をゲット
+	/// 回転数の標準値をセット
 	/// </summary>
-	/// <returns>最大回転数</returns>
+	/// <param name="Value">新しい値</param>
 	UFUNCTION(BlueprintCallable)
-	int GetMaxRPM() const;
-
-	/// <summary>
-	/// 最大回転数を設定
-	/// </summary>
-	/// <param name="Value">回転数</param>
-	UFUNCTION(BlueprintCallable)
-	void SetMaxRPM(int Value);
+	void SetStandardRPM(int Value);
 
 	/// <summary>
 	/// 回転数の標準値をゲット
 	/// </summary>
-	/// <returns>回転数の標準値</returns>
+	/// <returns></returns>
 	UFUNCTION(BlueprintCallable)
 	int GetStandardRPM() const;
-
-	/// <summary>
-	/// 回転数の標準値を設定
-	/// </summary>
-	/// <param name="Value">標準値</param>
-	UFUNCTION(BlueprintCallable)
-	void SetStandardRPM(int Value);
 
 	/// <summary>
 	/// 回転数の標準値をリセット
@@ -195,64 +181,61 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetStandardRPM();
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateStandardRPMDelegate, int, Num);
+	/// <summary>
+	/// RPMの閾値を変更
+	/// </summary>
+	/// <param name="Value">変更値</param>
+	UFUNCTION(BlueprintCallable)
+	void AdjustThreshold(int Value);
 
 	/// <summary>
-	/// 標準回転数が変わった通知
+	/// RPMの閾値をゲット
+	/// </summary>
+	/// <returns>閾値</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetThreshold() const;
+
+	/// <summary>
+	/// RPMの閾値をリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetThreshold();
+
+	/// <summary>
+	/// 危険値をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetDangerRPM() const;
+
+	/// <summary>
+	/// 安全値をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetSafeRPM() const;
+
+	/// <summary>
+	/// 最大RPMをゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetMaxRPM() const;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUpdateRPMDelegate, int, Standard, int, Danger, int, Safe);
+
+	/// <summary>
+	/// RPMが更新した通知
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
-	FUpdateStandardRPMDelegate OnUpdateStandardRPM;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateMaxRPMDelegate, int, Value);
-
-	/// <summary>
-	/// 最大回転数の更新通知
-	/// </summary>
-	UPROPERTY(BlueprintAssignable)
-	FUpdateMaxRPMDelegate OnUpdateMaxRPM;
-
-	/// <summary>
-	/// RPMの中央値を調整
-	/// </summary>
-	/// <param name="Value">調整値</param>
-	UFUNCTION(BlueprintCallable)
-	void AdjustCenterRPM(int Value);
-
-	/// <summary>
-	/// RPMの調整値を変更
-	/// </summary>
-	/// <param name="Value">新しい調整値</param>
-	UFUNCTION(BlueprintCallable)
-	void SetAdjustVal(float Value);
-
-	/// <summary>
-	/// RPMの調整値をゲット
-	/// </summary>
-	/// <returns>調整値</returns>
-	UFUNCTION(BlueprintCallable)
-	float GetAdjustVal() const;
-
-	/// <summary>
-	/// RPMの調整値をリセット
-	/// </summary>
-	void ResetAdjustVal();
+	FUpdateRPMDelegate OnUpdateRPM;
 
 private:
 
 	/// <summary>
-	/// 標準回転数が変わったのを通知する
+	/// RPMが更新したのを通知
 	/// </summary>
-	void NotifyUpdateStandardRPM();
-
-	/// <summary>
-	/// 最大回転数が変わったことを通知する
-	/// </summary>
-	void NotifyUpdateMaxRPM();
-
-	/// <summary>
-	/// 最大回転数
-	/// </summary>
-	int MaxRPM;
+	void NotifyUpdateRPM();
 
 	/// <summary>
 	/// 回転数の標準値
@@ -260,20 +243,16 @@ private:
 	int StandardRPM;
 
 	/// <summary>
-	/// 回転数の中央値
+	/// RPMの閾値
 	/// </summary>
-	int CenterRPM;
+	int RPMThreshold;
 
 	/// <summary>
-	/// 回転数の中央値の最大値
+	/// 回転数の最大値
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int MaxCenterRPM;
+	int MaxStandardRPM;
 
-	/// <summary>
-	/// RPMの調整値
-	/// </summary>
-	int RPMAdjustValue;
 #pragma endregion
 	
 #pragma region ペット

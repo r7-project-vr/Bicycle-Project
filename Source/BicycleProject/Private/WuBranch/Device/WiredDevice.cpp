@@ -35,8 +35,9 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	Device->SetInterfacePt(new WindowsSerial());
 	// RPM
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	GameInstance->OnUpdateMaxRPM.AddDynamic(this, &UWiredDevice::UpdateMaxRPM);
-	MaxRPM = GameInstance->GetMaxRPM();
+	GameInstance->OnUpdateRPM.AddDynamic(this, &UWiredDevice::UpdateMaxRPM);
+	// 危険値を最大値として使う
+	MaxRPM = GameInstance->GetDangerRPM();
 }
 
 void UWiredDevice::Tick(float DeltaTime)
@@ -178,9 +179,10 @@ void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 	NotifyMoveEvent(MoveVector);
 }
 
-void UWiredDevice::UpdateMaxRPM(int Value)
+void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
 {
-	MaxRPM = Value;
+	// 危険値を最大値として使う
+	MaxRPM = Danger;
 }
 
 template<typename T>

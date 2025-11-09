@@ -107,10 +107,10 @@ void UHeightTesterComponent::FinishRecalibration()
 	float Avg = CaculateAvg();
 
 	// 腕の長さを計算
-	float PlayerHiehgt = Avg - GetOwner()->GetActorLocation().Z;
+	float PlayerHeight = Avg - GetOwner()->GetActorLocation().Z;
 
 	// 7割り
-	UseResultInGame(PlayerHiehgt * 0.7);
+	UseResultInGame(PlayerHeight * 0.7);
 	NotifyRecalibrationCompleted();
 }
 

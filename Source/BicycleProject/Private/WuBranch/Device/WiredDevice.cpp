@@ -2,7 +2,9 @@
 
 
 #include "WuBranch/Device/WiredDevice.h"
+#if PLATFORM_WINDOWS
 #include "WuBranch/Device/DeviceCmdSender.h"
+#endif
 #include <WuBranch/MyGameInstance.h>
 
 #if PLATFORM_WINDOWS
@@ -271,6 +273,10 @@ bool UWiredDevice::CheckDevice()
 }
 
 void UWiredDevice::GetMoveDataFromDevice()
+{
+}
+
+void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
 {
 }
 

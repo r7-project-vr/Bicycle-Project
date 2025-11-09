@@ -12,6 +12,9 @@ UMyGameInstance::UMyGameInstance()
 	, StandardRPM(50)
 	, RPMThreshold(10)
 	, MaxStandardRPM(60)
+	// 2025.11.09 谷村 start
+	, NumOfSets(4)
+	// 2025.11.09 谷村 end
 {
 	DeviceManager = nullptr;
 }

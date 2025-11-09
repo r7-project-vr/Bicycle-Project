@@ -254,7 +254,16 @@ private:
 	int MaxStandardRPM;
 
 #pragma endregion
-	
+
+	// 2025.11.09 谷村 start
+public:
+	/// <summary>
+	/// セット数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 NumOfSets;
+	// 2025.11.09 谷村 end
+
 #pragma region ペット
 public:
 

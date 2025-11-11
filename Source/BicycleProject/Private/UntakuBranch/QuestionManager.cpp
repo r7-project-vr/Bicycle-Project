@@ -2,6 +2,7 @@
 
 
 #include "UntakuBranch/QuestionManager.h"
+#include "WuBranch/MyGameInstance.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 
@@ -99,25 +100,36 @@ TArray<FQuestion*> AQuestionManager::GetQuizs(int32 NeedAmount)
 
 void AQuestionManager::TestRandomQuestions()
 {
-	int32 NumToDraw = 3;//自由設定できる　抽選問題数
-	TArray<FQuestion> RandomQuestions = GetRandomQuestions(NumToDraw);
-
-	int32 MessageKey = 0;
-
-	for (const FQuestion& Q : RandomQuestions)
+	// 2025.11.12 谷村 start
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	if (!GameInstance)
 	{
-		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
-		//	FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
+		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
+	}
+	// 2025.11.12 谷村 end
+	else
+	{
+		TArray<FQuestion> RandomQuestions = GetRandomQuestions(GameInstance->NumOfSets);
+		//int32 NumToDraw = 3;//自由設定できる　抽選問題数
+		//TArray<FQuestion> RandomQuestions = GetRandomQuestions(NumToDraw);
 
-		for (int32 i = 0; i < Q.AnswerContents.Num(); ++i)
+		int32 MessageKey = 0;
+
+		for (const FQuestion& Q : RandomQuestions)
 		{
-			TCHAR OptionChar = 'A' + i;
-			//FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
-			//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
-		}
+			//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Cyan,
+			//	FString::Printf(TEXT("[QuestionID: %d] %s"), Q.ID, *Q.Content));
 
-		//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
-		//	FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
+			for (int32 i = 0; i < Q.AnswerContents.Num(); ++i)
+			{
+				TCHAR OptionChar = 'A' + i;
+				//FString OptionStr = FString::Printf(TEXT("%c. %s "), OptionChar, *Q.AnswerContents[i]);
+				//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::White, OptionStr);
+			}
+
+			//GEngine->AddOnScreenDebugMessage(MessageKey++, 8.f, FColor::Green,
+			//	FString::Printf(TEXT("CorrectAnswer: %d"), Q.Correct));
+		}
 	}
 }
 

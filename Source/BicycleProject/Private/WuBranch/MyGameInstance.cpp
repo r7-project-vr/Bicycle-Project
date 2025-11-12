@@ -12,6 +12,9 @@ UMyGameInstance::UMyGameInstance()
 	, StandardRPM(50)
 	, RPMThreshold(10)
 	, MaxStandardRPM(60)
+	// 2025.11.09 谷村 start
+	, NumOfSets(4)
+	// 2025.11.09 谷村 end
 {
 	DeviceManager = nullptr;
 }
@@ -168,6 +171,15 @@ void UMyGameInstance::NotifyUpdateRPM()
 		OnUpdateRPM.Broadcast(GetStandardRPM(), GetDangerRPM(), GetSafeRPM());
 }
 #pragma endregion
+
+// 2025.11.12 谷村 start
+#pragma region セット数
+void UMyGameInstance::SetNumOfSets(int Value)
+{
+	NumOfSets = Value;
+}
+#pragma endregion
+// 2025.11.12 谷村 end
 
 #pragma region 動物
 void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)

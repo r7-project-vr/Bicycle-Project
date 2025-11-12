@@ -255,6 +255,24 @@ private:
 
 #pragma endregion
 	
+// 2025.11.12 谷村 start
+#pragma region セット数
+public:
+	/// <summary>
+	/// セット数をセット
+	/// </summary>
+	/// <param name="Value">新しい値</param>
+	UFUNCTION(BlueprintCallable)
+	void SetNumOfSets(int Value);
+
+	/// <summary>
+	/// セット数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 NumOfSets;
+#pragma endregion
+// 2025.11.12 谷村 end
+
 #pragma region ペット
 public:
 

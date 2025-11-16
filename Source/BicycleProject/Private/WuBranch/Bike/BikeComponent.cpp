@@ -17,6 +17,7 @@
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
 	: CoinsOfQuiz(0)
+	, bIsPenalty(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -37,8 +38,9 @@ void UBikeComponent::BeginPlay()
 
 	// ...
 
-	_isAutoPlay = false;
+	bIsAutoPlay = false;
 	CoinsOfQuiz = 0;
+	bIsPenalty = false;
 }
 
 // Called every frame
@@ -48,7 +50,7 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// ...
 
-	if (_isAutoPlay)
+	if (bIsAutoPlay)
 	{
 		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
 		{
@@ -81,21 +83,21 @@ void UBikeComponent::ReduceVelocityTo0()
 
 void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
-	_isAutoPlay = true;
+	bIsAutoPlay = true;
 	_questionActor = actor;
 	NotifyAutoPlay();
 }
 
 void UBikeComponent::DisableAutoPlay()
 {
-	_isAutoPlay = false;
+	bIsAutoPlay = false;
 	_questionActor = nullptr;
 	NotifyAutoPlay();
 }
 
 bool UBikeComponent::GetIsAutoPlay() const
 {
-	return _isAutoPlay;
+	return bIsAutoPlay;
 }
 
 void UBikeComponent::SetSynchPos(FVector pos)
@@ -122,6 +124,11 @@ void UBikeComponent::AddCoins(int Amount)
 	CoinsOfQuiz += Amount;
 }
 
+bool UBikeComponent::IsInPenalty() const
+{
+	return bIsPenalty;
+}
+
 void UBikeComponent::HandleInertia(float DeltaTime)
 {
 	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
@@ -138,6 +145,17 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
+	// ペナルティ中またはオートプレイ中は移動しない
+	if (bIsPenalty || bIsAutoPlay)
+		return;
+
+	// 加速が最大になるとペナルティ
+	if (direction.Length() == 1)
+	{
+		HandlePenalty();
+		return;
+	}
+
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
@@ -279,5 +297,24 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 
 void UBikeComponent::NotifyAutoPlay()
 {
-	OnUpdateAutoPlayEvent.Broadcast(_isAutoPlay);
+	OnUpdateAutoPlayEvent.Broadcast(bIsAutoPlay);
+}
+
+void UBikeComponent::HandlePenalty()
+{
+	FTimerHandle PenaltyTimerHandle;
+	bIsPenalty = true;
+	// ペナルティ時間後にキャンセル
+	GetWorld()->GetTimerManager().SetTimer(
+		PenaltyTimerHandle,
+		this,
+		&UBikeComponent::CancelPenalty,
+		PenaltyDuration,
+		false
+	);
+}
+
+void UBikeComponent::CancelPenalty()
+{
+	bIsPenalty = false;
 }

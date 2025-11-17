@@ -202,12 +202,12 @@ void UMyGameInstance::RemoveAnimal(TSubclassOf<AAnimal> Animal)
 	if (!Animal)
 		return;
 
-	// 配列から見つけない
+	// 配列のなかに見当たらない
 	if (Animals.Num() > 0 && Animals.Contains(Animal))
 		return;
 
 	// 削除
-	//Animals.Remove(Animal);
+	Animals.Remove(Animal);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const

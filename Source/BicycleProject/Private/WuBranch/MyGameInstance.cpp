@@ -118,7 +118,7 @@ void UMyGameInstance::SetGameResult(bool Result)
 #pragma region RPM
 void UMyGameInstance::SetStandardRPM(int Value)
 {
-	StandardRPM = FMath::Clamp(StandardRPM + Value * RPMThreshold, 0, MaxStandardRPM);
+	StandardRPM = FMath::Clamp(Value, 0, MaxStandardRPM);
 	NotifyUpdateRPM();
 }
 

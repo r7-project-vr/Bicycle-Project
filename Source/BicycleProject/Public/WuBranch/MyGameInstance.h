@@ -50,13 +50,30 @@ public:
 	/// コインを取得
 	/// </summary>
 	/// <returns></returns>
-	int GetCoins() const;
+	int GetTotalCoins() const;
 
 	/// <summary>
-	/// コインを追加
+	/// コインを設定
 	/// </summary>
-	/// <param name="Amount">追加する量</param>
-	void AddCoins(int Amount);
+	/// <param name="Amount">新しいコイン数</param>
+	void SetTotalCoins(int NewCoin);
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインを追加
+	/// </summary>
+	/// <param name="Amount">追加量</param>
+	void AddCoinsPerGame(int Amount);
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインをリセット
+	/// </summary>
+	void ResetCoinsPerGame();
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインを取得
+	/// </summary>
+	/// <returns></returns>
+	int GetCoinsPerGame() const;
 
 	/// <summary>
 	/// コインの高さを取得
@@ -121,7 +138,13 @@ private:
 	/// 持ってるコイン
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int Coins;
+	int TotalCoins;
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインの数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int CoinsPerGame;
 
 	// コインの高さ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

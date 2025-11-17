@@ -41,6 +41,10 @@ void UBikeComponent::BeginPlay()
 	bIsAutoPlay = false;
 	CoinsOfQuiz = 0;
 	bIsPenalty = false;
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Bike Component Begin Play"));
+	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+		GameInstance->ResetCoinsPerGame();
 }
 
 // Called every frame
@@ -175,7 +179,7 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 入力した方向をキャラクターの向きに合わせる
 	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
 	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
+	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
@@ -290,7 +294,8 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 	// 保存
 	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
-		GameInstance->AddCoins(CoinsOfQuiz);
+		GameInstance->AddCoinsPerGame(CoinsOfQuiz);
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("CoinsOfQuiz: %d"), CoinsOfQuiz));
 	// リセット
 	CoinsOfQuiz = 0;
 }

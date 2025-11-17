@@ -7,7 +7,7 @@
 #include "WuBranch/Actor/Animal.h"
 
 UMyGameInstance::UMyGameInstance()
-	: Coins(0)
+	: TotalCoins(0)
 	, IsClear(false)
 	, StandardRPM(50)
 	, RPMThreshold(10)
@@ -39,19 +39,34 @@ UDeviceManager* UMyGameInstance::GetDeviceManager() const
 #pragma endregion
 
 #pragma region コイン
-int UMyGameInstance::GetCoins() const
+int UMyGameInstance::GetTotalCoins() const
 {
-	return Coins;
+	return TotalCoins;
 }
 
-void UMyGameInstance::AddCoins(int Amount)
+void UMyGameInstance::SetTotalCoins(int Amount)
 {
-	Coins += Amount;
-	if (Coins < 0)
-	{
-		Coins = 0; // コインがマイナスにならないようにする
-	}
+	TotalCoins = FMath::Clamp(Amount, 0, INT32_MAX);
 	UpdateCoin();
+}
+
+void UMyGameInstance::AddCoinsPerGame(int Amount)
+{
+	// 無効な値
+	if(Amount <= 0)
+		return;
+
+	CoinsPerGame += Amount;
+}
+
+void UMyGameInstance::ResetCoinsPerGame()
+{
+	CoinsPerGame = 0;
+}
+
+int UMyGameInstance::GetCoinsPerGame() const
+{
+	return CoinsPerGame;
 }
 
 float UMyGameInstance::GetCoinHeight() const
@@ -78,7 +93,7 @@ void UMyGameInstance::SaveCoinsToFile()
 
 void UMyGameInstance::ReadCoinFromFile()
 {
-	Coins = 0; // 初期化
+	TotalCoins = 0; // 初期化
 	CoinHeight = 475.f;
 }
 
@@ -86,7 +101,7 @@ void UMyGameInstance::UpdateCoin()
 {
 	if (OnUpdateCoin.IsBound())
 	{
-		OnUpdateCoin.Broadcast(Coins);
+		OnUpdateCoin.Broadcast(TotalCoins);
 	}
 }
 

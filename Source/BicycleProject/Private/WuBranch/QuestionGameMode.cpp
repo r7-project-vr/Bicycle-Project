@@ -226,6 +226,8 @@ void AQuestionGameMode::EndGame(bool GameResult)
 	//GameInstance->SaveQuizsForResult(_questions);
 	// 結果を記録
 	GameInstance->SetGameResult(GameResult);
+	// コインの決算
+	GameInstance->SetTotalCoins(GameInstance->GetTotalCoins() + GameInstance->GetCoinsPerGame());
 	// ゴールをプレイヤーの進行先に置く
 	PlaceGoal();
 }

@@ -5,6 +5,8 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <UntakuBranch/Question.h>
 #include "WuBranch/Actor/Animal.h"
+#include "WuBranch/System/FileOperator.h"
+#include "WuBranch/Struct/GameData.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -86,15 +88,15 @@ void UMyGameInstance::ResetCoinHeight()
 	UpdateCoinHeight();
 }
 
-void UMyGameInstance::SaveCoinsToFile()
+void UMyGameInstance::PrepareCoinFileData(FGameData& oData)
 {
-
+	oData.TotalCoins = TotalCoins;
 }
 
-void UMyGameInstance::ReadCoinFromFile()
+void UMyGameInstance::InitializeCoin()
 {
 	TotalCoins = 0; // 初期化
-	CoinHeight = 475.f;
+	CoinHeight = 100.f;
 }
 
 void UMyGameInstance::UpdateCoin()
@@ -235,8 +237,16 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 	MaxAnimalCount = Amount;
 }
 
-void UMyGameInstance::SaveAnimalToFile()
+void UMyGameInstance::PrepareAnimalFileData(FGameData& oData)
 {
+	for (TSubclassOf<AAnimal> AnimalClass : Animals)
+	{
+		oData.Animals.Add(FSoftClassPath(AnimalClass));
+	}
+}
+void UMyGameInstance::InitializeAnimal()
+{
+	Animals.Empty();
 }
 #pragma endregion
 
@@ -255,12 +265,80 @@ FVector UMyGameInstance::GetBikeOffset() const
 #pragma region セーブ
 void UMyGameInstance::SaveAllToFile()
 {
-	SaveAnimalToFile();
-	SaveCoinsToFile();
+	FString Path = FileOperator::GetInstance().GetFullPath(FileName);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Path);
+
+	// セーブデータ作成
+	FGameData SaveData;
+	PrepareAnimalFileData(SaveData);
+	PrepareCoinFileData(SaveData);
+
+	// JSONに変換
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+	JsonObject->SetNumberField(CoinKey, SaveData.TotalCoins);
+	TArray<TSharedPtr<FJsonValue>> AnimalArray;
+	for (const FSoftClassPath& AnimalPath : SaveData.Animals)
+	{
+		AnimalArray.Add(MakeShareable(new FJsonValueString(AnimalPath.ToString())));
+	}
+	JsonObject->SetArrayField(AnimalKey, AnimalArray);
+
+	// JSONを文字列に変換
+	FString OutputString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+	if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer))
+	{
+		// ファイルに書き込み
+		if (FileOperator::GetInstance().WriteFile(Path, OutputString))
+		{
+			UE_LOG(LogTemp, Log, TEXT("セーブ成功"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("セーブ失敗: ファイル書き込みエラー"));
+		}
+	}
 }
 
 void UMyGameInstance::ReadAll()
 {
-	ReadCoinFromFile();
+	FString Data;
+	if (FileOperator::GetInstance().ReadFile(FileName, Data))
+	{
+		// 文字列をJSONに変換
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Data);
+		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+		{
+			// データを読み込み
+			TotalCoins = JsonObject->GetIntegerField(CoinKey);
+			Animals.Empty();
+			const TArray<TSharedPtr<FJsonValue>>* AnimalArray;
+			if (JsonObject->TryGetArrayField(AnimalKey, AnimalArray))
+			{
+				for (const TSharedPtr<FJsonValue>& Value : *AnimalArray)
+				{
+					FString AnimalPathString = Value->AsString();
+					FSoftClassPath AnimalPath(AnimalPathString);
+					UClass* AnimalClass = AnimalPath.TryLoadClass<AAnimal>();
+					if (AnimalClass)
+					{
+						Animals.Add(AnimalClass);
+					}
+				}
+			}
+			return; // 正常終了
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("セーブデータの読み込み失敗: JSON解析エラー"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("セーブデータが存在しません。初期値を使用します。"));
+		InitializeCoin();
+		InitializeAnimal();
+	}
 }
 #pragma endregion

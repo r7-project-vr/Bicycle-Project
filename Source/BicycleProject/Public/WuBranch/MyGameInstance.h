@@ -8,6 +8,7 @@
 
 class UDeviceManager;
 struct FQuestion;
+struct FGameData;
 class AAnimal;
 
 /**
@@ -115,14 +116,15 @@ public:
 private:
 
 	/// <summary>
-	/// コインをファイルに保存
+	/// コインデータをファイル用に準備
 	/// </summary>
-	void SaveCoinsToFile();
+	/// <param name="oData">データ</param>
+	void PrepareCoinFileData(FGameData& oData);
 
 	/// <summary>
-	/// ファイルからコインを読み込む
+	/// コインの初期化
 	/// </summary>
-	void ReadCoinFromFile();
+	void InitializeCoin();
 
 	/// <summary>
 	/// コインの数を更新
@@ -149,6 +151,8 @@ private:
 	// コインの高さ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float CoinHeight;
+
+	const FString CoinKey = TEXT("TotalCoins");
 #pragma endregion
 	
 #pragma region ゲーム結果
@@ -329,7 +333,13 @@ private:
 	/// <summary>
 	/// 動物をファイルに保存
 	/// </summary>
-	void SaveAnimalToFile();
+	/// <param name="oData">データ</param>
+	void PrepareAnimalFileData(FGameData& oData);
+
+	/// <summary>
+	/// 動物の初期化
+	/// </summary>
+	void InitializeAnimal();
 
 	/// <summary>
 	/// 一ゲーム内でついてくる動物
@@ -341,6 +351,8 @@ private:
 	/// 最大ついて来れる動物の数
 	/// </summary>
 	int MaxAnimalCount;
+
+	const FString AnimalKey = TEXT("Animals");
 #pragma endregion
 
 #pragma region 自転車調整
@@ -372,6 +384,7 @@ public:
 	/// <summary>
 	/// すべてのデータをセーブ
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void SaveAllToFile();
 
 private:
@@ -380,5 +393,10 @@ private:
 	/// すべてのデータを読み込む
 	/// </summary>
 	void ReadAll();
+
+	/// <summary>
+	/// セーブファイル名
+	/// </summary>
+	const FString FileName = TEXT("GameData.ini");
 #pragma endregion
 };

@@ -9,7 +9,7 @@ public class BicycleProject : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// 共通
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "Foliage", "AIModule" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "Foliage", "AIModule", "Json", "JsonUtilities" });
 
 		// Windowsだけ
         if (Target.Platform == UnrealTargetPlatform.Win64)

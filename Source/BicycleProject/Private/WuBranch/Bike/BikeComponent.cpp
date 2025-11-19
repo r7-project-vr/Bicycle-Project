@@ -41,7 +41,6 @@ void UBikeComponent::BeginPlay()
 	bIsAutoPlay = false;
 	CoinsOfQuiz = 0;
 	bIsPenalty = false;
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Bike Component Begin Play"));
 	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 		GameInstance->ResetCoinsPerGame();
@@ -295,7 +294,6 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 		GameInstance->AddCoinsPerGame(CoinsOfQuiz);
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("CoinsOfQuiz: %d"), CoinsOfQuiz));
 	// リセット
 	CoinsOfQuiz = 0;
 }

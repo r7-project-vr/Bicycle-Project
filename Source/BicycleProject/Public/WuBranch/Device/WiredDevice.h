@@ -10,6 +10,14 @@
 class UASerialLibControllerWin;
 class DeviceCmdSender;
 
+enum class ECommandType : uint8_t
+{
+	RPM = 0x21,
+	RPS = 0x22,
+	Revolutions = 0x24,
+	RevolutionsReset = 0x25,
+};
+
 /**
  * 
  */
@@ -62,6 +70,12 @@ public:
 private:
 	
 	/// <summary>
+	/// 受け取ったデータを処理する
+	/// </summary>
+	/// <param name="Data"></param>
+	void HandleReceivedData(const ASerialDataStruct::ASerialData& Data);
+
+	/// <summary>
 	/// RPMデータを受け取った時の処理
 	/// </summary>
 	/// <param name="RPMData">RPMデータ</param>
@@ -72,6 +86,12 @@ private:
 	/// </summary>
 	/// <param name="RPSData">RPSデータ</param>
 	void HandleRPSData(const ASerialDataStruct::ASerialData& RPSData);
+
+	/// <summary>
+	/// 回転数データを受け取った時の処理
+	/// </summary>
+	/// <param name="RevolutionsData">回転数データ</param>
+	void HandleRevolutionsData(const ASerialDataStruct::ASerialData& RevolutionsData);
 
 	/// <summary>
 	/// 回転数を更新
@@ -96,6 +116,17 @@ private:
 	/// </summary>
 	/// <param name="MoveData">移動量</param>
 	void NotifyMoveEvent(FVector2D MoveData);
+
+	/// <summary>
+	/// 回転数イベントを通知
+	/// </summary>
+	/// <param name="Revolutions">回転数</param>
+	void NotifyRevolutionsEvent(int Revolutions);
+
+	/// <summary>
+	/// 次のコマンドをリクエストする
+	/// </summary>
+	void RequestNextCommand();
 
 	/// <summary>
 	/// 移動機能のスイッチ
@@ -128,4 +159,8 @@ private:
 	/// </summary>
 	float MaxRPM;
 
+	/// <summary>
+	/// 現在のリクエストコマンド
+	/// </summary>
+	ECommandType CurrentRequestCommand;
 };

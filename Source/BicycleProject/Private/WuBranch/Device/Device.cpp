@@ -63,3 +63,13 @@ void UDevice::BindSelectRightEvent_Implementation(UObject* Object, FName Functio
 		OnSelectRightEvent.Add(Delegate);
 	}
 }
+
+void UDevice::BindRevolutionsEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnRevolutionsEvent.Add(Delegate);
+	}
+}

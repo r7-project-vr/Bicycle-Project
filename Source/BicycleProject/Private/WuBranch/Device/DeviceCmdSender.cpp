@@ -41,6 +41,8 @@ uint32 DeviceCmdSender::Run()
 		if (IsPause)
 			continue;
 
+		double StartTime = FPlatformTime::Seconds();
+
 		/*uint8_t Command;
 		if (CommandQueue->Dequeue(Command))
 		{
@@ -49,11 +51,18 @@ uint32 DeviceCmdSender::Run()
 				UE_LOG(LogTemp, Error, TEXT("Do command %d fail"), Command);
 			}
 		}*/
+		HandleCommand();
 
-		GetRPMData();
+		//GetRPMData();
 
-		// 頻度に応じてスリープ
-		FPlatformProcess::Sleep(1.f / Frequency);
+		double Elapsed = FPlatformTime::Seconds() - StartTime;
+		double SleepTime = 1.f / Frequency - Elapsed;
+
+		if (SleepTime > 0)
+		{
+			// 更新頻度に応じてスリープ
+			FPlatformProcess::Sleep(SleepTime);
+		}
 	}
 	return 0;
 }
@@ -120,6 +129,67 @@ bool DeviceCmdSender::DoCommand(uint8_t Command)
 		DataQueue->Enqueue(RPMData);
 	}
 	return true;
+}
+
+void DeviceCmdSender::HandleCommand()
+{
+	UASerialLibControllerWin* Device = DeviceWP.Get();
+	if (!Device)
+		return;
+
+	switch (CurrentState)
+	{
+	case EProcessState::Idle:
+		if(!CommandQueue->IsEmpty())
+			CurrentState = EProcessState::Sending;
+		break;
+	case EProcessState::Sending:
+	{
+		uint8_t Command;
+		CommandQueue->Peek(Command);
+		// コマンドを送信
+		if (!SendCommand(Device, Command))
+			return;
+
+		// 返信を確認する。もし返信がない場合は待つ状態に移行
+		ASerialDataStruct::ASerialData Data;
+		if (WaitForDeviceResponse(Device, Data))
+		{
+			// 返信を貰った場合
+			//Data.command = Command;
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Received Data for Command: %d"), Command));
+			// データが正常に取得できた場合、キューに追加
+			DataQueue->Enqueue(Data);
+			// コマンドを削除
+			CommandQueue->Pop();
+			// 次のコマンドを待つ状態に移行
+			CurrentState = EProcessState::Idle;
+		}
+		else
+		{
+			// 貰ってない場合、レスポンスを待つ状態に移行
+			CurrentState = EProcessState::WaitingResponse;
+		}
+		break;
+	}
+	case EProcessState::WaitingResponse:
+	{
+		// チェックコマンドを送信
+		if (!SendCommand(Device, CheckCmd))
+			return;
+
+		ASerialDataStruct::ASerialData Data;
+		if (WaitForDeviceResponse(Device, Data))
+		{
+			// データが正常に取得できた場合
+			if (Data.data[0] == 1)
+			{
+				CurrentState = EProcessState::Sending;
+			}
+		}
+		break;
+	}
+	}
 }
 
 void DeviceCmdSender::GetRPMData()

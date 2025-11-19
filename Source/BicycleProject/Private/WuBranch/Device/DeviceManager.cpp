@@ -200,6 +200,16 @@ void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
 	}
 }
 
+void UDeviceManager::BindRevolutionsEvent(UObject* Object, FName FunctionName)
+{
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Foot);
+	if (Device)
+	{
+		IMoveProvider::Execute_BindRevolutionsEvent(Device, Object, FunctionName);
+	}
+}
+
 UDevice* UDeviceManager::CreateKeyBoardDevice()
 {
 	UDevice* Device = NewObject<UKeyboardDevice>(this);

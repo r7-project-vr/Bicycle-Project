@@ -245,6 +245,11 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	SpawnMap(false);
 }
 
+void UBikeComponent::OnRevolutions(int Revolutions)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("Revolutions: %d"), Revolutions));
+}
+
 void UBikeComponent::DisableSelectAnswerAction()
 {
 	UMyGameInstance* gameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();

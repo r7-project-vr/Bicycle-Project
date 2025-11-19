@@ -80,6 +80,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		DeviceManager->BindMoveEvent(_bike, "OnMove");
 		DeviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
 		DeviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
+		DeviceManager->BindRevolutionsEvent(_bike, "OnRevolutions");
 	}
 }
 

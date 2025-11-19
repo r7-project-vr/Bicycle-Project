@@ -72,6 +72,8 @@ public:
 
 	void BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName) override;
 
+	void BindRevolutionsEvent_Implementation(UObject* Object, FName FunctionName) override;
+
 protected:
 
 	/// <summary>
@@ -91,6 +93,12 @@ protected:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FSelectV2Delegate OnSelectRightEvent;
+
+	/// <summary>
+	/// 回転数イベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FRevolutionsDelegate OnRevolutionsEvent;
 
 	/// <summary>
 	/// デバイスの名前

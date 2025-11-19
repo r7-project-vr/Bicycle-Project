@@ -121,6 +121,14 @@ public:
 	UFUNCTION()
 	void BindSelectRightEvent(UObject* object, FName functionName);
 
+	/// <summary>
+	/// 回転イベントをバインドする
+	/// </summary>
+	/// <param name="Object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="FunctionName">関数名</param>
+	UFUNCTION()
+	void BindRevolutionsEvent(UObject* Object, FName FunctionName);
+
 private:
 
 	/// <summary>

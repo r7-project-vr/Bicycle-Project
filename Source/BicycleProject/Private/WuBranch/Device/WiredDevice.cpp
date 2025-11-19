@@ -10,6 +10,7 @@ UWiredDevice::UWiredDevice()
 	: MoveSwitch(false)
 	, Device(nullptr)
 	, CmdSender(nullptr)
+	, CurrentRequestCommand(ECommandType::RPM)
 {
 }
 
@@ -46,7 +47,10 @@ void UWiredDevice::Tick(float DeltaTime)
 	{
 		ASerialDataStruct::ASerialData RPMData;
 		DataQueue.Dequeue(RPMData);
-		HandleRPMData(RPMData);
+		// 次のコマンドをリクエストする
+		RequestNextCommand();
+		// データを処理する
+		HandleReceivedData(RPMData);
 	}
 }
 
@@ -85,7 +89,8 @@ bool UWiredDevice::Connect()
 		State = EDeviceConnectType::Connected;
 
 		CmdSender = new DeviceCmdSender(Device, &CommandQueue, &DataQueue);
-
+		// 最初にRPMコマンドを送信する
+		CommandQueue.Enqueue((uint8_t)CurrentRequestCommand);
 		return true;
 	}
 	else
@@ -162,6 +167,24 @@ void UWiredDevice::GetMoveDataFromDevice()
 	}
 }
 
+void UWiredDevice::HandleReceivedData(const ASerialDataStruct::ASerialData& Data)
+{
+	switch (Data.command)
+	{
+	case (uint8_t)ECommandType::RPM:
+		HandleRPMData(Data);
+		break;
+	case (uint8_t)ECommandType::RPS:
+		HandleRPSData(Data);
+		break;
+	case (uint8_t)ECommandType::Revolutions:
+		HandleRevolutionsData(Data);
+		break;
+	default:
+		break;
+	}
+}
+
 void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 {
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
@@ -177,6 +200,12 @@ void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
 	FVector2D MoveVector((float)RPS / 100.f, 0);
 	NotifyMoveEvent(MoveVector);
+}
+
+void UWiredDevice::HandleRevolutionsData(const ASerialDataStruct::ASerialData& RevolutionsData)
+{
+	int Revolutions = TransformDataToInt<int>(RevolutionsData.data, RevolutionsData.data_num);
+	NotifyRevolutionsEvent(Revolutions);
 }
 
 void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
@@ -205,6 +234,30 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UWiredDevice::NotifyRevolutionsEvent(int Revolutions)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnRevolutionsEvent.IsBound())
+		OnRevolutionsEvent.Broadcast(Revolutions);
+}
+
+void UWiredDevice::RequestNextCommand()
+{
+	// 次のコマンドをセット
+	if (CurrentRequestCommand == ECommandType::RPM)
+	{
+		CurrentRequestCommand = ECommandType::Revolutions;
+	}
+	else if (CurrentRequestCommand == ECommandType::Revolutions)
+	{
+		CurrentRequestCommand = ECommandType::RPM;
+	}
+	CommandQueue.Enqueue((uint8_t)CurrentRequestCommand);
 }
 
 #elif PLATFORM_ANDROID

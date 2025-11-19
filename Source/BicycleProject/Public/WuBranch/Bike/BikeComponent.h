@@ -131,6 +131,13 @@ private:
 	void OnMove(FVector2D direction);
 
 	/// <summary>
+	/// 回転数の処理
+	/// </summary>
+	/// <param name="Revolutions">回転数</param>
+	UFUNCTION()
+	void OnRevolutions(int Revolutions);
+
+	/// <summary>
 	/// 答えを選ぶ動作を機能させない
 	/// </summary>
 	void DisableSelectAnswerAction();

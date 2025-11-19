@@ -9,6 +9,12 @@
 #include "ASerialLibControllerWin.h"
 #include "Containers/Queue.h"
 
+enum class EProcessState
+{
+	Idle,           // 待機
+	Sending,        // コマンドを送る
+	WaitingResponse,// 返信を待つ
+};
 
 /**
  * 
@@ -46,6 +52,11 @@ private:
 	/// </summary>
 	/// <param name="Command"></param>
 	bool DoCommand(uint8_t Command);
+
+	/// <summary>
+	/// コマンドを処理する
+	/// </summary>
+	void HandleCommand();
 
 	/// <summary>
 	/// RPMデータを取得する
@@ -103,6 +114,11 @@ private:
 	/// 頻度
 	/// </summary>
 	float Frequency = 60.0f;
+
+	/// <summary>
+	/// 現在のプロセス状態
+	/// </summary>
+	EProcessState CurrentState;
 
 	/// <summary>
 	/// チェックのコマンド

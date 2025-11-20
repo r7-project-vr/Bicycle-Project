@@ -15,6 +15,7 @@
 #include "UntakuBranch/QuestionManager.h"
 #include <ShiiBranch/OptionUIWidget.h>
 #include <Components/WidgetComponent.h>
+#include "WuBranch/MyGameInstance.h"
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -32,6 +33,17 @@ void AQuestionGameMode::BeginPlay()
 	WrongNum = 0;
 	QuestionIndex = 0;
 	CurrentState = QuestionGameState::Playing;
+	// 2025.11.19 谷村 start
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	if (!GameInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Get Game Instance Error!"));
+	}
+	else
+	{
+		SuccessCondition = GameInstance->NumOfSets;
+	}
+	// 2025.11.19 谷村 end
 
 	GetAllQuestions();
 }
@@ -226,6 +238,8 @@ void AQuestionGameMode::EndGame(bool GameResult)
 	//GameInstance->SaveQuizsForResult(_questions);
 	// 結果を記録
 	GameInstance->SetGameResult(GameResult);
+	// コインの決算
+	GameInstance->SetTotalCoins(GameInstance->GetTotalCoins() + GameInstance->GetCoinsPerGame());
 	// ゴールをプレイヤーの進行先に置く
 	PlaceGoal();
 }

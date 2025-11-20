@@ -8,6 +8,7 @@
 
 class UBoxComponent;
 class AWildAnimal;
+class ACharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UWildAnimalManagerComponent : public USceneComponent
@@ -15,79 +16,56 @@ class BICYCLEPROJECT_API UWildAnimalManagerComponent : public USceneComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UWildAnimalManagerComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	/// <summary>
-	/// ランダムのシードを設定する
-	/// </summary>
-	/// <param name="Seed">シード</param>
+public:
+	UFUNCTION(BlueprintCallable, Category = "Wild Animal")
 	void SetSeed(int Seed);
 
-	/// <summary>
-	/// 動物の生成を開始する
-	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "Wild Animal")
 	void StartSpawnAnimal();
 
-	/// <summary>
-	/// すべての動物を削除
-	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "Wild Animal")
 	void DestroyAllAnimals();
 
-private:
+protected:
+	// 普通動物のリスト
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
+	TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;
 
-	/// <summary>
-	/// 確率の合計を計算
-	/// </summary>
-	void CaculateTotalProbility();
+	// レア動物のリスト
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
+	TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
 
-	/// <summary>
-	/// 動物を生成する
-	/// </summary>
-	/// <param name="Character">動物の目標</param>
-	/// <param name="Target">生成する動物</param>
-	/// <param name="Location">座標</param>
-	/// <param name="Rotation">回転</param>
-	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation);
-
-	/// <summary>
-	/// 実際生成する動物を決める
-	/// </summary>
-	/// <returns>動物</returns>
-	TSubclassOf<AWildAnimal> DecideAnimal();
-
-	/// <summary>
-	/// 野良動物の位置
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wild Animal|Spawn Settings")
 	TArray<UBoxComponent*> WildAnimalSpawnLocations;
 
-	/// <summary>
-	/// 野良動物の種類と確率
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TMap<TSubclassOf<AWildAnimal>, int> WildAnimalTypes;
-		
-	/// <summary>
-	/// 確率の合計
-	/// </summary>
-	int TotalProbility;
-
-	/// <summary>
-	/// 生成した野良動物
-	/// </summary>
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wild Animal")
 	TArray<AWildAnimal*> SpawnedAnimals;
 
-	/// <summary>
-	/// ランダム生成器
-	/// </summary>
+private:
+	// ランダムストリーム
 	FRandomStream RandomStream;
+	
+	// RandomStream が初期化されたかを追跡するフラグ（インスタンス変数）
+	bool bRandomStreamInitialized;
+
+	// 普通動物とレア動物の確率テーブル
+	struct FAnimalProbabilityEntry
+	{
+		TSubclassOf<AWildAnimal> AnimalClass;
+		float CumulativeProbability; // 累積確率
+	};
+	TArray<FAnimalProbabilityEntry> ProbabilityTable;
+
+	// ヘルパーメソッド
+	void BuildProbabilityTable();
+	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation);
+	TSubclassOf<AWildAnimal> DecideAnimal();
+	
+	/** RandomStream が初期化されているか確認し、必要なら初期化する */
+	void EnsureRandomStreamInitialized();
 };

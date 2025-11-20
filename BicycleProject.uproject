@@ -32,7 +32,13 @@
 		},
 		{
 			"Name": "OpenXRHandTracking",
-			"Enabled": true
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Android",
+				"VisionOS"
+			]
 		},
 		{
 			"Name": "UdpMessaging",
@@ -49,6 +55,11 @@
 		{
 			"Name": "VisualStudioTools",
 			"Enabled": true
+		},
+		{
+			"Name": "BleGoodies",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9ad1594e91da4da1aa72fb617697c9f7"
 		}
 	]
 }

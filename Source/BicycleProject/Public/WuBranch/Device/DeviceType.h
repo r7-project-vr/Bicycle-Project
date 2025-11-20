@@ -31,7 +31,8 @@ enum class EDevicePart : uint8
 UENUM(BlueprintType)
 enum class EDeviceConnectType : uint8
 {
-	UnConnected,
+	Disconnected,
+	Disconnecting,
 	Connecting,
 	Connected,
 };

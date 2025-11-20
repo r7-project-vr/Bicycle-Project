@@ -133,6 +133,10 @@ private:
 	/// </summary>
 	UDevice* CreateWiredDevice();
 
+	/// 自作デバイスを作る
+	/// </summary>
+	void CreateCustomDevice();
+
 	/// <summary>
 	/// 装置(複数の場合)
 	/// </summary>

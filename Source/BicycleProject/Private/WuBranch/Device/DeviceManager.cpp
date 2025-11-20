@@ -3,6 +3,7 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
+#include <WuBranch/Device/CustomDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <WuBranch/Device/WiredDevice.h>
 
@@ -103,7 +104,11 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		SingleDevice = CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
+#if PLATFORM_WINDOWS
 		SingleDevice = CreateWiredDevice();
+#elif PLATFORM_ANDROID || PLATFORM_IOS
+		CreateCustomDevice();
+#endif
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -220,4 +225,10 @@ UDevice* UDeviceManager::CreateWiredDevice()
 	}
 #endif
 	return nullptr;
+}
+
+void UDeviceManager::CreateCustomDevice()
+{
+	_device = NewObject<UCustomDevice>(this);
+	_device->Init();
 }

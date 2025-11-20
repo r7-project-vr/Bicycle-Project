@@ -35,17 +35,17 @@ public:
 
 	virtual void Init() override;
 
-	void EnableDefaultActions_Implementation() override;
+	virtual bool Connect() override;
 
-	void DisableDefaultActions_Implementation() override;
+	virtual bool Disconnect() override;
 
-	void EnableSelectAnswerActions_Implementation() override;
+	void EnableMoveAction_Implementation() override;
 
-	void DisableSelectAnswerActions_Implementation() override;
+	void DisableMoveAction_Implementation() override;
 
-	void Connect_Implementation() override;
+	void EnableSelectAnswerAction_Implementation() override;
 
-	void Disconnect_Implementation() override;
+	void DisableSelectAnswerAction_Implementation() override;
 
 private:
 
@@ -112,16 +112,10 @@ private:
 	void OnMove();
 
 	/// <summary>
-	/// MappingContextで左の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
+	/// 移動イベントを通知
 	/// </summary>
-	/// <param name="Value"></param>
-	void OnSelectLeftAnswer();
-
-	/// <summary>
-	/// MappingContextで右の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
-	/// </summary>
-	/// <param name="Value"></param>
-	void OnSelectRightAnswer();
+	/// <param name="MoveData">移動量</param>
+	void NotifyMoveEvent(FVector2D MoveData);
 
 	/// <summary>
 	/// BLEマネジャー
@@ -139,14 +133,9 @@ private:
 	IBleDeviceInterface* MyDevice;
 
 	/// <summary>
-	/// デフォルトアクションのスイッチ
+	/// 移動機能のスイッチ
 	/// </summary>
-	bool DefaultActionSwitch;
-
-	/// <summary>
-	/// 答えを選択するアクションのスイッチ
-	/// </summary>
-	bool SelectAnswerSwitch;
+	bool MoveSwitch;
 
 	FTimerHandle GetDataHandler;
 };

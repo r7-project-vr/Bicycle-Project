@@ -13,8 +13,7 @@
 //#endif
 
 UCustomDevice::UCustomDevice()
-	: DefaultActionSwitch(false)
-	, SelectAnswerSwitch(false)
+	: MoveSwitch(false)
 	, BleManager(nullptr)
 	, MyDevice(nullptr)
 {
@@ -41,31 +40,11 @@ void UCustomDevice::Init()
 	RequestAndroidPermission();
 	FindDeviceByServices();
 
-	EnableDefaultActions_Implementation();
+	EnableMoveAction_Implementation();
 //#endif
 }
 
-void UCustomDevice::EnableDefaultActions_Implementation()
-{
-	DefaultActionSwitch = true;
-}
-
-void UCustomDevice::DisableDefaultActions_Implementation()
-{
-	DefaultActionSwitch = false;
-}
-
-void UCustomDevice::EnableSelectAnswerActions_Implementation()
-{
-	SelectAnswerSwitch = true;
-}
-
-void UCustomDevice::DisableSelectAnswerActions_Implementation()
-{
-	SelectAnswerSwitch = false;
-}
-
-void UCustomDevice::Connect_Implementation()
+bool UCustomDevice::Connect()
 {
 //#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
@@ -73,11 +52,12 @@ void UCustomDevice::Connect_Implementation()
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnConnectError"));
 	MyDevice->Connect(SuccFunction, ErrFunction);
-	_state = EDeviceConnectType::Connecting;
+	State = EDeviceConnectType::Connecting;
 //#endif
+	return false;
 }
 
-void UCustomDevice::Disconnect_Implementation()
+bool UCustomDevice::Disconnect()
 {
 //#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
@@ -85,8 +65,27 @@ void UCustomDevice::Disconnect_Implementation()
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
 	MyDevice->Disconnect(SuccFunction, ErrFunction);
-	_state = EDeviceConnectType::Disconnecting;
+	State = EDeviceConnectType::Disconnecting;
 //#endif
+	return false;
+}
+
+void UCustomDevice::EnableMoveAction_Implementation()
+{
+	MoveSwitch = true;
+}
+
+void UCustomDevice::DisableMoveAction_Implementation()
+{
+	MoveSwitch = false;
+}
+
+void UCustomDevice::EnableSelectAnswerAction_Implementation()
+{
+}
+
+void UCustomDevice::DisableSelectAnswerAction_Implementation()
+{
 }
 
 bool UCustomDevice::CheckBluetooth()
@@ -165,11 +164,11 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 	{
 		// 新しく見つけたデバイスを使用する
 		// 既に接続した場合は切断する
-		if (_state == EDeviceConnectType::Connected)
+		if (State == EDeviceConnectType::Connected)
 		{
-			Disconnect_Implementation();
+			Disconnect();
 		}
-		else if (_state == EDeviceConnectType::Connecting || _state == EDeviceConnectType::Disconnecting)
+		else if (State == EDeviceConnectType::Connecting || State == EDeviceConnectType::Disconnecting)
 		{
 			// 接続しているか切断しているか
 			// 何もしない、やっていることが終了するまで待つ
@@ -179,7 +178,7 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 			MyDevice = DeviceInterface;
 			
 			// 接続する
-			Connect_Implementation();
+			Connect();
 		}
 	}
 //#endif
@@ -188,29 +187,29 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 void UCustomDevice::OnConnectSucc()
 {
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
-	_name = MyDevice->GetDeviceName();
-	_uuid = MyDevice->GetDeviceId();
-	_state = EDeviceConnectType::Connected;
+	Name = MyDevice->GetDeviceName();
+	UUID = MyDevice->GetDeviceId();
+	State = EDeviceConnectType::Connected;
 }
 
 void UCustomDevice::OnConnectError(FString ErrorMessage)
 {
 	UE_LOG(LogTemplateDevice, Error, TEXT("Connect to device failed: %s"), *ErrorMessage);
-	_state = EDeviceConnectType::Disconnected;
+	State = EDeviceConnectType::UnConnected;
 }
 
 void UCustomDevice::OnDisconnectSucc()
 {
 	UE_LOG(LogTemplateDevice, Display, TEXT("Disconnect to device successfully"));
-	_name.Empty();
-	_uuid.Empty();
-	_state = EDeviceConnectType::Disconnected;
+	Name.Empty();
+	UUID.Empty();
+	State = EDeviceConnectType::UnConnected;
 }
 
 void UCustomDevice::OnDisconnectError(FString ErrorMessage)
 {
 	UE_LOG(LogTemplateDevice, Error, TEXT("Disconnect to device failed: %s"), *ErrorMessage);
-	_state = EDeviceConnectType::Connected;
+	State = EDeviceConnectType::Connected;
 }
 
 void UCustomDevice::OnMove()
@@ -218,19 +217,15 @@ void UCustomDevice::OnMove()
 	// (Y, X)
 	// Y: 前後, X: 左右(無視)
 	FVector2D MoveVector(0, 0);
-
-	if (DefaultActionSwitch && _onMoveEvent.IsBound())
-		_onMoveEvent.Broadcast(MoveVector);
+	NotifyMoveEvent(MoveVector);
 }
 
-void UCustomDevice::OnSelectLeftAnswer()
+void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
 {
-	if (SelectAnswerSwitch && _onSelectLeftEvent.IsBound())
-		_onSelectLeftEvent.Broadcast();
-}
+	if(!MoveSwitch)
+		return;
 
-void UCustomDevice::OnSelectRightAnswer()
-{
-	if (SelectAnswerSwitch && _onSelectRightEvent.IsBound())
-		_onSelectRightEvent.Broadcast();
+	// 通知する
+	if (OnMoveEvent.IsBound())
+		OnMoveEvent.Broadcast(MoveData);
 }

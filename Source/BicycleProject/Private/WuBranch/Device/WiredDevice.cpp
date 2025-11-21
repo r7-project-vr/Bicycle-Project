@@ -90,6 +90,7 @@ bool UWiredDevice::Connect()
 
 		CmdSender = new DeviceCmdSender(Device, &CommandQueue, &DataQueue);
 		// 最初にRPMコマンドを送信する
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Request Command")));
 		CommandQueue.Enqueue((uint8_t)CurrentRequestCommand);
 		return true;
 	}
@@ -169,6 +170,7 @@ void UWiredDevice::GetMoveDataFromDevice()
 
 void UWiredDevice::HandleReceivedData(const ASerialDataStruct::ASerialData& Data)
 {
+	UE_LOG(LogTemp, Display, TEXT("Receive command: %u"), Data.command);
 	switch (Data.command)
 	{
 	case (uint8_t)ECommandType::RPM:
@@ -191,6 +193,7 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 	uint16 RPM = TransformDataToInt<uint16>(RPMData.data, RPMData.data_num);
 	float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
+	UE_LOG(LogTemp, Display, TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity);
 	FVector2D MoveVector(InputVelocity, 0);
 	NotifyMoveEvent(MoveVector);
 }

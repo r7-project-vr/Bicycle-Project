@@ -29,6 +29,7 @@ DeviceCmdSender::~DeviceCmdSender()
 bool DeviceCmdSender::Init()
 {
 	HasSendRPMCmd = false;
+	CurrentState = EProcessState::Idle;
 	return true;
 }
 
@@ -51,9 +52,9 @@ uint32 DeviceCmdSender::Run()
 				UE_LOG(LogTemp, Error, TEXT("Do command %d fail"), Command);
 			}
 		}*/
-		HandleCommand();
+		//HandleCommand();
 
-		//GetRPMData();
+		GetRPMData();
 
 		double Elapsed = FPlatformTime::Seconds() - StartTime;
 		double SleepTime = 1.f / Frequency - Elapsed;
@@ -140,9 +141,13 @@ void DeviceCmdSender::HandleCommand()
 	switch (CurrentState)
 	{
 	case EProcessState::Idle:
-		if(!CommandQueue->IsEmpty())
+	{
+		if (!CommandQueue->IsEmpty())
+		{
 			CurrentState = EProcessState::Sending;
+		}
 		break;
+	}
 	case EProcessState::Sending:
 	{
 		uint8_t Command;
@@ -156,8 +161,7 @@ void DeviceCmdSender::HandleCommand()
 		if (WaitForDeviceResponse(Device, Data))
 		{
 			// 返信を貰った場合
-			//Data.command = Command;
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Received Data for Command: %d"), Command));
+			Data.command = Command;
 			// データが正常に取得できた場合、キューに追加
 			DataQueue->Enqueue(Data);
 			// コマンドを削除
@@ -224,6 +228,7 @@ void DeviceCmdSender::GetRPMData()
 			return;
 
 		// データが正常に取得できた場合、キューに追加
+		Data.command = RPMCmd;
 		DataQueue->Enqueue(Data);
 		NeedCheck = true;
 	}

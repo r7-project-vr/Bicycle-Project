@@ -23,7 +23,7 @@ void UCustomDevice::Init()
 {
 #if !PLATFORM_ANDROID || !PLATFORM_IOS
 	UE_LOG(LogTemplateDevice, Error, TEXT("Sorry, this class only support for android or ios platform because of the plugin."));
-	return;
+	//return;
 #endif
 
 //#if PLATFORM_ANDROID
@@ -54,7 +54,7 @@ bool UCustomDevice::Connect()
 	MyDevice->Connect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Connecting;
 //#endif
-	return false;
+	return true;
 }
 
 bool UCustomDevice::Disconnect()
@@ -67,7 +67,7 @@ bool UCustomDevice::Disconnect()
 	MyDevice->Disconnect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Disconnecting;
 //#endif
-	return false;
+	return true;
 }
 
 void UCustomDevice::EnableMoveAction_Implementation()

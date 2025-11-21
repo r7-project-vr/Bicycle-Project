@@ -40,6 +40,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
 	TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
 
+	// 普通動物の重み（確率の比率）
+	// デフォルト: 6 (普通動物1匹あたり6の重み)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Probability Settings", meta = (ClampMin = "0.1", UIMin = "0.1"))
+	float NormalAnimalWeight = 6.0f;
+
+	// レア動物の重み（確率の比率）
+	// デフォルト: 1 (レア動物1匹あたり1の重み)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Probability Settings", meta = (ClampMin = "0.1", UIMin = "0.1"))
+	float RareAnimalWeight = 1.0f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wild Animal|Spawn Settings")
 	TArray<UBoxComponent*> WildAnimalSpawnLocations;
 

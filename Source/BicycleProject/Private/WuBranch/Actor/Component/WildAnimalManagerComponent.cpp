@@ -151,11 +151,16 @@ void UWildAnimalManagerComponent::BuildProbabilityTable()
 		return;
 	}
 
-	// 比率: 普通動物 = 6、レア動物 = 1
-	const float NormalAnimalWeight = 6.0f;
-	const float RareAnimalWeight = 1.0f;
+	// 確率チェック
+	if (NormalAnimalWeight <= 0.0f || RareAnimalWeight <= 0.0f)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid weight values! NormalAnimalWeight=%.2f, RareAnimalWeight=%.2f"), 
+			NormalAnimalWeight, RareAnimalWeight);
+		return;
+	}
 
 	// 総確率を計算
+	// NormalAnimalWeight と RareAnimalWeight は Blueprint で調整可能
 	float TotalWeight = (TotalNormalAnimals * NormalAnimalWeight) + (TotalRareAnimals * RareAnimalWeight);
 
 	if (TotalWeight <= 0.0f)
@@ -196,12 +201,14 @@ void UWildAnimalManagerComponent::BuildProbabilityTable()
 
 	// デバッグログ出力
 	UE_LOG(LogTemp, Log, TEXT("=== Wild Animal Probability Table ==="));
-	UE_LOG(LogTemp, Log, TEXT("Normal Animals: %d (each %.2f%%, total %.2f%%)"), 
-	       TotalNormalAnimals, 
+	UE_LOG(LogTemp, Log, TEXT("Normal Animals: %d (weight: %.2f, each %.2f%%, total %.2f%%)"), 
+	       TotalNormalAnimals,
+	       NormalAnimalWeight,
 	       NormalAnimalProbabilityEach,
 	       NormalAnimalProbabilityEach * TotalNormalAnimals);
-	UE_LOG(LogTemp, Log, TEXT("Rare Animals: %d (each %.2f%%, total %.2f%%)"), 
-	       TotalRareAnimals, 
+	UE_LOG(LogTemp, Log, TEXT("Rare Animals: %d (weight: %.2f, each %.2f%%, total %.2f%%)"), 
+	       TotalRareAnimals,
+	       RareAnimalWeight,
 	       RareAnimalProbabilityEach,
 	       RareAnimalProbabilityEach * TotalRareAnimals);
 	UE_LOG(LogTemp, Log, TEXT("Total: %.2f%%"), CumulativeProbability);

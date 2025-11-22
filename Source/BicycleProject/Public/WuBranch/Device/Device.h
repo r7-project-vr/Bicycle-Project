@@ -68,6 +68,8 @@ public:
 
 	void BindMoveEvent_Implementation(UObject* Object, FName FunctionName) override;
 
+	void BindMoveNumEvent_Implementation(UObject* Object, FName FunctionName) override;
+
 	void BindSelectLeftEvent_Implementation(UObject* Object, FName FunctionName) override;
 
 	void BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName) override;
@@ -79,6 +81,12 @@ protected:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FMoveV2Delegate OnMoveEvent;
+
+	/// <summary>
+	/// 数字移動イベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FMoveNumDelegate OnMoveNumEvent;
 
 	/// <summary>
 	/// 左を選ぶイベント

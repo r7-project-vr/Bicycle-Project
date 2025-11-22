@@ -44,6 +44,16 @@ void UDevice::BindMoveEvent_Implementation(UObject* Object, FName FunctionName)
 	}
 }
 
+void UDevice::BindMoveNumEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnMoveNumEvent.Add(Delegate);
+	}
+}
+
 void UDevice::BindSelectLeftEvent_Implementation(UObject* Object, FName FunctionName)
 {
 	if (Object)

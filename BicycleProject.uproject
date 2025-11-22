@@ -20,7 +20,13 @@
 		},
 		{
 			"Name": "OpenXR",
-			"Enabled": true
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Android",
+				"VisionOS"
+			]
 		},
 		{
 			"Name": "XRBase",
@@ -28,7 +34,12 @@
 		},
 		{
 			"Name": "OpenXREyeTracker",
-			"Enabled": true
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Android"
+			]
 		},
 		{
 			"Name": "OpenXRHandTracking",
@@ -50,11 +61,18 @@
 		},
 		{
 			"Name": "AppleProResMedia",
-			"Enabled": true
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64"
+			]
 		},
 		{
 			"Name": "VisualStudioTools",
-			"Enabled": true
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/362651520df94e4fa65492dbcba44ae2",
+			"SupportedTargetPlatforms": [
+				"Win64"
+			]
 		},
 		{
 			"Name": "BleGoodies",

@@ -98,6 +98,12 @@ private:
 	void NotifyMoveEvent(FVector2D MoveData);
 
 	/// <summary>
+	/// 数字移動イベントを通知
+	/// </summary>
+	/// <param name="MoveData">移動量</param>
+	void NotifyMoveNumEvent(int Num);
+
+	/// <summary>
 	/// 移動機能のスイッチ
 	/// </summary>
 	bool MoveSwitch;

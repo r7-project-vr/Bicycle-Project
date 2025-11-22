@@ -172,6 +172,7 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
 	FVector2D MoveVector(InputVelocity, 0);
 	NotifyMoveEvent(MoveVector);
+	NotifyMoveNumEvent(RPM);
 }
 
 void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
@@ -207,6 +208,16 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UWiredDevice::NotifyMoveNumEvent(int Num)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveNumEvent.IsBound())
+		OnMoveNumEvent.Broadcast(Num);
 }
 
 #elif PLATFORM_ANDROID

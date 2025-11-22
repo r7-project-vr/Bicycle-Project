@@ -106,6 +106,14 @@ public:
 	void BindMoveEvent(UObject* Object, FName FunctionName);
 
 	/// <summary>
+	/// 数字移動イベントをバインド
+	/// </summary>
+	/// <param name="object">バインドされたい関数があるオブジェクト</param>
+	/// <param name="functionName">関数名</param>
+	UFUNCTION()
+	void BindMoveNumEvent(UObject* object, FName functionName);
+
+	/// <summary>
 	/// 左の答えを選ぶイベントをバインドする
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>

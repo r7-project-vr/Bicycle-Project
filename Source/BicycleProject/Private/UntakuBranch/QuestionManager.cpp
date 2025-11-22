@@ -18,6 +18,11 @@ AQuestionManager::AQuestionManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	// DifficultyQuizRatioのデフォルト値を設定
+	// 例: Easy 20%, Normal 60%, Hard 20%
+	DifficultyQuizRatio.Add(EQuestionLevel::Easy, 0.2f);
+	DifficultyQuizRatio.Add(EQuestionLevel::Normal, 0.6f);
+	DifficultyQuizRatio.Add(EQuestionLevel::Hard, 0.2f);
 }
 
 // Called when the game starts or when spawned
@@ -69,11 +74,40 @@ TArray<FQuestion> AQuestionManager::GetRandomQuestions(int32 NumQuestions)
 TArray<FQuestion*> AQuestionManager::GetQuizs(int32 NeedAmount)
 {
 	TArray<FQuestion*> Result;
+	
+	// DifficultyQuizRatioが正しく初期化されているかチェック
+	if (DifficultyQuizRatio.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DifficultyQuizRatio is not initialized!"));
+		return Result;
+	}
+
 	// 各難易度の取得すべき数を計算
+	// nullptrチェックを追加
+	float* EasyRatioPtr = DifficultyQuizRatio.Find(EQuestionLevel::Easy);
+	float* NormalRatioPtr = DifficultyQuizRatio.Find(EQuestionLevel::Normal);
+	float* HardRatioPtr = DifficultyQuizRatio.Find(EQuestionLevel::Hard);
+
+	if (!EasyRatioPtr || !NormalRatioPtr || !HardRatioPtr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DifficultyQuizRatio does not contain all required difficulty levels!"));
+		return Result;
+	}
+
 	// 基本、イージーとハードを先に計算し、ノーマルは残りの数
-	int NeedEasyNum = FMath::RoundToInt((*DifficultyQuizRatio.Find(EQuestionLevel::Easy)) * NeedAmount);
-	int NeedHardNum = FMath::RoundToInt((*DifficultyQuizRatio.Find(EQuestionLevel::Hard)) * NeedAmount);
+	int NeedEasyNum = FMath::RoundToInt((*EasyRatioPtr) * NeedAmount);
+	int NeedHardNum = FMath::RoundToInt((*HardRatioPtr) * NeedAmount);
 	int NeedNormalNum = NeedAmount - NeedEasyNum - NeedHardNum;
+
+	// デバッグログ追加
+	UE_LOG(LogTemp, Log, TEXT("=== Question Distribution ==="));
+	UE_LOG(LogTemp, Log, TEXT("Total needed: %d"), NeedAmount);
+	UE_LOG(LogTemp, Log, TEXT("Easy: %d (%.1f%%), Normal: %d (%.1f%%), Hard: %d (%.1f%%)"), 
+		NeedEasyNum, *EasyRatioPtr * 100.0f,
+		NeedNormalNum, *NormalRatioPtr * 100.0f,
+		NeedHardNum, *HardRatioPtr * 100.0f);
+	UE_LOG(LogTemp, Log, TEXT("Available - Easy: %d, Normal: %d, Hard: %d"), 
+		EasyQuizs.Num(), NormalQuizs.Num(), HardQuizs.Num());
 
 	// 問題数が足りない場合、他の難易度から補充する、優先順位はノーマル > イージー > ハード
 	// 各難易度の足りない数
@@ -93,6 +127,8 @@ TArray<FQuestion*> AQuestionManager::GetQuizs(int32 NeedAmount)
 	Result.Append(GetRandomQuizsWithNum(HardQuizs, NeedHardNum));
 
 	QuizsInGame = Result;
+
+	UE_LOG(LogTemp, Log, TEXT("Final result: %d questions selected"), Result.Num());
 
 	return Result;
 }
@@ -180,6 +216,10 @@ void AQuestionManager::LoadQuestionsData()
 			HardQuizs.Add(Quiz);
 		}
 	}
+
+	// ロード後のデバッグ情報
+	UE_LOG(LogTemp, Log, TEXT("Questions loaded - Easy: %d, Normal: %d, Hard: %d"), 
+		EasyQuizs.Num(), NormalQuizs.Num(), HardQuizs.Num());
 }
 
 void AQuestionManager::ClampNeedNum(const int& QuizNum, int& NeedNum, int& LackSum)

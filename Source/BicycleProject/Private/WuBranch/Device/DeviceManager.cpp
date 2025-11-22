@@ -184,6 +184,15 @@ void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
 	}
 }
 
+void UDeviceManager::BindMoveNumEvent(UObject* object, FName functionName)
+{
+	UDevice* Device = GetDevice(EDevicePart::Foot);
+	if (Device)
+	{
+		IMoveProvider::Execute_BindMoveNumEvent(Device, object, functionName);
+	}
+}
+
 void UDeviceManager::BindSelectLeftEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合

@@ -235,16 +235,33 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 
 void UCustomDevice::OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
 {
-	// RPMの通知が来た場合
 	if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPM_CHARACTERISTIC_UUID))
-	{
-		uint16 RPM = TransformDataToInt<uint16>(Data.GetData(), Data.Num());
-		float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
-		FVector2D MoveVector(InputVelocity, 0);
-		NotifyMoveEvent(MoveVector);
-		return;
-	}
+		HandleRPMData(Data);
+	else if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPS_CHARACTERISTIC_UUID))
+		HandleRPSData(Data);
+	else if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_REVOLUTION_CHARACTERISTIC_UUID))
+		HandleRevolutionData(Data);
+}
+
+void UCustomDevice::HandleRPMData(const TArray<uint8>& Data)
+{
+	uint16 RPM = TransformDataToInt<uint16>(Data.GetData(), Data.Num());
+	float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
+	FVector2D MoveVector(InputVelocity, 0);
+	NotifyMoveEvent(MoveVector);
+}
+
+void UCustomDevice::HandleRPSData(const TArray<uint8>& Data)
+{
+	uint8 Battery = TransformDataToInt<uint8>(Data.GetData(), Data.Num());
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, FString::Printf(TEXT("Battery: %d%%"), Battery));
+}
+
+void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
+{
+	uint32 Revolution = TransformDataToInt<uint32>(Data.GetData(), Data.Num());
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Revolution: %d"), Revolution));
 }
 
 void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)

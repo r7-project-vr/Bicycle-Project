@@ -126,13 +126,37 @@ private:
 	void OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
 
 	/// <summary>
+	/// RPMデータを処理
+	/// </summary>
+	/// <param name="Data">データ</param>
+	void HandleRPMData(const TArray<uint8>& Data);
+
+	/// <summary>
+	/// RPSデータを処理
+	/// </summary>
+	/// <param name="Data">データ/param>
+	void HandleRPSData(const TArray<uint8>& Data);
+
+	/// <summary>
+	/// 回転数データを処理
+	/// </summary>
+	/// <param name="Data">データ</param>
+	void HandleRevolutionData(const TArray<uint8>& Data);
+
+	/// <summary>
 	/// 移動イベントを通知
 	/// </summary>
 	/// <param name="MoveData">移動量</param>
 	void NotifyMoveEvent(FVector2D MoveData);
 
 	/// <summary>
-	/// 回転数を更新
+	/// 回転数イベントを通知
+	/// </summary>
+	/// <param name="MoveNum"></param>
+	void NotifyMoveNumEvent(int MoveNum);
+
+	/// <summary>
+	/// 最大回転数を更新
 	/// </summary>
 	/// <param name="Standard">標準値</param>
 	/// <param name="Danger">危険値</param>

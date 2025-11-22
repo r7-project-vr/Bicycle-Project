@@ -109,16 +109,36 @@ private:
 	void OnDisconnectError(FString ErrorMessage);
 
 	/// <summary>
-	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ
+	/// 貰ったデータから必要な数値に変換
 	/// </summary>
-	/// <param name="Value"></param>
-	void OnMove();
+	/// <param name="Data">データ</param>
+	/// <param name="Size">データサイズ</param>
+	/// <returns>数値</returns>
+	template<typename T>
+	T TransformDataToInt(const uint8_t* Data, int Size) const;
+
+	/// <summary>
+	/// 通知が来た時
+	/// </summary>
+	/// <param name="ServiceUUID">サービスUUID</param>
+	/// <param name="CharacteristicUUID"></param>
+	/// <param name="Data">データ</param>
+	void OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
 
 	/// <summary>
 	/// 移動イベントを通知
 	/// </summary>
 	/// <param name="MoveData">移動量</param>
 	void NotifyMoveEvent(FVector2D MoveData);
+
+	/// <summary>
+	/// 回転数を更新
+	/// </summary>
+	/// <param name="Standard">標準値</param>
+	/// <param name="Danger">危険値</param>
+	/// <param name="Safe">安全値</param>
+	UFUNCTION()
+	void UpdateMaxRPM(int Standard, int Danger, int Safe);
 
 	/// <summary>
 	/// BLEマネジャー
@@ -140,5 +160,8 @@ private:
 	/// </summary>
 	bool MoveSwitch;
 
-	FTimerHandle GetDataHandler;
+	/// <summary>
+	/// 最大回転数
+	/// </summary>
+	float MaxRPM;
 };

@@ -237,7 +237,7 @@ UDevice* UDeviceManager::CreateBleDevice()
 	bool bResult = Device->Connect();
 	if (bResult)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Wired Device Connect Success"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("BLE Device Connect Success"));
 		return Device;
 	}
 	return nullptr;

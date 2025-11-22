@@ -9,6 +9,7 @@
 #include "Interface/BleDeviceInterface.h"
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
+#include <WuBranch/MyGameInstance.h>
 //#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
 //#endif
 
@@ -41,6 +42,9 @@ void UCustomDevice::Init()
 	FindDeviceByServices();
 
 	EnableMoveAction_Implementation();
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	GameInstance->OnUpdateRPM.AddDynamic(this, &UCustomDevice::UpdateMaxRPM);
+	MaxRPM = GameInstance->GetDangerRPM();
 //#endif
 }
 
@@ -175,6 +179,7 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 		}
 		else
 		{
+			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device->GetDeviceName());
 			MyDevice = DeviceInterface;
 			
 			// 接続する
@@ -190,6 +195,10 @@ void UCustomDevice::OnConnectSucc()
 	Name = MyDevice->GetDeviceName();
 	UUID = MyDevice->GetDeviceId();
 	State = EDeviceConnectType::Connected;
+	FBleCharacteristicDataDelegate NotifyFunction;
+	NotifyFunction.BindUFunction(this, FName("OnNotification"));
+	MyDevice->BindToCharacteristicNotificationEvent(NotifyFunction);
+	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
 }
 
 void UCustomDevice::OnConnectError(FString ErrorMessage)
@@ -212,12 +221,30 @@ void UCustomDevice::OnDisconnectError(FString ErrorMessage)
 	State = EDeviceConnectType::Connected;
 }
 
-void UCustomDevice::OnMove()
+template<typename T>
+T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 {
-	// (Y, X)
-	// Y: 前後, X: 左右(無視)
-	FVector2D MoveVector(0, 0);
-	NotifyMoveEvent(MoveVector);
+	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
+	T Result = 0;
+	for (int i = 0; i < Size; ++i)
+	{
+		Result |= (Data[i] << (8 * (Size - 1 - i)));
+	}
+	return Result;
+}
+
+void UCustomDevice::OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
+{
+	// RPMの通知が来た場合
+	if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPM_CHARACTERISTIC_UUID))
+	{
+		uint16 RPM = TransformDataToInt<uint16>(Data.GetData(), Data.Num());
+		float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
+		FVector2D MoveVector(InputVelocity, 0);
+		NotifyMoveEvent(MoveVector);
+		return;
+	}
 }
 
 void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
@@ -228,4 +255,10 @@ void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UCustomDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
+{
+	// 危険値を最大値として使う
+	MaxRPM = Danger;
 }

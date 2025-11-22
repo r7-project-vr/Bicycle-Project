@@ -178,7 +178,7 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 {
 	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
-	FVector2D MoveVector((float)RPS / 100.f, 0);
+	FVector2D MoveVector((float)RPS / (MaxRPM / 60.f), 0);
 	NotifyMoveEvent(MoveVector);
 }
 

@@ -243,10 +243,8 @@ UDevice* UDeviceManager::CreateBleDevice()
 {
 	UDevice* Device = NewObject<UCustomDevice>(this);
 	Device->Init();
-	bool bResult = Device->Connect();
-	if (bResult)
+	if (Device)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("BLE Device Connect Success"));
 		return Device;
 	}
 	return nullptr;

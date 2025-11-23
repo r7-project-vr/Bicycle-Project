@@ -19,7 +19,7 @@ ABikeCharacter::ABikeCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
+	Bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
@@ -28,7 +28,7 @@ ABikeCharacter::ABikeCharacter()
 
 	_handlebarCenteringSpeed = 1.0f;
 	_isRotate = false;
-	_handlebarsAngle = 0.0f;
+	HandleBarsAngle = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -86,7 +86,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ABikeCharacter::Pause_Implementation()
 {
 	IsPause = true;
-	if (!_bike->GetIsAutoPlay())
+	if (!Bike->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -96,14 +96,14 @@ void ABikeCharacter::Pause_Implementation()
 				DeviceManager->DisableDefaultActions();
 			}
 		}
-		_bike->ReduceVelocityTo0();
+		Bike->ReduceVelocityTo0();
 	}
 }
 
 void ABikeCharacter::ReStart_Implementation()
 {
 	IsPause = false;
-	if (!_bike->GetIsAutoPlay())
+	if (!Bike->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -133,7 +133,7 @@ float ABikeCharacter::GetSpeed()
 
 float ABikeCharacter::GetHandlerAngle() const
 {
-	return _handlebarsAngle;
+	return HandleBarsAngle;
 }
 
 void ABikeCharacter::SetTurningAngle(FRotator angle)
@@ -141,10 +141,10 @@ void ABikeCharacter::SetTurningAngle(FRotator angle)
 	_targetRotator = GetActorRotation() + angle;
 	// 右折
 	if (angle.Yaw > 0)
-		_handlebarsAngle = -30.0f;
+		HandleBarsAngle = -30.0f;
 	// 左折
 	else if (angle.Yaw < 0)
-		_handlebarsAngle = 30.0f;
+		HandleBarsAngle = 30.0f;
 	_isRotate = true;
 }
 
@@ -158,7 +158,7 @@ void ABikeCharacter::DisableHintLine()
 
 UBikeComponent* ABikeCharacter::GetBikeComponent()
 {
-	return _bike;
+	return Bike;
 }
 
 bool ABikeCharacter::HasOverSpeed() const
@@ -201,7 +201,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	{
 		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
 		SetActorRelativeRotation(_targetRotator);
-		_handlebarsAngle = 0.0f;
+		HandleBarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
 		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
@@ -218,7 +218,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	SetActorRelativeRotation(angle);
 
 	// ハンドルの戻り角度の計算
-	_handlebarsAngle = FMath::FInterpTo(_handlebarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
+	HandleBarsAngle = FMath::FInterpTo(HandleBarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
 }
 
 bool ABikeCharacter::CheckOverSpeed() const

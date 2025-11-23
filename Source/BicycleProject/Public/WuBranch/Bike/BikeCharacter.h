@@ -115,7 +115,7 @@ private:
 	/// 自転車の機能
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UBikeComponent* _bike;
+	UBikeComponent* Bike;
 
 	/// <summary>
 	/// 動物管理者
@@ -148,7 +148,8 @@ private:
 	/// <summary>
 	/// ハンドルの角度
 	/// </summary>
-	float _handlebarsAngle;
+	UPROPERTY(BlueprintReadWrite, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	float HandleBarsAngle;
 
 	/// <summary>
 	/// ハンドルの戻り速度

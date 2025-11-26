@@ -10,7 +10,7 @@ UWiredDevice::UWiredDevice()
 	: MoveSwitch(false)
 	, Device(nullptr)
 	, CmdSender(nullptr)
-	, CurrentRequestCommand(ECommandType::RPM)
+	, CurrentRequestCommand(ECommandType::Revolutions)
 {
 }
 
@@ -89,8 +89,8 @@ bool UWiredDevice::Connect()
 		State = EDeviceConnectType::Connected;
 
 		CmdSender = new DeviceCmdSender(Device, &CommandQueue, &DataQueue);
-		// 最初にRPMコマンドを送信する
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Request Command")));
+		// 最初に回転数をリセットするコマンドを送信する
+		CommandQueue.Enqueue((uint8_t)ECommandType::RevolutionsReset);
 		CommandQueue.Enqueue((uint8_t)CurrentRequestCommand);
 		return true;
 	}
@@ -170,7 +170,6 @@ void UWiredDevice::GetMoveDataFromDevice()
 
 void UWiredDevice::HandleReceivedData(const ASerialDataStruct::ASerialData& Data)
 {
-	UE_LOG(LogTemp, Display, TEXT("Receive command: %u"), Data.command);
 	switch (Data.command)
 	{
 	case (uint8_t)ECommandType::RPM:
@@ -192,8 +191,8 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 	//　今の所、前進だけが自作デバイスを使うので、前進のデータを取得して、通知する
 	uint16 RPM = TransformDataToInt<uint16>(RPMData.data, RPMData.data_num);
 	float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
-	UE_LOG(LogTemp, Display, TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %u, Velocity: %lf"), RPM, InputVelocity));
+	UE_LOG(LogTemp, Display, TEXT("RPM: %u, Velocity: %lf"), RPM, InputVelocity);
 	FVector2D MoveVector(InputVelocity, 0);
 	NotifyMoveEvent(MoveVector);
 }
@@ -252,13 +251,9 @@ void UWiredDevice::NotifyRevolutionsEvent(int Revolutions)
 void UWiredDevice::RequestNextCommand()
 {
 	// 次のコマンドをセット
-	if (CurrentRequestCommand == ECommandType::RPM)
+	if (CurrentRequestCommand == ECommandType::Revolutions)
 	{
 		CurrentRequestCommand = ECommandType::Revolutions;
-	}
-	else if (CurrentRequestCommand == ECommandType::Revolutions)
-	{
-		CurrentRequestCommand = ECommandType::RPM;
 	}
 	CommandQueue.Enqueue((uint8_t)CurrentRequestCommand);
 }

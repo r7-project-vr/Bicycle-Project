@@ -5,18 +5,11 @@
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
 #include <ASerialCore/ASerialPacket.h>
+#include "WuBranch/Device/ECommandType.h"
 #include "WiredDevice.generated.h"
 
 class UASerialLibControllerWin;
 class DeviceCmdSender;
-
-enum class ECommandType : uint8_t
-{
-	RPM = 0x21,
-	RPS = 0x22,
-	Revolutions = 0x24,
-	RevolutionsReset = 0x25,
-};
 
 /**
  * 

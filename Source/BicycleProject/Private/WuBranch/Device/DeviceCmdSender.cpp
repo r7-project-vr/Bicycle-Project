@@ -2,6 +2,7 @@
 
 
 #include "WuBranch/Device/DeviceCmdSender.h"
+#include "WuBranch/Device/ECommandType.h"
 
 #if PLATFORM_WINDOWS
 
@@ -28,7 +29,6 @@ DeviceCmdSender::~DeviceCmdSender()
 
 bool DeviceCmdSender::Init()
 {
-	HasSendRPMCmd = false;
 	CurrentState = EProcessState::Idle;
 	return true;
 }
@@ -44,15 +44,8 @@ uint32 DeviceCmdSender::Run()
 
 		double StartTime = FPlatformTime::Seconds();
 
-		/*uint8_t Command;
-		if (CommandQueue->Dequeue(Command))
-		{
-			if (!DoCommand(Command))
-			{
-				UE_LOG(LogTemp, Error, TEXT("Do command %d fail"), Command);
-			}
-		}*/
-		//HandleCommand();
+		// RPM・RPS以外のコマンドの処理
+		HandleCommand();
 
 		GetRPMData();
 
@@ -98,40 +91,6 @@ void DeviceCmdSender::ReStart()
 	IsPause = false;
 }
 
-bool DeviceCmdSender::DoCommand(uint8_t Command)
-{
-	UASerialLibControllerWin* Device = DeviceWP.Get();
-	if (!Device)
-		return false;
-
-	if(Command == RPMCmd)
-	{
-		// RPMのコマンドを送信する前に、RPMコマンドが既に送信されているか確認
-		if (HasSendRPMCmd)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("RPM command is already sent, skipping this command"));
-			return false;
-		}
-		// RPMコマンドを送信
-		if (!SendCommand(Device, Command))
-			return false;
-		UE_LOG(LogTemp, Log, TEXT("Send RPM command"));
-		HasSendRPMCmd = true;
-
-		// チェックする
-		//CheckRPMState(Device);
-
-		UE_LOG(LogTemp, Log, TEXT("RPM Data start"));
-		ASerialDataStruct::ASerialData RPMData;
-		if (!WaitForDeviceResponse(Device, RPMData, &HasSendRPMCmd))
-			return false;
-	
-		UE_LOG(LogTemp, Log, TEXT("RPM Data complete"));
-		DataQueue->Enqueue(RPMData);
-	}
-	return true;
-}
-
 void DeviceCmdSender::HandleCommand()
 {
 	UASerialLibControllerWin* Device = DeviceWP.Get();
@@ -156,6 +115,16 @@ void DeviceCmdSender::HandleCommand()
 		if (!SendCommand(Device, Command))
 			return;
 
+		// 返信する必要のないコマンド
+		if (Command == (uint8_t)ECommandType::RevolutionsReset)
+		{
+			// コマンドを削除
+			CommandQueue->Pop();
+			// 次のコマンドを待つ状態に移行
+			CurrentState = EProcessState::Idle;
+			return;
+		}
+
 		// 返信を確認する。もし返信がない場合は待つ状態に移行
 		ASerialDataStruct::ASerialData Data;
 		if (WaitForDeviceResponse(Device, Data))
@@ -179,7 +148,7 @@ void DeviceCmdSender::HandleCommand()
 	case EProcessState::WaitingResponse:
 	{
 		// チェックコマンドを送信
-		if (!SendCommand(Device, CheckCmd))
+		if (!SendCommand(Device, (uint8_t)ECommandType::RPMUpdateCheck))
 			return;
 
 		ASerialDataStruct::ASerialData Data;
@@ -202,11 +171,16 @@ void DeviceCmdSender::GetRPMData()
 	if (!Device)
 		return;
 
+	// RPMの更新フラグは内部で値の更新があると立ち上がります。
+	// 逆に更新フラグの取得が行われたらフラグが立ち下がります。
+	// RPM・RPSコマンドが送ったかどうかには関係ない
+	// なので、先にチェックコマンドを送り、更新あるならRPM・RPSコマンドを送る
+
 	ASerialDataStruct::ASerialData Data;
 	if (NeedCheck)
 	{
 		// チェックコマンドを送信
-		if (!SendCommand(Device, CheckCmd))
+		if (!SendCommand(Device, (uint8_t)ECommandType::RPMUpdateCheck))
 			return;
 
 		if (!WaitForDeviceResponse(Device, Data))
@@ -221,14 +195,14 @@ void DeviceCmdSender::GetRPMData()
 	else
 	{
 		// RPMコマンドを送信
-		if (!SendCommand(Device, RPMCmd))
+		if (!SendCommand(Device, (uint8_t)ECommandType::RPM))
 			return;
 
 		if (!WaitForDeviceResponse(Device, Data))
 			return;
-
+			
 		// データが正常に取得できた場合、キューに追加
-		Data.command = RPMCmd;
+		Data.command = (uint8_t)ECommandType::RPM;
 		DataQueue->Enqueue(Data);
 		NeedCheck = true;
 	}

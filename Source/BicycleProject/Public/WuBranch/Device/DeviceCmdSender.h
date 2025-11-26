@@ -48,13 +48,7 @@ public:
 private:
 
 	/// <summary>
-	/// コマンドを実行する
-	/// </summary>
-	/// <param name="Command"></param>
-	bool DoCommand(uint8_t Command);
-
-	/// <summary>
-	/// コマンドを処理する
+	/// コマンドを処理する(RPM・RPS以外)
 	/// </summary>
 	void HandleCommand();
 
@@ -119,41 +113,6 @@ private:
 	/// 現在のプロセス状態
 	/// </summary>
 	EProcessState CurrentState;
-
-	/// <summary>
-	/// チェックのコマンド
-	/// </summary>
-	uint8_t CheckCmd = 0x20;
-
-	/// <summary>
-	/// RPMのコマンド
-	/// </summary>
-	uint8_t RPMCmd = 0x21;
-
-	/// <summary>
-	/// RPSコマンド
-	/// </summary>
-	uint8_t RPSCmd = 0x22;
-
-	/// <summary>
-	/// 回転数コマンド
-	/// </summary>
-	uint8_t RevolutionsCmd = 0x24;
-
-	/// <summary>
-	/// 回転数をリゼットするコマンド
-	/// </summary>
-	uint8_t RevolutionsResetCmd = 0x25;
-
-	/// <summary>
-	/// RPMコマンドを送ったか
-	/// </summary>
-	bool HasSendRPMCmd = false;
-
-	/// <summary>
-	/// 確認のコマンドを送ったか
-	/// </summary>
-	bool HasSendCheckCmd = false;
 
 	/// <summary>
 	/// チェックを実行するか

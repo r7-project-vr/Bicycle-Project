@@ -300,4 +300,14 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
 }
+
+void UWiredDevice::NotifyMoveNumEvent(int Num)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveNumEvent.IsBound())
+		OnMoveNumEvent.Broadcast(Num);
+}
 #endif

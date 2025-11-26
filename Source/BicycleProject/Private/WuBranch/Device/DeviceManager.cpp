@@ -242,9 +242,9 @@ UDevice* UDeviceManager::CreateWiredDevice()
 UDevice* UDeviceManager::CreateBleDevice()
 {
 	UDevice* Device = NewObject<UCustomDevice>(this);
-	Device->Init();
 	if (Device)
 	{
+		Device->Init();
 		return Device;
 	}
 	return nullptr;

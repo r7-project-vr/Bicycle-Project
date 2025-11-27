@@ -41,7 +41,7 @@ void AAnimal::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 
-	if (CurrentTarget.IsNull())
+	if (!CurrentTarget)
 	{
 		CurrentState = BehaviorState::None;
 		return;
@@ -95,9 +95,9 @@ void AAnimal::Action(float DeltaTime)
 	UE_LOG(LogTemp, Warning, TEXT("Did not implement"));
 }
 
-FVector AAnimal::GetTargetLocation()
+FVector AAnimal::GetMyTargetLocation()
 {
-	if(CurrentTarget.IsNull())
+	if(!CurrentTarget)
 		return GetActorLocation();
 
 	ACharacter* Player = CurrentTarget.Get();
@@ -106,7 +106,7 @@ FVector AAnimal::GetTargetLocation()
 
 FVector AAnimal::GetOffsetWorldLocation()
 {
-	if(CurrentTarget.IsNull())
+	if(!CurrentTarget)
 		return GetActorLocation();
 
 	ACharacter* Player = CurrentTarget.Get();

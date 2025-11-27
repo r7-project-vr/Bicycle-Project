@@ -39,7 +39,7 @@ public:
 	/// </summary>
 	/// <param name="Part">デバイスをつける部位</param>
 	/// <param name="Device">デバイス本体</param>
-	void AddDevice(EDevicePart Part, UDevice* device);
+	void AddDevice(EDevicePart Part, UDevice* Device);
 
 	/// <summary>
 	/// リストからデバイスを削除
@@ -103,7 +103,7 @@ public:
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
 	UFUNCTION()
-	void BindMoveEvent(UObject* object, FName functionName);
+	void BindMoveEvent(UObject* Object, FName FunctionName);
 
 	/// <summary>
 	/// 数字移動イベントをバインド
@@ -119,7 +119,7 @@ public:
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
 	UFUNCTION()
-	void BindSelectLeftEvent(UObject* object, FName functionName);
+	void BindSelectLeftEvent(UObject* Object, FName FunctionName);
 
 	/// <summary>
 	/// 左の答えを選ぶイベントをバインドする
@@ -127,7 +127,7 @@ public:
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
 	UFUNCTION()
-	void BindSelectRightEvent(UObject* object, FName functionName);
+	void BindSelectRightEvent(UObject* Object, FName FunctionName);
 
 private:
 
@@ -140,6 +140,11 @@ private:
 	/// 有線デバイスを作る
 	/// </summary>
 	UDevice* CreateWiredDevice();
+
+	/// <summary>
+	/// Bluetoothデバイスを作る
+	/// </summary>
+	UDevice* CreateBleDevice();
 
 	/// <summary>
 	/// 装置(複数の場合)

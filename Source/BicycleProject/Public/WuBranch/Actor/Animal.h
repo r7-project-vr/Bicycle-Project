@@ -76,7 +76,7 @@ protected:
 	/// 目標の位置をゲット
 	/// </summary>
 	/// <returns></returns>
-	FVector GetTargetLocation();
+	FVector GetMyTargetLocation();
 
 	/// <summary>
 	/// 偏移の位置をゲット

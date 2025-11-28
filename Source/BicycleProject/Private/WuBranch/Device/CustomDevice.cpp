@@ -2,16 +2,16 @@
 
 
 #include "WuBranch/Device/CustomDevice.h"
-#include "BleUtils.h"
 #include <WuBranch/Device/DeviceType.h>
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
+#include "BleUtils.h"
 #include "Interface/BleManagerInterface.h"
 #include "Interface/BleDeviceInterface.h"
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
 #include <WuBranch/MyGameInstance.h>
 //#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
-//#endif
+#endif
 
 UCustomDevice::UCustomDevice()
 	: MoveSwitch(false)
@@ -22,14 +22,15 @@ UCustomDevice::UCustomDevice()
 
 void UCustomDevice::Init()
 {
-#if !PLATFORM_ANDROID || !PLATFORM_IOS
+#if !PLATFORM_ANDROID && !PLATFORM_IOS
 	UE_LOG(LogTemplateDevice, Error, TEXT("Sorry, this class only support for android or ios platform because of the plugin."));
-	//return;
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, TEXT("Sorry, this class only support for android or ios platform because of the plugin."));
 #endif
 
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Create Ble Manager in custom device."));
 	BleManager = Cast<IBleManagerInterface>(UBleUtils::CreateBleManager().GetObject());
-
+	
 	if (!CheckBluetooth())
 		return;
 
@@ -45,32 +46,32 @@ void UCustomDevice::Init()
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	GameInstance->OnUpdateRPM.AddDynamic(this, &UCustomDevice::UpdateMaxRPM);
 	MaxRPM = GameInstance->GetDangerRPM();
-//#endif
+#endif
 }
 
 bool UCustomDevice::Connect()
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
 	SuccFunction.BindUFunction(this, FName("OnConnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnConnectError"));
 	MyDevice->Connect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Connecting;
-//#endif
+#endif
 	return true;
 }
 
 bool UCustomDevice::Disconnect()
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
 	FBleDelegate SuccFunction;
 	SuccFunction.BindUFunction(this, FName("OnDisconnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
 	MyDevice->Disconnect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Disconnecting;
-//#endif
+#endif
 	return true;
 }
 
@@ -94,12 +95,13 @@ void UCustomDevice::DisableSelectAnswerAction_Implementation()
 
 bool UCustomDevice::CheckBluetooth()
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
 	if (BleManager)
 	{
 		if (!BleManager->IsBleSupported())
 		{
 			UE_LOG(LogTemplateDevice, Error, TEXT("This device is not support Bluetooth low energy"));
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, TEXT("This device is not support Bluetooth low energy"));
 			return false;
 		}
 
@@ -107,17 +109,20 @@ bool UCustomDevice::CheckBluetooth()
 		{
 			UE_LOG(LogTemplateDevice, Warning, TEXT("This device did not open bluetooth"));
 			UE_LOG(LogTemplateDevice, Warning, TEXT("Open bluetooth"));
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Yellow, TEXT("Open bluetooth"));
 			BleManager->SetBluetoothState(true);
 			return true;
 		}
 	}
-//#endif
+#endif
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, TEXT("Ble Manager is null"));
 	return false;
 }
 
 void UCustomDevice::RequestAndroidPermission()
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Request Android Permission"));
 	if (!UAndroidPermissionFunctionLibrary::CheckPermission(ANDROID_FILE_LOCATION_PERMISSION))
 	{
 		TArray<FString> Permissions;
@@ -127,7 +132,7 @@ void UCustomDevice::RequestAndroidPermission()
 		UAndroidPermissionCallbackProxy* Callback = UAndroidPermissionFunctionLibrary::AcquirePermissions(Permissions);
 		Callback->OnPermissionsGrantedDynamicDelegate.AddDynamic(this, &UCustomDevice::OnPermissionResult);
 	}
-//#endif
+#endif
 }
 
 void UCustomDevice::OnPermissionResult(const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
@@ -143,27 +148,29 @@ void UCustomDevice::DecideTargetServices()
 	// そうでないと、すべてのデバイスが見つかって戻ってきって、大量のリソースが消耗されるだそうです。
 	// https://docs.ninevastudios.com/#/ue-plugins/ble-goodies?id=setup
 	UE_LOG(LogTemplateDevice, Display, TEXT("Prepare services's uuid"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Prepare services's uuid"));
 	Services.Empty();
 	Services.Add(IO_SERVICE_UUID);
 }
 
 void UCustomDevice::FindDeviceByServices()
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
 	if (BleManager)
 	{
 		FBleOnDeviceFoundDelegate Function;
 		Function.BindUFunction(this, FName("OnDeviceFound"));
 		FString JoinedString = FString::Join(Services, TEXT(","));
 		UE_LOG(LogTemplateDevice, Display, TEXT("Scan for devices: %s"), *JoinedString);
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Scan for devices: %s"), *JoinedString));
 		BleManager->ScanForDevices(Services, Function);
 	}
-//#endif
+#endif
 }
 
 void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 {
-//#if PLATFORM_ANDROID
+#if PLATFORM_ANDROID
 	if (IBleDeviceInterface* DeviceInterface = Cast<IBleDeviceInterface>(Device.GetObject()))
 	{
 		// 新しく見つけたデバイスを使用する
@@ -180,18 +187,21 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 		else
 		{
 			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device->GetDeviceName());
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Connect to Device: %s"), *Device->GetDeviceName()));
 			MyDevice = DeviceInterface;
 			
 			// 接続する
 			Connect();
 		}
 	}
-//#endif
+#endif
 }
 
 void UCustomDevice::OnConnectSucc()
 {
+#if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Connect to device successfully"));
 	Name = MyDevice->GetDeviceName();
 	UUID = MyDevice->GetDeviceId();
 	State = EDeviceConnectType::Connected;
@@ -199,17 +209,21 @@ void UCustomDevice::OnConnectSucc()
 	NotifyFunction.BindUFunction(this, FName("OnNotification"));
 	MyDevice->BindToCharacteristicNotificationEvent(NotifyFunction);
 	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
+#endif
 }
 
 void UCustomDevice::OnConnectError(FString ErrorMessage)
 {
 	UE_LOG(LogTemplateDevice, Error, TEXT("Connect to device failed: %s"), *ErrorMessage);
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Connect to device failed: %s"), *ErrorMessage));
+
 	State = EDeviceConnectType::UnConnected;
 }
 
 void UCustomDevice::OnDisconnectSucc()
 {
 	UE_LOG(LogTemplateDevice, Display, TEXT("Disconnect to device successfully"));
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Disconnect to device successfully"));
 	Name.Empty();
 	UUID.Empty();
 	State = EDeviceConnectType::UnConnected;
@@ -218,6 +232,7 @@ void UCustomDevice::OnDisconnectSucc()
 void UCustomDevice::OnDisconnectError(FString ErrorMessage)
 {
 	UE_LOG(LogTemplateDevice, Error, TEXT("Disconnect to device failed: %s"), *ErrorMessage);
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Disconnect to device failed: %s"), *ErrorMessage));
 	State = EDeviceConnectType::Connected;
 }
 

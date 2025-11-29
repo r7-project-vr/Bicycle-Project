@@ -10,7 +10,6 @@
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
 #include <WuBranch/MyGameInstance.h>
-//#include "../../../../../../../../../../Program Files/Epic Games/UE_5.4/Engine/Plugins/Runtime/AndroidPermission/Source/AndroidPermission/Classes/AndroidPermissionFunctionLibrary.h"
 #endif
 
 UCustomDevice::UCustomDevice()
@@ -18,6 +17,20 @@ UCustomDevice::UCustomDevice()
 	, BleManager(nullptr)
 	, MyDevice(nullptr)
 {
+}
+
+UCustomDevice::~UCustomDevice()
+{
+#if PLATFORM_ANDROID
+	if (BleManager)
+	{
+		if (State == EDeviceConnectType::Connected)
+		{
+			Disconnect();
+		}
+	}
+
+#endif
 }
 
 void UCustomDevice::Init()
@@ -28,8 +41,7 @@ void UCustomDevice::Init()
 #endif
 
 #if PLATFORM_ANDROID
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Create Ble Manager in custom device."));
-	BleManager = Cast<IBleManagerInterface>(UBleUtils::CreateBleManager().GetObject());
+	BleManager = UBleUtils::CreateBleManager().GetInterface();
 	
 	if (!CheckBluetooth())
 		return;
@@ -101,7 +113,6 @@ bool UCustomDevice::CheckBluetooth()
 		if (!BleManager->IsBleSupported())
 		{
 			UE_LOG(LogTemplateDevice, Error, TEXT("This device is not support Bluetooth low energy"));
-			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, TEXT("This device is not support Bluetooth low energy"));
 			return false;
 		}
 
@@ -109,20 +120,18 @@ bool UCustomDevice::CheckBluetooth()
 		{
 			UE_LOG(LogTemplateDevice, Warning, TEXT("This device did not open bluetooth"));
 			UE_LOG(LogTemplateDevice, Warning, TEXT("Open bluetooth"));
-			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Yellow, TEXT("Open bluetooth"));
 			BleManager->SetBluetoothState(true);
-			return true;
 		}
+		return true;
 	}
 #endif
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, TEXT("Ble Manager is null"));
+
 	return false;
 }
 
 void UCustomDevice::RequestAndroidPermission()
 {
 #if PLATFORM_ANDROID
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Request Android Permission"));
 	if (!UAndroidPermissionFunctionLibrary::CheckPermission(ANDROID_FILE_LOCATION_PERMISSION))
 	{
 		TArray<FString> Permissions;

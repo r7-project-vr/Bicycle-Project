@@ -2,7 +2,9 @@
 
 
 #include "WuBranch/Device/WiredDevice.h"
+#if PLATFORM_WINDOWS
 #include "WuBranch/Device/DeviceCmdSender.h"
+#endif
 #include <WuBranch/MyGameInstance.h>
 
 #if PLATFORM_WINDOWS
@@ -176,7 +178,7 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 {
 	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
-	FVector2D MoveVector((float)RPS / 100.f, 0);
+	FVector2D MoveVector((float)RPS / (MaxRPM / 60.f), 0);
 	NotifyMoveEvent(MoveVector);
 }
 
@@ -285,6 +287,10 @@ void UWiredDevice::GetMoveDataFromDevice()
 {
 }
 
+void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
+{
+}
+
 void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 {
 	if (!MoveSwitch)
@@ -293,5 +299,15 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UWiredDevice::NotifyMoveNumEvent(int Num)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveNumEvent.IsBound())
+		OnMoveNumEvent.Broadcast(Num);
 }
 #endif

@@ -37,7 +37,7 @@ void AWildAnimal::Action(float DeltaTime)
 
 bool AWildAnimal::IsTargetPassed()
 {
-	if(CurrentTarget.IsNull())
+	if(!CurrentTarget)
 		return false;
 
 	bool Result = false;
@@ -60,7 +60,7 @@ bool AWildAnimal::IsTargetPassed()
 
 void AWildAnimal::StareAtTarget(float DeltaTime)
 {
-	if (CurrentTarget.IsNull())
+	if (!CurrentTarget)
 		return;
 	
 	ACharacter* Player = CurrentTarget.Get();

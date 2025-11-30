@@ -86,7 +86,9 @@ UBoxComponent* ACoin::GetCollision() const
 void ACoin::ChangeBaseHeight(float NewHeight)
 {
 	// 基本の位置を更新
-	BaseLocation.Z = NewHeight;
+	FVector NowLocation = GetActorLocation();
+	NowLocation.Z = NewHeight;
+	SetActorLocation(NowLocation);
 }
 
 void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)

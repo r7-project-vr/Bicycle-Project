@@ -7,10 +7,14 @@
 #include "WuBranch/Actor/Animal.h"
 
 UMyGameInstance::UMyGameInstance()
-	: Coins(0)
+	: TotalCoins(0)
 	, IsClear(false)
-	, MaxRPM(100)
 	, StandardRPM(50)
+	, RPMThreshold(10)
+	, MaxStandardRPM(60)
+	// 2025.11.09 谷村 start
+	, NumOfSets(1)
+	// 2025.11.09 谷村 end
 {
 	DeviceManager = nullptr;
 }
@@ -35,19 +39,34 @@ UDeviceManager* UMyGameInstance::GetDeviceManager() const
 #pragma endregion
 
 #pragma region コイン
-int UMyGameInstance::GetCoins() const
+int UMyGameInstance::GetTotalCoins() const
 {
-	return Coins;
+	return TotalCoins;
 }
 
-void UMyGameInstance::AddCoins(int Amount)
+void UMyGameInstance::SetTotalCoins(int Amount)
 {
-	Coins += Amount;
-	if (Coins < 0)
-	{
-		Coins = 0; // コインがマイナスにならないようにする
-	}
+	TotalCoins = FMath::Clamp(Amount, 0, INT32_MAX);
 	UpdateCoin();
+}
+
+void UMyGameInstance::AddCoinsPerGame(int Amount)
+{
+	// 無効な値
+	if(Amount <= 0)
+		return;
+
+	CoinsPerGame += Amount;
+}
+
+void UMyGameInstance::ResetCoinsPerGame()
+{
+	CoinsPerGame = 0;
+}
+
+int UMyGameInstance::GetCoinsPerGame() const
+{
+	return CoinsPerGame;
 }
 
 float UMyGameInstance::GetCoinHeight() const
@@ -74,7 +93,7 @@ void UMyGameInstance::SaveCoinsToFile()
 
 void UMyGameInstance::ReadCoinFromFile()
 {
-	Coins = 0; // 初期化
+	TotalCoins = 0; // 初期化
 	CoinHeight = 475.f;
 }
 
@@ -82,7 +101,7 @@ void UMyGameInstance::UpdateCoin()
 {
 	if (OnUpdateCoin.IsBound())
 	{
-		OnUpdateCoin.Broadcast(Coins);
+		OnUpdateCoin.Broadcast(TotalCoins);
 	}
 }
 
@@ -112,14 +131,10 @@ void UMyGameInstance::SetGameResult(bool Result)
 #pragma endregion
 
 #pragma region RPM
-int UMyGameInstance::GetMaxRPM() const
+void UMyGameInstance::SetStandardRPM(int Value)
 {
-	return MaxRPM;
-}
-
-void UMyGameInstance::SetMaxRPM(int Value)
-{
-	MaxRPM = Value;
+	StandardRPM = FMath::Clamp(Value, 0, MaxStandardRPM);
+	NotifyUpdateRPM();
 }
 
 int UMyGameInstance::GetStandardRPM() const
@@ -127,24 +142,59 @@ int UMyGameInstance::GetStandardRPM() const
 	return StandardRPM;
 }
 
-void UMyGameInstance::SetStandardRPM(int Value)
-{
-	StandardRPM = Value;
-	NotifyUpdateStandardRPM();
-}
-
 void UMyGameInstance::ResetStandardRPM()
 {
 	StandardRPM = 50;
-	NotifyUpdateStandardRPM();
+	NotifyUpdateRPM();
 }
 
-void UMyGameInstance::NotifyUpdateStandardRPM()
+void UMyGameInstance::AdjustThreshold(int Value)
 {
-	if (OnUpdateStandardRPM.IsBound())
-		OnUpdateStandardRPM.Broadcast(StandardRPM);
+	RPMThreshold += Value;
+	NotifyUpdateRPM();
+}
+
+int UMyGameInstance::GetThreshold() const
+{
+	return RPMThreshold;
+}
+
+void UMyGameInstance::ResetThreshold()
+{
+	RPMThreshold = 10;
+	NotifyUpdateRPM();
+}
+
+int UMyGameInstance::GetDangerRPM() const
+{
+	return StandardRPM + RPMThreshold;
+}
+
+int UMyGameInstance::GetSafeRPM() const
+{
+	return StandardRPM - RPMThreshold;
+}
+
+int UMyGameInstance::GetMaxRPM() const
+{
+	return MaxStandardRPM;
+}
+
+void UMyGameInstance::NotifyUpdateRPM()
+{
+	if (OnUpdateRPM.IsBound())
+		OnUpdateRPM.Broadcast(GetStandardRPM(), GetDangerRPM(), GetSafeRPM());
 }
 #pragma endregion
+
+// 2025.11.12 谷村 start
+#pragma region セット数
+void UMyGameInstance::SetNumOfSets(int Value)
+{
+	NumOfSets = Value;
+}
+#pragma endregion
+// 2025.11.12 谷村 end
 
 #pragma region 動物
 void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)
@@ -167,12 +217,12 @@ void UMyGameInstance::RemoveAnimal(TSubclassOf<AAnimal> Animal)
 	if (!Animal)
 		return;
 
-	// 配列から見つけない
+	// 配列のなかに見当たらない
 	if (Animals.Num() > 0 && Animals.Contains(Animal))
 		return;
 
 	// 削除
-	//Animals.Remove(Animal);
+	Animals.Remove(Animal);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const

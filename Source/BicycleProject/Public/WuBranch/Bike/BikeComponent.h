@@ -110,6 +110,13 @@ public:
 	/// <param name="Amount">数</param>
 	void AddCoins(int Amount);
 
+	/// <summary>
+	/// ペナルティ中か
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	bool IsInPenalty() const;
+
 private:
 
 	/// <summary>
@@ -153,15 +160,25 @@ private:
 	void NotifyAutoPlay();
 
 	/// <summary>
+	/// ペナルティの処理
+	/// </summary>
+	void HandlePenalty();
+
+	/// <summary>
+	/// ペナルティをキャンセル
+	/// </summary>
+	void CancelPenalty();
+
+	/// <summary>
 	/// スピード
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
-	float _speed;
+	float Speed;
 
 	/// <summary>
-	/// 単位速度
+	/// 移動の入力あるか
 	/// </summary>
-	const float _unitSpeed = 1;
+	bool bHasMovInput;
 
 	/// <summary>
 	/// 慣性の速度
@@ -177,7 +194,7 @@ private:
 	/// <summary>
 	/// オートプレイ
 	/// </summary>
-	bool _isAutoPlay;
+	bool bIsAutoPlay;
 
 	/// <summary>
 	/// オートプレイする時同期したい位置
@@ -199,4 +216,15 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int BonusCoin;
+
+	/// <summary>
+	/// ペナルティ中か
+	/// </summary>
+	bool bIsPenalty;
+
+	/// <summary>
+	/// ペナルティの持続時間
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float PenaltyDuration;
 };

@@ -17,15 +17,17 @@
 // Sets default values for this component's properties
 UBikeComponent::UBikeComponent()
 	: CoinsOfQuiz(0)
+	, bIsPenalty(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	_speed = 50.0f;
+	Speed = 50.0f;
 	_inertiaDamping = 10.0f;
 	_inertiaVelocity = FVector::ZeroVector;
+	bHasMovInput = false;
 }
 
 
@@ -36,8 +38,12 @@ void UBikeComponent::BeginPlay()
 
 	// ...
 
-	_isAutoPlay = false;
+	bIsAutoPlay = false;
 	CoinsOfQuiz = 0;
+	bIsPenalty = false;
+	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+		GameInstance->ResetCoinsPerGame();
 }
 
 // Called every frame
@@ -47,7 +53,7 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	// ...
 
-	if (_isAutoPlay)
+	if (bIsAutoPlay)
 	{
 		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
 		{
@@ -61,11 +67,12 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			GetOwner()->SetActorLocation(DeltaPos);
 		}
 	}
-	else
+	else if(!bHasMovInput)
 	{
 		HandleInertia(DeltaTime);
 	}
 
+	bHasMovInput = false;
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
@@ -79,21 +86,21 @@ void UBikeComponent::ReduceVelocityTo0()
 
 void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
 {
-	_isAutoPlay = true;
+	bIsAutoPlay = true;
 	_questionActor = actor;
 	NotifyAutoPlay();
 }
 
 void UBikeComponent::DisableAutoPlay()
 {
-	_isAutoPlay = false;
+	bIsAutoPlay = false;
 	_questionActor = nullptr;
 	NotifyAutoPlay();
 }
 
 bool UBikeComponent::GetIsAutoPlay() const
 {
-	return _isAutoPlay;
+	return bIsAutoPlay;
 }
 
 void UBikeComponent::SetSynchPos(FVector pos)
@@ -120,6 +127,11 @@ void UBikeComponent::AddCoins(int Amount)
 	CoinsOfQuiz += Amount;
 }
 
+bool UBikeComponent::IsInPenalty() const
+{
+	return bIsPenalty;
+}
+
 void UBikeComponent::HandleInertia(float DeltaTime)
 {
 	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
@@ -136,6 +148,17 @@ void UBikeComponent::HandleInertia(float DeltaTime)
 
 void UBikeComponent::OnMove(FVector2D direction)
 {
+	// ペナルティ中またはオートプレイ中は移動しない
+	if (bIsPenalty || bIsAutoPlay)
+		return;
+
+	// 加速が最大になるとペナルティ
+	if (direction.Length() == 1)
+	{
+		HandlePenalty();
+		return;
+	}
+
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
 	FVector actorRight = GetOwner()->GetActorRightVector();
@@ -155,12 +178,13 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 入力した方向をキャラクターの向きに合わせる
 	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
 	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
+	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
 	// 慣性を設定
-	_inertiaVelocity = dir.GetSafeNormal() * _speed;
+	_inertiaVelocity = dir.GetSafeNormal() * Speed;
+	bHasMovInput = true;
 }
 
 void UBikeComponent::OnSelectLeftAnswer()
@@ -174,14 +198,18 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
 	//出口まで誘導
 	_questionActor->UseLeftExit();
+	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	bool Result = GameMode->CheckAnswer(questionID, answer);
+	//bool Result = GameMode->CheckAnswer(questionID, answer);
+	GameMode->AnsweredQuestion();
 	// 正解か不正解を表示
-	_questionActor->SetResult(0, Result);
+	//_questionActor->SetResult(0, Result);
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	HandleCoin(Result, !Character->HasOverSpeed());
+	//HandleCoin(Result, !Character->HasOverSpeed());
+	HandleCoin(true, !Character->HasOverSpeed());
+	// 2025.10.19 ウー end
 	// 超速の記録をリセット
 	Character->ResetOverSpeed();
 	// マップの生成
@@ -199,14 +227,18 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
 	_questionActor->UseRightExit();
+	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	bool Result = GameMode->CheckAnswer(questionID, answer);
+	//bool Result = GameMode->CheckAnswer(questionID, answer);
+	GameMode->AnsweredQuestion();
 	// 正解か不正解を表示
-	_questionActor->SetResult(1, Result);
+	//_questionActor->SetResult(1, Result);
 	// コインの処理
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	HandleCoin(Result, !Character->HasOverSpeed());
+	//HandleCoin(Result, !Character->HasOverSpeed());
+	HandleCoin(true, !Character->HasOverSpeed());
+	// 2025.10.19 ウー end
 	// 超速の記録をリセット
 	Character->ResetOverSpeed();
 	// マップの生成
@@ -261,12 +293,31 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 	// 保存
 	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
-		GameInstance->AddCoins(CoinsOfQuiz);
+		GameInstance->AddCoinsPerGame(CoinsOfQuiz);
 	// リセット
 	CoinsOfQuiz = 0;
 }
 
 void UBikeComponent::NotifyAutoPlay()
 {
-	OnUpdateAutoPlayEvent.Broadcast(_isAutoPlay);
+	OnUpdateAutoPlayEvent.Broadcast(bIsAutoPlay);
+}
+
+void UBikeComponent::HandlePenalty()
+{
+	FTimerHandle PenaltyTimerHandle;
+	bIsPenalty = true;
+	// ペナルティ時間後にキャンセル
+	GetWorld()->GetTimerManager().SetTimer(
+		PenaltyTimerHandle,
+		this,
+		&UBikeComponent::CancelPenalty,
+		PenaltyDuration,
+		false
+	);
+}
+
+void UBikeComponent::CancelPenalty()
+{
+	bIsPenalty = false;
 }

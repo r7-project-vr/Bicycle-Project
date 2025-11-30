@@ -2,7 +2,9 @@
 
 
 #include "WuBranch/Device/WiredDevice.h"
+#if PLATFORM_WINDOWS
 #include "WuBranch/Device/DeviceCmdSender.h"
+#endif
 #include <WuBranch/MyGameInstance.h>
 
 #if PLATFORM_WINDOWS
@@ -35,7 +37,9 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	Device->SetInterfacePt(new WindowsSerial());
 	// RPM
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	MaxRPM = GameInstance->GetMaxRPM();
+	GameInstance->OnUpdateRPM.AddDynamic(this, &UWiredDevice::UpdateMaxRPM);
+	// 危険値を最大値として使う
+	MaxRPM = GameInstance->GetDangerRPM();
 }
 
 void UWiredDevice::Tick(float DeltaTime)
@@ -168,13 +172,20 @@ void UWiredDevice::HandleRPMData(const ASerialDataStruct::ASerialData& RPMData)
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
 	FVector2D MoveVector(InputVelocity, 0);
 	NotifyMoveEvent(MoveVector);
+	NotifyMoveNumEvent(RPM);
 }
 
 void UWiredDevice::HandleRPSData(const ASerialDataStruct::ASerialData& RPSData)
 {
 	int RPS = TransformDataToInt<int>(RPSData.data, RPSData.data_num);
-	FVector2D MoveVector((float)RPS / 100.f, 0);
+	FVector2D MoveVector((float)RPS / (MaxRPM / 60.f), 0);
 	NotifyMoveEvent(MoveVector);
+}
+
+void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
+{
+	// 危険値を最大値として使う
+	MaxRPM = Danger;
 }
 
 template<typename T>
@@ -197,6 +208,16 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UWiredDevice::NotifyMoveNumEvent(int Num)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveNumEvent.IsBound())
+		OnMoveNumEvent.Broadcast(Num);
 }
 
 #elif PLATFORM_ANDROID
@@ -266,6 +287,10 @@ void UWiredDevice::GetMoveDataFromDevice()
 {
 }
 
+void UWiredDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
+{
+}
+
 void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 {
 	if (!MoveSwitch)
@@ -274,5 +299,15 @@ void UWiredDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UWiredDevice::NotifyMoveNumEvent(int Num)
+{
+	if (!MoveSwitch)
+		return;
+
+	// 通知する
+	if (OnMoveNumEvent.IsBound())
+		OnMoveNumEvent.Broadcast(Num);
 }
 #endif

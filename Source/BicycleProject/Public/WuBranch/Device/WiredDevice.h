@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
+#if PLATFORM_WINDOWS
 #include <ASerialCore/ASerialPacket.h>
+#endif
 #include "WiredDevice.generated.h"
 
 class UASerialLibControllerWin;
@@ -61,6 +63,7 @@ public:
 
 private:
 	
+#if PLATFORM_WINDOWS
 	/// <summary>
 	/// RPMデータを受け取った時の処理
 	/// </summary>
@@ -72,7 +75,18 @@ private:
 	/// </summary>
 	/// <param name="RPSData">RPSデータ</param>
 	void HandleRPSData(const ASerialDataStruct::ASerialData& RPSData);
+#endif
 
+	/// <summary>
+	/// 回転数を更新
+	/// </summary>
+	/// <param name="Standard">標準値</param>
+	/// <param name="Danger">危険値</param>
+	/// <param name="Safe">安全値</param>
+	UFUNCTION()
+	void UpdateMaxRPM(int Standard, int Danger, int Safe);
+
+#if PLATFORM_WINDOWS
 	/// <summary>
 	/// 貰ったデータから必要な数値に変換
 	/// </summary>
@@ -81,12 +95,19 @@ private:
 	/// <returns>数値</returns>
 	template<typename T>
 	T TransformDataToInt(const uint8_t* Data, int Size) const;
+#endif
 
 	/// <summary>
 	/// 移動イベントを通知
 	/// </summary>
 	/// <param name="MoveData">移動量</param>
 	void NotifyMoveEvent(FVector2D MoveData);
+
+	/// <summary>
+	/// 数字移動イベントを通知
+	/// </summary>
+	/// <param name="MoveData">移動量</param>
+	void NotifyMoveNumEvent(int Num);
 
 	/// <summary>
 	/// 移動機能のスイッチ
@@ -97,6 +118,7 @@ private:
 	/// 実際使う装置
 	/// </summary>
 	UPROPERTY()
+#if PLATFORM_WINDOWS
 	UASerialLibControllerWin* Device;
 
 	/// <summary>
@@ -113,7 +135,8 @@ private:
 	/// 貰ったデータのキュー
 	/// </summary>
 	TQueue<ASerialDataStruct::ASerialData, EQueueMode::Spsc> DataQueue;
-	
+#endif
+
 	/// <summary>
 	/// 最大回転数
 	/// </summary>

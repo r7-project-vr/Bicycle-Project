@@ -7,6 +7,7 @@
 #include "MoveProvider.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveV2Delegate, FVector2D, dir);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveNumDelegate, int, Num);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -32,6 +33,15 @@ public:
 	/// <param name="functionName"></param>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Move Provider")
 	void BindMoveEvent(UObject* object, FName functionName);
+
+	/// <summary>
+	/// 移動数イベントを登録
+	/// </summary>
+	/// <param name="object"></param>
+	/// <param name="functionName"></param>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Move Provider")
+	void BindMoveNumEvent(UObject* object, FName functionName);
+
 
 	/// <summary>
 	/// 起動する

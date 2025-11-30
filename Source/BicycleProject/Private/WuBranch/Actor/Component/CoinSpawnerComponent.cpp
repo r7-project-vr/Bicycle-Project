@@ -124,9 +124,9 @@ void UCoinSpawnerComponent::Spawn(int Num, float StartLocation)
 
 void UCoinSpawnerComponent::UpdateCoinHeight(float NewHeight)
 {
-	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (!Player)
-		return;
+	//ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	//if (!Player)
+	//	return;
 
 	//
 	UpdateSpawnZoneHeight(NewHeight);

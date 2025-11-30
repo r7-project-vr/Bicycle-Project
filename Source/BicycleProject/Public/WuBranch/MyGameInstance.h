@@ -50,13 +50,30 @@ public:
 	/// コインを取得
 	/// </summary>
 	/// <returns></returns>
-	int GetCoins() const;
+	int GetTotalCoins() const;
 
 	/// <summary>
-	/// コインを追加
+	/// コインを設定
 	/// </summary>
-	/// <param name="Amount">追加する量</param>
-	void AddCoins(int Amount);
+	/// <param name="Amount">新しいコイン数</param>
+	void SetTotalCoins(int NewCoin);
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインを追加
+	/// </summary>
+	/// <param name="Amount">追加量</param>
+	void AddCoinsPerGame(int Amount);
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインをリセット
+	/// </summary>
+	void ResetCoinsPerGame();
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインを取得
+	/// </summary>
+	/// <returns></returns>
+	int GetCoinsPerGame() const;
 
 	/// <summary>
 	/// コインの高さを取得
@@ -121,7 +138,13 @@ private:
 	/// 持ってるコイン
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	int Coins;
+	int TotalCoins;
+
+	/// <summary>
+	/// 一ゲームあたりにもらえるコインの数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int CoinsPerGame;
 
 	// コインの高さ
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -162,32 +185,18 @@ private:
 public:
 
 	/// <summary>
-	/// 最大回転数をゲット
+	/// 回転数の標準値をセット
 	/// </summary>
-	/// <returns>最大回転数</returns>
+	/// <param name="Value">新しい値</param>
 	UFUNCTION(BlueprintCallable)
-	int GetMaxRPM() const;
-
-	/// <summary>
-	/// 最大回転数を設定
-	/// </summary>
-	/// <param name="Value">回転数</param>
-	UFUNCTION(BlueprintCallable)
-	void SetMaxRPM(int Value);
+	void SetStandardRPM(int Value);
 
 	/// <summary>
 	/// 回転数の標準値をゲット
 	/// </summary>
-	/// <returns>回転数の標準値</returns>
+	/// <returns></returns>
 	UFUNCTION(BlueprintCallable)
 	int GetStandardRPM() const;
-
-	/// <summary>
-	/// 回転数の標準値を設定
-	/// </summary>
-	/// <param name="Value">標準値</param>
-	UFUNCTION(BlueprintCallable)
-	void SetStandardRPM(int Value);
 
 	/// <summary>
 	/// 回転数の標準値をリセット
@@ -195,32 +204,98 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetStandardRPM();
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateStandardRPMDelegate, int, Num);
+	/// <summary>
+	/// RPMの閾値を変更
+	/// </summary>
+	/// <param name="Value">変更値</param>
+	UFUNCTION(BlueprintCallable)
+	void AdjustThreshold(int Value);
 
 	/// <summary>
-	/// 標準回転数が変わった通知
+	/// RPMの閾値をゲット
+	/// </summary>
+	/// <returns>閾値</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetThreshold() const;
+
+	/// <summary>
+	/// RPMの閾値をリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ResetThreshold();
+
+	/// <summary>
+	/// 危険値をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetDangerRPM() const;
+
+	/// <summary>
+	/// 安全値をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetSafeRPM() const;
+
+	/// <summary>
+	/// 最大RPMをゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int GetMaxRPM() const;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUpdateRPMDelegate, int, Standard, int, Danger, int, Safe);
+
+	/// <summary>
+	/// RPMが更新した通知
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
-	FUpdateStandardRPMDelegate OnUpdateStandardRPM;
+	FUpdateRPMDelegate OnUpdateRPM;
 
 private:
 
 	/// <summary>
-	/// 標準回転数が変わったのを通知する
+	/// RPMが更新したのを通知
 	/// </summary>
-	void NotifyUpdateStandardRPM();
-
-	/// <summary>
-	/// 最大回転数
-	/// </summary>
-	int MaxRPM;
+	void NotifyUpdateRPM();
 
 	/// <summary>
 	/// 回転数の標準値
 	/// </summary>
 	int StandardRPM;
+
+	/// <summary>
+	/// RPMの閾値
+	/// </summary>
+	int RPMThreshold;
+
+	/// <summary>
+	/// 回転数の最大値
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int MaxStandardRPM;
+
 #pragma endregion
 	
+// 2025.11.12 谷村 start
+#pragma region セット数
+public:
+	/// <summary>
+	/// セット数をセット
+	/// </summary>
+	/// <param name="Value">新しい値</param>
+	UFUNCTION(BlueprintCallable)
+	void SetNumOfSets(int Value);
+
+	/// <summary>
+	/// セット数
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 NumOfSets;
+#pragma endregion
+// 2025.11.12 谷村 end
+
 #pragma region ペット
 public:
 

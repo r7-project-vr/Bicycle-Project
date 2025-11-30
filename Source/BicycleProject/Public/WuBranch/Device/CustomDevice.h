@@ -11,6 +11,7 @@
 //===================================================
 // Service UUID
 #define IO_SERVICE_UUID "682a0468-1482-63be-dc47-4296d65ad4b8"
+#define IO_DEVICE_NAME "BicycleDevice"
 // Write Characteristic UUID
 #define IO_WRITE_CHARACTERISTIC_UUID "72063c8c-a816-4e9a-8627-e9a689952370"
 // Read Characteristic UUID
@@ -130,7 +131,7 @@ private:
 	/// <param name="CharacteristicUUID"></param>
 	/// <param name="Data">データ</param>
 	UFUNCTION()
-	void OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
+	void OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
 
 	/// <summary>
 	/// RPMデータを処理

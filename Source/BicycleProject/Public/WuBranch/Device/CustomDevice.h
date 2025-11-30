@@ -11,6 +11,7 @@
 //===================================================
 // Service UUID
 #define IO_SERVICE_UUID "682a0468-1482-63be-dc47-4296d65ad4b8"
+#define IO_DEVICE_NAME "BicycleDevice"
 // Write Characteristic UUID
 #define IO_WRITE_CHARACTERISTIC_UUID "72063c8c-a816-4e9a-8627-e9a689952370"
 // Read Characteristic UUID
@@ -18,9 +19,8 @@
 #define IO_RPS_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4ba"
 #define IO_REVOLUTION_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4bd"
 
-
-//
-#define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FILE_LOCATION"
+// Android Permission
+#define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FINE_LOCATION"
 #define ANDROID_BLUETOOTH_CONNECT_PERMISSION "android.permission.BLUETOOTH_CONNECT"
 #define ANDROID_BLUETOOTH_SCAN_PERMISSION "android.permission.BLUETOOTH_SCAN"
 
@@ -35,6 +35,7 @@ class BICYCLEPROJECT_API UCustomDevice : public UDevice
 public:
 
 	UCustomDevice();
+	~UCustomDevice();
 
 	virtual void Init() override;
 
@@ -68,6 +69,7 @@ private:
 	/// </summary>
 	/// <param name="Permissions"></param>
 	/// <param name="GrantResults"></param>
+	UFUNCTION()
 	void OnPermissionResult(const TArray<FString>& Permissions, const TArray<bool>& GrantResults);
 
 	/// <summary>
@@ -84,28 +86,33 @@ private:
 	/// 新しいデバイスが見つかった時
 	/// </summary>
 	/// <param name="Device">デバイス</param>
+	UFUNCTION()
 	void OnDeviceFound(TScriptInterface<class IBleDeviceInterface> Device);
 
 	/// <summary>
 	/// コネクションが成功した時
 	/// </summary>
+	UFUNCTION()
 	void OnConnectSucc();
 
 	/// <summary>
 	/// コネクションが失敗した時
 	/// </summary>
 	/// <param name="ErrorMessage">エラーメッセージ</param>
+	UFUNCTION()
 	void OnConnectError(FString ErrorMessage);
 
 	/// <summary>
 	/// 切断成功した時
 	/// </summary>
+	UFUNCTION()
 	void OnDisconnectSucc();
 
 	/// <summary>
 	/// 切断失敗した時
 	/// </summary>
 	/// <param name="ErrorMessage">エラーメッセージ</param>
+	UFUNCTION()
 	void OnDisconnectError(FString ErrorMessage);
 
 	/// <summary>
@@ -123,7 +130,8 @@ private:
 	/// <param name="ServiceUUID">サービスUUID</param>
 	/// <param name="CharacteristicUUID"></param>
 	/// <param name="Data">データ</param>
-	void OnNotification(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
+	UFUNCTION()
+	void OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data);
 
 	/// <summary>
 	/// RPMデータを処理

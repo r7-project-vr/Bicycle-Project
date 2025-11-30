@@ -14,9 +14,9 @@ public class BicycleProject : ModuleRules
 
 		// Windowsだけ
         if (Target.Platform == UnrealTargetPlatform.Win64)
-			PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
+            PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
 		// Androidだけ
-		else if(Target.Platform == UnrealTargetPlatform.Android)
+        else if(Target.Platform == UnrealTargetPlatform.Android)
             PublicDependencyModuleNames.AddRange(new string[] { });
 			
 

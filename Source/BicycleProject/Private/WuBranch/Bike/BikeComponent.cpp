@@ -127,6 +127,20 @@ void UBikeComponent::AddCoins(int Amount)
 	CoinsOfQuiz += Amount;
 }
 
+void UBikeComponent::ApplyPenalty()
+{
+	FTimerHandle PenaltyTimerHandle;
+	bIsPenalty = true;
+	// ペナルティ時間後にキャンセル
+	GetWorld()->GetTimerManager().SetTimer(
+		PenaltyTimerHandle,
+		this,
+		&UBikeComponent::CancelPenalty,
+		PenaltyDuration,
+		false
+	);
+}
+
 bool UBikeComponent::IsInPenalty() const
 {
 	return bIsPenalty;
@@ -155,7 +169,7 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 加速が最大になるとペナルティ
 	if (direction.Length() == 1)
 	{
-		HandlePenalty();
+		ApplyPenalty();
 		return;
 	}
 
@@ -213,7 +227,7 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	// 超速の記録をリセット
 	Character->ResetOverSpeed();
 	// マップの生成
-	SpawnMap(true);
+	SpawnNextMap(true);
 }
 
 void UBikeComponent::OnSelectRightAnswer()
@@ -242,7 +256,7 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	// 超速の記録をリセット
 	Character->ResetOverSpeed();
 	// マップの生成
-	SpawnMap(false);
+	SpawnNextMap(false);
 }
 
 void UBikeComponent::DisableSelectAnswerAction()
@@ -252,7 +266,7 @@ void UBikeComponent::DisableSelectAnswerAction()
 	deviceManager->DisableSelectAnswerActions();
 }
 
-void UBikeComponent::SpawnMap(bool IsLeft)
+void UBikeComponent::SpawnNextMap(bool IsLeft)
 {
 	ATile* CurrentTile = FindCurrentTile();
 	
@@ -301,20 +315,6 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 void UBikeComponent::NotifyAutoPlay()
 {
 	OnUpdateAutoPlayEvent.Broadcast(bIsAutoPlay);
-}
-
-void UBikeComponent::HandlePenalty()
-{
-	FTimerHandle PenaltyTimerHandle;
-	bIsPenalty = true;
-	// ペナルティ時間後にキャンセル
-	GetWorld()->GetTimerManager().SetTimer(
-		PenaltyTimerHandle,
-		this,
-		&UBikeComponent::CancelPenalty,
-		PenaltyDuration,
-		false
-	);
 }
 
 void UBikeComponent::CancelPenalty()

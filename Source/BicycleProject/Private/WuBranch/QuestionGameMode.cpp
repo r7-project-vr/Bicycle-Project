@@ -4,7 +4,6 @@
 #include "WuBranch/QuestionGameMode.h"
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Bike/BikeCharacter.h"
-#include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/BikePlayerController.h"
 #include "WuBranch/Actor/Firework.h"
 #include "WuBranch/UI/QuestionUIActor.h"
@@ -15,7 +14,6 @@
 #include "UntakuBranch/QuestionManager.h"
 #include <ShiiBranch/OptionUIWidget.h>
 #include <Components/WidgetComponent.h>
-#include "WuBranch/MyGameInstance.h"
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -60,7 +58,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		{
 			_playerController->SetPlayerEnabledState(false);
 		}*/
-		_player->GetBikeComponent()->ReduceVelocityTo0();
+		_player->StopMove();
 
 		if (CurrentState == QuestionGameState::Playing)
 			return;

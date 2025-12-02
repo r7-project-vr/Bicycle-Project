@@ -8,6 +8,8 @@
 #include "BikeCharacter.generated.h"
 
 class UBikeComponent;
+class UBikeMovementComponent;
+class UResponderComponent;
 class UAnimalManagerComponent;
 
 UCLASS()
@@ -66,10 +68,9 @@ public:
 	void DisableHintLine();
 
 	/// <summary>
-	/// BikeComponentをゲット
+	/// 移動停止
 	/// </summary>
-	/// <returns></returns>
-	UBikeComponent* GetBikeComponent();
+	void StopMove();
 
 	/// <summary>
 	/// 超速したか
@@ -116,6 +117,16 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBikeComponent* Bike;
+
+	/// <summary>
+	/// 移動
+	/// </summary>
+	UBikeMovementComponent* BikeMovement;
+
+	/// <summary>
+	/// 解答者
+	/// </summary>
+	UResponderComponent* Responder;
 
 	/// <summary>
 	/// 動物管理者

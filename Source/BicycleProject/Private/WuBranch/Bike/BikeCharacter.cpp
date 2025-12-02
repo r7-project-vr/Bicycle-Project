@@ -8,8 +8,9 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Bike/BikeComponent.h>
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
-#include <WuBranch/QuestionGameMode.h>
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
+#include "WuBranch/Bike/BikeMovementComponent.h"
+#include "WuBranch/Bike/ResponderComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -45,6 +46,9 @@ void ABikeCharacter::BeginPlay()
 	//_handlebarsAngle = 0.0f;
 	IsOverSpeed = false;
 	IsPause = false;
+
+	BikeMovement = GetComponentByClass<UBikeMovementComponent>();
+	Responder = GetComponentByClass<UResponderComponent>();
 }
 
 // Called every frame
@@ -77,16 +81,20 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
 		DeviceManager->CreateAllDevices();
-		DeviceManager->BindMoveEvent(Bike, "OnMove");
-		DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
-		DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
+		if(BikeMovement)
+			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
+		if (Responder)
+		{
+			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
+			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
+		}
 	}
 }
 
 void ABikeCharacter::Pause_Implementation()
 {
 	IsPause = true;
-	if (!Bike->GetIsAutoPlay())
+	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -96,14 +104,14 @@ void ABikeCharacter::Pause_Implementation()
 				DeviceManager->DisableDefaultActions();
 			}
 		}
-		Bike->ReduceVelocityTo0();
+		StopMove();
 	}
 }
 
 void ABikeCharacter::ReStart_Implementation()
 {
 	IsPause = false;
-	if (!Bike->GetIsAutoPlay())
+	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -156,9 +164,10 @@ void ABikeCharacter::DisableHintLine()
 	}
 }
 
-UBikeComponent* ABikeCharacter::GetBikeComponent()
+void ABikeCharacter::StopMove()
 {
-	return Bike;
+	if(BikeMovement)
+		BikeMovement->ReduceVelocityTo0();
 }
 
 bool ABikeCharacter::HasOverSpeed() const

@@ -40,6 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Init(float init, float max, float danger, float safe, float avalage);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SubTherd(float delta);
+
 	/// <summary>
 	/// UIの針を動かすための数値
 	/// </summary>
@@ -75,6 +78,13 @@ public:
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite)
 	float avalageSpeed = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool penalty = false;
+
+	UFUNCTION(BlueprintCallable)
+	void hikizan(float delta);
+
 
 	
 };

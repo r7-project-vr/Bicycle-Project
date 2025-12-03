@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WuBranch/Actor/Pet.h"
 #include "ShopItem.generated.h"
 
 /**
@@ -30,4 +31,10 @@ struct BICYCLEPROJECT_API FShopItem : public FTableRowBase
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 Price;
+
+	/// <summary>
+	/// 実際の動物クラス
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<APet> Animal;
 };

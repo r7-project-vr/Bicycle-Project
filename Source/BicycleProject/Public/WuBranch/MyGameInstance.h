@@ -332,6 +332,12 @@ public:
 	/// <param name="Amount">数</param>
 	void SetMaxAnimalCount(int Amount);
 
+	/// <summary>
+	/// すでに最大量の動物を持っているか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool HasMaxAnimals() const;
+
 private:
 	
 	/// <summary>
@@ -348,6 +354,7 @@ private:
 	/// <summary>
 	/// 最大ついて来れる動物の数
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int MaxAnimalCount;
 #pragma endregion
 

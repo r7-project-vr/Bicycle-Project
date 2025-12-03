@@ -209,7 +209,7 @@ void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)
 		return;
 
 	// もう入れられない
-	if (Animals.Num() >= MaxAnimalCount)
+	if (HasMaxAnimals())
 		return;
 
 	// 追加
@@ -238,6 +238,11 @@ TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
 void UMyGameInstance::SetMaxAnimalCount(int Amount)
 {
 	MaxAnimalCount = Amount;
+}
+
+bool UMyGameInstance::HasMaxAnimals() const
+{
+	return Animals.Num() >= MaxAnimalCount;
 }
 
 void UMyGameInstance::SaveAnimalToFile()

@@ -82,7 +82,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool penalty = false;
 
-
+	UFUNCTION(BlueprintCallable)
+	void hikizan(float delta);
 
 
 	

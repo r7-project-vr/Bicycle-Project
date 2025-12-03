@@ -44,9 +44,18 @@ void USpeedUI::CounterChangeAninx_Implementation(float bikeSpeed)
 
 void USpeedUI::SubTherd_Implementation(float delta)
 {
-	currentY -= (1 / 3) * delta;
+	currentY -= (1.0f / 3.0f) * delta;
 	if (currentY <= 0.0f) {
 		currentY = 0.0f;
 		penalty = false;
+	}
+}
+
+void USpeedUI::hikizan(float delta)
+{
+	if (penalty)return;
+	currentY += 0.5 * delta;
+	if (currentY >= 1.0f) {
+		penalty = true;
 	}
 }

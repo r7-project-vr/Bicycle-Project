@@ -16,13 +16,6 @@ class BICYCLEPROJECT_API USpeedUI : public UUserWidget
 public:
 
 	/// <summary>
-	/// 受け取る値が自転車の速度（RPM）のときの速度取得用関数
-	/// </summary>
-	/// <param name="bikeSpeed"></param>
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void CounterChange(float bikeSpeed);
-
-	/// <summary>
 	/// 受け取る値が直に自転車の速度の割合だった時の速度取得用関数
 	/// </summary>
 	/// <param name="bikeSpeed"></param>
@@ -82,9 +75,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool penalty = false;
 
-	UFUNCTION(BlueprintCallable)
-	void hikizan(float delta);
-
-
+	/// <summary>
+	/// ペナルティの持続時間
+	/// </summary>
+	float PenaltyDuraction;
 	
 };

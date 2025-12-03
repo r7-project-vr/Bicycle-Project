@@ -193,6 +193,11 @@ void UMyGameInstance::SetNumOfSets(int Value)
 {
 	NumOfSets = Value;
 }
+
+int32 UMyGameInstance::GetNumOfSets() const
+{
+	return NumOfSets;
+}
 #pragma endregion
 // 2025.11.12 谷村 end
 

@@ -2,22 +2,9 @@
 
 
 #include "tokuamaru/SpeedUI.h"
-
-void USpeedUI::CounterChange_Implementation(float bikeSpeed)
-{
-	currentY = bikeSpeed / maxSpeed;
-	nowSpeed = bikeSpeed;
-	if (currentY >= 1.0f) {
-		currentY = 1.0f;
-		return;
-	}
-	if (currentY <= 0.0f) {
-		currentY = 0.0f;
-		return;
-	}
-
-
-}
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
+#include <WuBranch/Bike/BikeComponent.h>
 
 void USpeedUI::Init_Implementation(float init, float max,float danger,float safe,float avalage)
 {
@@ -26,36 +13,22 @@ void USpeedUI::Init_Implementation(float init, float max,float danger,float safe
 	dangerSpeed = danger;
 	safeSpeed = safe;
 	avalageSpeed = avalage;
+	PenaltyDuraction = 3.0f;
+	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+		if(UBikeComponent* BikeCom = Character->GetComponentByClass<UBikeComponent>())
+			PenaltyDuraction = BikeCom->GetPenaltyDuration();
 }
 
 void USpeedUI::CounterChangeAninx_Implementation(float bikeSpeed)
 {
-	currentY = bikeSpeed;
+	currentY = FMath::Clamp(bikeSpeed, 0.f, 1.f);
 	nowSpeed = bikeSpeed;
-	if (currentY >= 1.0f) {
-		currentY = 1.0f;
-		return;
-	}
-	if (currentY <= 0.0f) {
-		currentY = 0.0f;
-		return;
-	}
 }
 
 void USpeedUI::SubTherd_Implementation(float delta)
 {
-	currentY -= (1.0f / 3.0f) * delta;
+	currentY -= (1.0f / PenaltyDuraction) * delta;
 	if (currentY <= 0.0f) {
 		currentY = 0.0f;
-		penalty = false;
-	}
-}
-
-void USpeedUI::hikizan(float delta)
-{
-	if (penalty)return;
-	currentY += 0.5 * delta;
-	if (currentY >= 1.0f) {
-		penalty = true;
 	}
 }

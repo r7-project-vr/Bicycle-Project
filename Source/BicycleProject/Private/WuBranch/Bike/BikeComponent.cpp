@@ -132,6 +132,11 @@ bool UBikeComponent::IsInPenalty() const
 	return bIsPenalty;
 }
 
+float UBikeComponent::GetPenaltyDuration() const
+{
+	return PenaltyDuration;
+}
+
 void UBikeComponent::HandleInertia(float DeltaTime)
 {
 	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);

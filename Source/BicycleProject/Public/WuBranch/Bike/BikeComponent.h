@@ -114,6 +114,7 @@ public:
 	/// ペナルティ中か
 	/// </summary>
 	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
 	bool IsInPenalty() const;
 
 private:

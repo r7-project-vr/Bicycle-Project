@@ -34,4 +34,5 @@ enum class EDeviceConnectType : uint8
 	UnConnected,
 	Connecting,
 	Connected,
+	Disconnecting,
 };

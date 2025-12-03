@@ -1,5 +1,6 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class BicycleProject : ModuleRules
@@ -9,13 +10,13 @@ public class BicycleProject : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		// 共通
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "Foliage", "AIModule" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "XRBase", "Niagara", "Foliage", "AIModule", "BleGoodies", "AndroidPermission" });
 
 		// Windowsだけ
         if (Target.Platform == UnrealTargetPlatform.Win64)
-			PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
+            PublicDependencyModuleNames.AddRange(new string[] { "ASerialCom" });
 		// Androidだけ
-		else if(Target.Platform == UnrealTargetPlatform.Android)
+        else if(Target.Platform == UnrealTargetPlatform.Android)
             PublicDependencyModuleNames.AddRange(new string[] { });
 			
 

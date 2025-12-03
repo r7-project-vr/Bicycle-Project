@@ -118,5 +118,9 @@ FMyTime UOrbitalRevolutionComponent::ConvertAngleToTime(float Angle)
 	if (Hour >= 24)
 		Hour -= 24;
 
-	return FMyTime((int)Hour, Min);
+	FMyTime NowTime;
+	NowTime.hour24 = (int)Hour;
+	NowTime.min = Min;
+
+	return NowTime;
 }

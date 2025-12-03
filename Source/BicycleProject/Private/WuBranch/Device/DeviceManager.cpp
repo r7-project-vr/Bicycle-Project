@@ -3,6 +3,7 @@
 
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Device/KeyboardDevice.h>
+#include <WuBranch/Device/CustomDevice.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include <WuBranch/Device/WiredDevice.h>
 
@@ -21,20 +22,25 @@ void UDeviceManager::CreateAllDevices()
 	AddDevice(EDevicePart::Hand, HandDevice);
 
 	// 足の部位
-	// 優先順位: 無線デバイス > 有線デバイス > キーボードデバイス
-	// 今無線の部分はまだできていない
+	// プラットフォームごと違うデバイスを使う
+	// Android/Ios:無線デバイス、Windows:有線デバイス、キーボードデバイス
 #if PLATFORM_WINDOWS
 	if (UDevice* WiredDevice = CreateWiredDevice())
 	{
 		AddDevice(EDevicePart::Foot, WiredDevice);
 	}
 	else
-#endif
 	{
 		// 有線デバイスが繋がらなかったら、キーボードデバイスを使う
 		UDevice* KeyboardDevice = CreateKeyBoardDevice();
 		AddDevice(EDevicePart::Foot, KeyboardDevice);
 	}
+#elif PLATFORM_ANDROID || PLATFORM_IOS
+	if (UDevice* BleDevice = CreateBleDevice())
+	{
+		AddDevice(EDevicePart::Foot, BleDevice);
+	}
+#endif
 	EnableDefaultActions();
 }
 
@@ -56,11 +62,11 @@ void UDeviceManager::DisConnectAllDevices()
 	}
 }
 
-void UDeviceManager::AddDevice(EDevicePart Part, UDevice* device)
+void UDeviceManager::AddDevice(EDevicePart Part, UDevice* Device)
 {
 	if (!Devices.Contains(Part))
 	{
-		Devices.Add(Part, device);
+		Devices.Add(Part, Device);
 	}
 	else
 	{
@@ -103,7 +109,11 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 		SingleDevice = CreateKeyBoardDevice();
 		break;
 	case EDeviceType::CustomDevice:
+#if PLATFORM_WINDOWS
 		SingleDevice = CreateWiredDevice();
+#elif PLATFORM_ANDROID || PLATFORM_IOS
+		SingleDevice = CreateBleDevice();
+#endif
 		break;
 	default:
 		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
@@ -161,16 +171,16 @@ void UDeviceManager::DisableSelectAnswerActions()
 		IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
 }
 
-void UDeviceManager::BindMoveEvent(UObject* object, FName functionName)
+void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合
-	//IMoveProvider::Execute_BindMoveEvent(Device, object, functionName);
+	//IMoveProvider::Execute_BindMoveEvent(Device, Object, FunctionName);
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Foot);
 	if (Device)
 	{
-		IMoveProvider::Execute_BindMoveEvent(Device, object, functionName);
+		IMoveProvider::Execute_BindMoveEvent(Device, Object, FunctionName);
 	}
 }
 
@@ -183,29 +193,29 @@ void UDeviceManager::BindMoveNumEvent(UObject* object, FName functionName)
 	}
 }
 
-void UDeviceManager::BindSelectLeftEvent(UObject* object, FName functionName)
+void UDeviceManager::BindSelectLeftEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合
-	//IChoiceProvider::Execute_BindSelectLeftEvent(Device, object, functionName);
+	//IChoiceProvider::Execute_BindSelectLeftEvent(Device, Object, FunctionName);
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device)
 	{
-		IChoiceProvider::Execute_BindSelectLeftEvent(Device, object, functionName);
+		IChoiceProvider::Execute_BindSelectLeftEvent(Device, Object, FunctionName);
 	}
 }
 
-void UDeviceManager::BindSelectRightEvent(UObject* object, FName functionName)
+void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合
-	//IChoiceProvider::Execute_BindSelectRightEvent(Device, object, functionName);
+	//IChoiceProvider::Execute_BindSelectRightEvent(Device, Object, FunctionName);
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device)
 	{
-		IChoiceProvider::Execute_BindSelectRightEvent(Device, object, functionName);
+		IChoiceProvider::Execute_BindSelectRightEvent(Device, Object, FunctionName);
 	}
 }
 
@@ -218,15 +228,24 @@ UDevice* UDeviceManager::CreateKeyBoardDevice()
 
 UDevice* UDeviceManager::CreateWiredDevice()
 {
-#if PLATFORM_WINDOWS
 	UDevice * Device = NewObject<UWiredDevice>(this);
 	Device->Init(WiredDeviceID, WiredDeviceVer);
-	bool Result = Device->Connect();
-	if (Result)
+	bool bResult = Device->Connect();
+	if (bResult)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Wired Device Connect Success"));
 		return Device;
 	}
-#endif
+	return nullptr;
+}
+
+UDevice* UDeviceManager::CreateBleDevice()
+{
+	UDevice* Device = NewObject<UCustomDevice>(this);
+	if (Device)
+	{
+		Device->Init();
+		return Device;
+	}
 	return nullptr;
 }

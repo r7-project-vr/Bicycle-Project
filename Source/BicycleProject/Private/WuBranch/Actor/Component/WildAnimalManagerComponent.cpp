@@ -12,19 +12,11 @@ UWildAnimalManagerComponent::UWildAnimalManagerComponent()
 	// off to improve performance if you don't need them.
 	//PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
-	for(int Index = 0; Index < 5; Index++)
-	{
-		UBoxComponent* BoxComponent = CreateDefaultSubobject<UBoxComponent>(FName(*FString::Printf(TEXT("Wild Animal Spawn Location%d"), Index)));
-		if(BoxComponent)
-		{
-			BoxComponent->SetupAttachment(this);
-			WildAnimalSpawnLocations.Add(BoxComponent);
-		}
-	}
-	
 	// コンストラクタで初期化フラグをfalseに設定
 	bRandomStreamInitialized = false;
+	
+	// 配列をクリア（古いコンポーネント参照を削除）
+	WildAnimalSpawnLocations.Empty();
 }
 
 // Called when the game starts
@@ -32,8 +24,25 @@ void UWildAnimalManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 子階層にいるUBoxComponentを全部参照
+	TArray<USceneComponent*> ChildComponents;
+	GetChildrenComponents(true, ChildComponents);
+	
+	for (USceneComponent* Child : ChildComponents)
+	{
+		if (UBoxComponent* BoxComp = Cast<UBoxComponent>(Child))
+		{
+			WildAnimalSpawnLocations.Add(BoxComp);
+		}
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Found %d BoxComponent(s) in child hierarchy"), WildAnimalSpawnLocations.Num());
+
 	// RandomStream の初期化を確認
 	EnsureRandomStreamInitialized();
+	
+	// 注意: BeginPlayでは自動スポーンしない
+	// WildAnimalSpawnerなどの親アクターが明示的にStartSpawnAnimal()を呼び出す必要がある
 }
 
 void UWildAnimalManagerComponent::SetSeed(int Seed)
@@ -63,38 +72,73 @@ void UWildAnimalManagerComponent::StartSpawnAnimal()
 	if (ProbabilityTable.Num() == 0)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Cannot spawn animals: Probability table is empty!"));
+		UE_LOG(LogTemp, Error, TEXT("Make sure NormalAnimalTypes and/or RareAnimalTypes are set in Blueprint!"));
 		return;
 	}
 	
+	if (WildAnimalSpawnLocations.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot spawn animals: No spawn locations found!"));
+		UE_LOG(LogTemp, Error, TEXT("Make sure BoxComponents are added as children of this component!"));
+		return;
+	}
+	
+	// スポーン場所の数をログ出力
+	UE_LOG(LogTemp, Log, TEXT("=== Starting Animal Spawn with %d locations ==="), WildAnimalSpawnLocations.Num());
+	
 	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
-	UE_LOG(LogTemp, Log, TEXT("=== Starting Animal Spawn ==="));
 	
 	for(int Index = 0; Index < WildAnimalSpawnLocations.Num(); Index++)
 	{
-		if(WildAnimalSpawnLocations[Index])
+		UBoxComponent* SpawnLocation = WildAnimalSpawnLocations[Index];
+		
+		if(!SpawnLocation)
 		{
-			FVector Location = WildAnimalSpawnLocations[Index]->GetComponentLocation();
-			FRotator Rotation = WildAnimalSpawnLocations[Index]->GetComponentRotation();
-			FVector OnwerLocation = GetOwner()->GetActorLocation();
-			FRotator OnwerRotation = GetOwner()->GetActorRotation();
-
-			FVector AdjustedLocation = OnwerRotation.RotateVector(Location) + OnwerLocation;
-			FRotator AdjustedRotation = OnwerRotation + Rotation;
+			UE_LOG(LogTemp, Warning, TEXT("Spawn Location %d is NULL!"), Index);
+			continue;
+		}
+		
+		// 位置情報をログ出力
+		FVector Location = SpawnLocation->GetComponentLocation();
+		FRotator Rotation = SpawnLocation->GetComponentRotation();
+		
+		UE_LOG(LogTemp, Log, TEXT("Spawn Location %d - Raw Location: %s, Raw Rotation: %s"), 
+			Index, *Location.ToString(), *Rotation.ToString());
+		
+		// Ownerの情報を確認
+		AActor* Owner = GetOwner();
+		if(!Owner)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Owner is NULL! Cannot spawn animal at location %d"), Index);
+			continue;
+		}
+		
+		FVector OwnerLocation = Owner->GetActorLocation();
+		FRotator OwnerRotation = Owner->GetActorRotation();
+		
+		UE_LOG(LogTemp, Log, TEXT("Owner Location: %s, Owner Rotation: %s"), 
+			*OwnerLocation.ToString(), *OwnerRotation.ToString());
+		
+		// 相対位置から絶対位置への変換（変数名を変更）
+		FVector LocalOffset = Location - OwnerLocation;
+		FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
+		FRotator AdjustedRotation = OwnerRotation + Rotation;
+		
+		UE_LOG(LogTemp, Log, TEXT("Adjusted Location: %s, Adjusted Rotation: %s"), 
+			*AdjustedLocation.ToString(), *AdjustedRotation.ToString());
+		
+		TSubclassOf<AWildAnimal> SelectedAnimal = DecideAnimal();
+		
+		if (SelectedAnimal)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Spawn Location %d: Selected Animal = %s"), 
+				Index, *SelectedAnimal->GetName());
 			
-			TSubclassOf<AWildAnimal> SelectedAnimal = DecideAnimal();
-			
-			if (SelectedAnimal)
-			{
-				UE_LOG(LogTemp, Log, TEXT("Spawn Location %d: Selected Animal = %s"), 
-					Index, *SelectedAnimal->GetName());
-				
-				CreateAnimal(Character, SelectedAnimal, AdjustedLocation, AdjustedRotation);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Spawn Location %d: Failed to select animal!"), Index);
-			}
+			CreateAnimal(Character, SelectedAnimal, AdjustedLocation, AdjustedRotation);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Spawn Location %d: Failed to select animal!"), Index);
 		}
 	}
 	
@@ -233,20 +277,27 @@ void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassO
 		UE_LOG(LogTemp, Error, TEXT("Create Wild Animal Failed: Invalid Target Class"));
 		return;
 	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Attempting to spawn %s at %s"), 
+		*Target->GetName(), *Location.ToString());
 
-	AWildAnimal* Animal = GetWorld()->SpawnActor<AWildAnimal>(Target, Location, Rotation);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
+	AWildAnimal* Animal = GetWorld()->SpawnActor<AWildAnimal>(Target, Location, Rotation, SpawnParams);
+	
 	if (Animal)
 	{
 		Animal->Init(Character, nullptr);
 		SpawnedAnimals.Add(Animal);
 		
-		UE_LOG(LogTemp, Log, TEXT("Successfully spawned: %s at location %s"), 
+		UE_LOG(LogTemp, Log, TEXT("✓ Successfully spawned: %s at location %s"), 
 			*Target->GetName(), 
 			*Location.ToString());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to spawn: %s at location %s"), 
+		UE_LOG(LogTemp, Error, TEXT("✗ Failed to spawn: %s at location %s - SpawnActor returned nullptr"), 
 			*Target->GetName(), 
 			*Location.ToString());
 	}

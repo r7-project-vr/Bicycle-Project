@@ -31,7 +31,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wild Animal")
 	void DestroyAllAnimals();
 
-protected:
 	// 普通動物のリスト
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
 	TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;

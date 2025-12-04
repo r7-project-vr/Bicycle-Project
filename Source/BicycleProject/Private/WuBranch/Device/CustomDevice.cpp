@@ -13,9 +13,9 @@
 #endif
 
 UCustomDevice::UCustomDevice()
-	: MoveSwitch(false)
-	, BleManager(nullptr)
+	: BleManager(nullptr)
 	, MyDevice(nullptr)
+	, MoveSwitch(false)
 {
 }
 
@@ -219,6 +219,7 @@ void UCustomDevice::OnConnectSucc()
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	MyDevice->BindToCharacteristicNotificationEvent(ReceiveFunction);
 	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
+	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
 #endif
 }
 
@@ -258,6 +259,7 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 
 void UCustomDevice::OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Receive %s data"), *CharacteristicUUID));
 	if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPM_CHARACTERISTIC_UUID))
 		HandleRPMData(Data);
 	else if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPS_CHARACTERISTIC_UUID))
@@ -268,7 +270,10 @@ void UCustomDevice::OnReceiveData(FString ServiceUUID, FString CharacteristicUUI
 
 void UCustomDevice::HandleRPMData(const TArray<uint8>& Data)
 {
-	uint16 RPM = TransformDataToInt<uint16>(Data.GetData(), Data.Num());
+	//DebugReceiveData(Data);
+	// 無線だと直接数字がもらえる、変換しなくていい
+	//uint16 RPM = TransformDataToInt<uint16>(Data.GetData(), Data.Num());
+	uint16 RPM = Data[0];
 	float InputVelocity = FMath::Clamp(RPM / MaxRPM, 0.f, 1.f);
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("RPM: %d, Velocity: %lf"), RPM, InputVelocity));
 	FVector2D MoveVector(InputVelocity, 0);
@@ -285,6 +290,14 @@ void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
 {
 	uint32 Revolution = TransformDataToInt<uint32>(Data.GetData(), Data.Num());
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Revolution: %d"), Revolution));
+}
+
+void UCustomDevice::DebugReceiveData(const TArray<uint8>& Data)
+{
+	FString Content;
+	for (uint8 D : Data)
+		Content += FString::FromInt(D) + TEXT(", ");
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("Content: %s, Num* %d"), *Content, Data.Num()));
 }
 
 void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)

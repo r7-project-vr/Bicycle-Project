@@ -289,6 +289,14 @@ public:
 	void SetNumOfSets(int Value);
 
 	/// <summary>
+	/// セット数をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int32 GetNumOfSets() const;
+
+private:
+	/// <summary>
 	/// セット数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

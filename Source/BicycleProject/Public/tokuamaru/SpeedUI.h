@@ -16,13 +16,6 @@ class BICYCLEPROJECT_API USpeedUI : public UUserWidget
 public:
 
 	/// <summary>
-	/// 受け取る値が自転車の速度（RPM）のときの速度取得用関数
-	/// </summary>
-	/// <param name="bikeSpeed"></param>
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void CounterChange(float bikeSpeed);
-
-	/// <summary>
 	/// 受け取る値が直に自転車の速度の割合だった時の速度取得用関数
 	/// </summary>
 	/// <param name="bikeSpeed"></param>
@@ -39,6 +32,9 @@ public:
 	/// <param name="avalage"></param>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Init(float init, float max, float danger, float safe, float avalage);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SubTherd(float delta);
 
 	/// <summary>
 	/// UIの針を動かすための数値
@@ -76,5 +72,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	float avalageSpeed = 0.0f;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool penalty = false;
+
+	/// <summary>
+	/// ペナルティの持続時間
+	/// </summary>
+	float PenaltyDuraction;
 	
 };

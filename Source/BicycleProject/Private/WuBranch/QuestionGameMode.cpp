@@ -144,6 +144,11 @@ void AQuestionGameMode::AnsweredQuestion()
 	}
 }
 
+void AQuestionGameMode::FinishGame()
+{
+
+}
+
 int AQuestionGameMode::GetCurrectNumber() const
 {
 	return CorrectNum;

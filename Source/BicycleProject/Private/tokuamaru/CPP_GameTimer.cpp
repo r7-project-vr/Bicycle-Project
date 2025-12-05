@@ -27,7 +27,6 @@ void UCPP_GameTimer::NativeOnInitialized()
 		if (UMyGameInstance* GI = Cast<UMyGameInstance>(World->GetGameInstance()))
 		{
 			TotalGameTime = GI->GetNumOfSets();
-			TotalGameTime = 2.0f;
 			CurrentGameTime = TotalGameTime * 60.0f;
 		}
 		else {

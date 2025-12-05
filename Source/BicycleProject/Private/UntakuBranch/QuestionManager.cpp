@@ -145,7 +145,7 @@ void AQuestionManager::TestRandomQuestions()
 	// 2025.11.12 谷村 end
 	else
 	{
-		TArray<FQuestion> RandomQuestions = GetRandomQuestions(GameInstance->NumOfSets);
+		TArray<FQuestion> RandomQuestions = GetRandomQuestions(GameInstance->GetNumOfSets());
 		//int32 NumToDraw = 3;//自由設定できる　抽選問題数
 		//TArray<FQuestion> RandomQuestions = GetRandomQuestions(NumToDraw);
 

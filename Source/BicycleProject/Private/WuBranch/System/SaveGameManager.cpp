@@ -10,8 +10,9 @@ void USaveGameManager::LoadFile(FString FilePath)
 	// ファイルが見つからない、なので新しいのを作る
 	if (!FPaths::FileExists(FilePath))
 	{
-		FPlayerSaveGame* Data = new FPlayerSaveGame();
-		SaveFile(FilePath, *Data);
+		FPlayerSaveGame Data;
+		SaveFile(FilePath, Data);
+		NotifyLoadComplete(Data);
 		return;
 	}
 

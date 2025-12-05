@@ -41,7 +41,7 @@ void AQuestionGameMode::BeginPlay()
 	}
 	else
 	{
-		SuccessCondition = GameInstance->NumOfSets;
+		SuccessCondition = GameInstance->GetNumOfSets();
 	}
 	// 2025.11.19 谷村 end
 

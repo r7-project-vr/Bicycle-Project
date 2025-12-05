@@ -295,11 +295,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetNumOfSets() const;
 
-private:
+protected:  // private から protected に変更
 	/// <summary>
 	/// セット数
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int32 NumOfSets;
 #pragma endregion
 // 2025.11.12 谷村 end

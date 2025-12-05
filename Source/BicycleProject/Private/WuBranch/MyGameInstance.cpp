@@ -23,6 +23,7 @@ UMyGameInstance::UMyGameInstance()
 	, MaxAnimalCount(10)
 {
 	DeviceManager = nullptr;
+	FileName = TEXT("PlayerData.json");
 }
 
 void UMyGameInstance::Init()
@@ -33,6 +34,9 @@ void UMyGameInstance::Init()
 	{
 		DeviceManager = NewObject<UDeviceManager>(this);
 	}
+
+	GetSubsystem<USaveGameManager>()->OnLoadCompleted.AddDynamic(this, &UMyGameInstance::OnLoadComplete);
+	GetSubsystem<USaveGameManager>()->OnSaveCompleted.AddDynamic(this, &UMyGameInstance::OnSaveComplete);
 
 	ReadAll();
 }
@@ -88,27 +92,20 @@ void UMyGameInstance::SetCoinHeight(float Height)
 
 void UMyGameInstance::ResetCoinHeight()
 {
-	CoinHeight = 475.f;
+	CoinHeight = 100.f;
 	UpdateCoinHeight();
 }
 
-void UMyGameInstance::SaveCoinsToFile(FPlayerSaveGame* Data)
+void UMyGameInstance::SaveCoinsToFile(FPlayerSaveGame& Data)
 {
-	Data->Coins = TotalCoins;
+	Data.Coins = TotalCoins;
 }
 
-void UMyGameInstance::ReadCoinFromFile(FPlayerSaveGame* Data)
+void UMyGameInstance::ReadCoinFromFile(const FPlayerSaveGame& Data)
 {
-	if (Data)
-	{
-		TotalCoins = Data->Coins;
-	}
-	else
-	{
-		// 初期化
-		TotalCoins = 0; 
-	}
-	CoinHeight = 475.f;
+	TotalCoins = Data.Coins;
+	CoinHeight = 100.f;
+	UpdateCoinHeight();
 }
 
 void UMyGameInstance::UpdateCoin()
@@ -138,9 +135,9 @@ void UMyGameInstance::SaveQuizsForResult(TArray<FQuestion*> Result)
 	}
 }
 
-void UMyGameInstance::SetGameResult(bool Result)
+void UMyGameInstance::SetGameResult(bool bResult)
 {
-	IsClear = Result;
+	IsClear = bResult;
 }
 #pragma endregion
 
@@ -200,26 +197,18 @@ void UMyGameInstance::NotifyUpdateRPM()
 		OnUpdateRPM.Broadcast(GetStandardRPM(), GetDangerRPM(), GetSafeRPM());
 }
 
-void UMyGameInstance::SaveRPMToFile(FPlayerSaveGame* Data)
+void UMyGameInstance::SaveRPMToFile(FPlayerSaveGame& Data)
 {
-	Data->RPMLimit = StandardRPM;
-	Data->RPMThreshold = RPMThreshold;
+	Data.RPMLimit = StandardRPM;
+	Data.RPMThreshold = RPMThreshold;
 }
 
-void UMyGameInstance::ReadRPMFromFile(FPlayerSaveGame* Data)
+void UMyGameInstance::ReadRPMFromFile(const FPlayerSaveGame& Data)
 {
-	if (Data)
-	{
-		StandardRPM = Data->RPMLimit;
-		RPMThreshold = Data->RPMThreshold;
-	}
-	else
-	{
-		// 初期化
-		StandardRPM = 50;
-		RPMThreshold = 10;
-		MaxStandardRPM = 60;
-	}
+	StandardRPM = Data.RPMLimit;
+	RPMThreshold = Data.RPMThreshold;
+	MaxStandardRPM = 60;
+	NotifyUpdateRPM();
 }
 #pragma endregion
 
@@ -236,22 +225,14 @@ int32 UMyGameInstance::GetNumOfSets() const
 }
 
 // 2025.12.05 ウー start
-void UMyGameInstance::SaveSetsToFile(FPlayerSaveGame* Data)
+void UMyGameInstance::SaveSetsToFile(FPlayerSaveGame& Data)
 {
-	Data->MapSets = NumOfSets;
+	Data.MapSets = NumOfSets;
 }
 
-void UMyGameInstance::ReadSetsFromFile(FPlayerSaveGame* Data)
+void UMyGameInstance::ReadSetsFromFile(const FPlayerSaveGame& Data)
 {
-	if (Data)
-	{
-		NumOfSets = Data->MapSets;
-	}
-	else
-	{
-		// 初期化
-		NumOfSets = 4;
-	}
+	NumOfSets = Data.MapSets;
 }
 // 2025.12.05 ウー end
 #pragma endregion
@@ -301,9 +282,14 @@ bool UMyGameInstance::HasMaxAnimals() const
 	return Animals.Num() >= MaxAnimalCount;
 }
 
-void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame* Data)
+void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame& Data)
 {
 	
+}
+
+void UMyGameInstance::ReadAnimalFromFile(const FPlayerSaveGame& Data)
+{
+
 }
 #pragma endregion
 
@@ -323,32 +309,35 @@ FVector UMyGameInstance::GetBikeOffset() const
 void UMyGameInstance::SaveAllToFile()
 {
 	// データ作り
-	//FPlayerSaveGame* Data = Cast<FPlayerSaveGame>(UGameplayStatics::CreateSaveGameObject(FPlayerSaveGame::StaticClass()));
-	//SaveAnimalToFile(Data);
-	//SaveCoinsToFile(Data);
-
-	//FAsyncSaveGameToSlotDelegate Func;
-	//Func.BindUFunction(this, "OnSaveComplete");
-	//SaveGameManager::SaveFile(FileName, 0, Data, Func);
+	FPlayerSaveGame Data;
+	SaveAnimalToFile(Data);
+	SaveCoinsToFile(Data);
+	SaveSetsToFile(Data);
+	SaveRPMToFile(Data);
+	
+	FString Path = FPaths::ProjectSavedDir() / FileName;
+	GetSubsystem<USaveGameManager>()->SaveFile(Path, Data);
 }
 
 void UMyGameInstance::ReadAll()
 {
-	//FAsyncLoadGameFromSlotDelegate Func;
-	//Func.BindUFunction(this, "OnLoadComplete");
-	//SaveGameManager::LoadFile(FileName, 0, Func);
+	FString Path = FPaths::ProjectSavedDir() / FileName;
+	GetSubsystem<USaveGameManager>()->LoadFile(Path);
 }
 
-void UMyGameInstance::OnSaveComplete(const FString& SlotName, const int32 UserIndex, bool bResult)
+void UMyGameInstance::OnSaveComplete(bool bResult)
 {
 	if (!bResult)
+	{
 		UE_LOG(LogTemp, Error, TEXT("Save file error"));
+	}
 }
 
-void UMyGameInstance::OnLoadComplete(const FString& SlotName, const int32 UserIndex, USaveGame* Data)
+void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 {
-	//FPlayerSaveGame* PlayerData = Cast<FPlayerSaveGame>(Data);
-	//ReadCoinFromFile(PlayerData);
-	//ReadRPMFromFile(PlayerData);
+	ReadCoinFromFile(Data);
+	ReadRPMFromFile(Data);
+	ReadSetsFromFile(Data);
+	ReadAnimalFromFile(Data);
 }
 #pragma endregion

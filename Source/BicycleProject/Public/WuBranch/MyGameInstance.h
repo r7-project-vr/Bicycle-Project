@@ -118,12 +118,12 @@ private:
 	/// <summary>
 	/// コインをファイルに保存
 	/// </summary>
-	void SaveCoinsToFile(FPlayerSaveGame* Data);
+	void SaveCoinsToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからコインを読み込む
 	/// </summary>
-	void ReadCoinFromFile(FPlayerSaveGame* Data);
+	void ReadCoinFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// コインの数を更新
@@ -165,7 +165,7 @@ public:
 	/// 一ゲームの結果を記録
 	/// </summary>
 	/// <param name="Result">true: クリア, false: 失敗</param>
-	void SetGameResult(bool Result);
+	void SetGameResult(bool bResult);
 
 private:
 
@@ -265,7 +265,7 @@ private:
 	/// RPMデータをファイルに保存
 	/// </summary>
 	/// <param name="Data"></param>
-	void SaveRPMToFile(FPlayerSaveGame* Data);
+	void SaveRPMToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからRPMデータをゲット
@@ -315,7 +315,7 @@ private:
 	/// セット数をファイルに保存
 	/// </summary>
 	/// <param name="Data"></param>
-	void SaveSetsToFile(FPlayerSaveGame* Data);
+	void SaveSetsToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからセット数をゲット
@@ -373,7 +373,7 @@ private:
 	/// <summary>
 	/// 動物をファイルに保存
 	/// </summary>
-	void SaveAnimalToFile(FPlayerSaveGame* Data);
+	void SaveAnimalToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// 一ゲーム内でついてくる動物
@@ -433,7 +433,7 @@ private:
 	/// <param name="UserIndex"></param>
 	/// <param name="bResult">保存結果</param>
 	UFUNCTION()
-	void OnSaveComplete(const FString& SlotName, const int32 UserIndex, bool bResult);
+	void OnSaveComplete(bool bResult);
 
 	/// <summary>
 	/// ロード完了
@@ -442,7 +442,7 @@ private:
 	/// <param name="UserIndex"></param>
 	/// <param name="Data">ロードデータ</param>
 	UFUNCTION()
-	void OnLoadComplete(const FString& SlotName, const int32 UserIndex, USaveGame* Data);
+	void OnLoadComplete(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイル名

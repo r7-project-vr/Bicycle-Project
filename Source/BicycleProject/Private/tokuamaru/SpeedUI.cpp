@@ -32,6 +32,7 @@ void USpeedUI::DecayCurrentYOverDuration_Implementation(float delta)
 	nowSpeed = 0.0f;
 	if (currentY <= 0.0f) {
 		currentY = 0.0f;
+		penalty = false;
 	}
 }
 
@@ -53,4 +54,13 @@ void USpeedUI::InterpolateCurrentYToTarget_Implementation(float delta)
 	//	0.5f        // 移動速度 (1秒あたりに進む量)
 	//);
 
+	CheckCurrentYOverDanger();
+
+}
+
+void USpeedUI::CheckCurrentYOverDanger()
+{
+	if (currentY >= 1.0f) {
+		penalty = true;
+	}
 }

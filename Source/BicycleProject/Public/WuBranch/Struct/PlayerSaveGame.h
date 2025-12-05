@@ -87,7 +87,7 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     /// 制限した回転数
     /// </summary>
     UPROPERTY()
-    float RPMLimit = 10.0f;
+    float RPMLimit = 50.0f;
 
     /// <summary>
     /// 回転数の閾値

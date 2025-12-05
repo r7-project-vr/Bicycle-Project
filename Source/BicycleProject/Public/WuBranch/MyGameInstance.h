@@ -271,7 +271,7 @@ private:
 	/// ファイルからRPMデータをゲット
 	/// </summary>
 	/// <param name="Data"></param>
-	void ReadRPMFromFile(FPlayerSaveGame* Data);
+	void ReadRPMFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// 回転数の標準値
@@ -321,7 +321,7 @@ private:
 	/// ファイルからセット数をゲット
 	/// </summary>
 	/// <param name="Data"></param>
-	void ReadSetsFromFile(FPlayerSaveGame* Data);
+	void ReadSetsFromFile(const FPlayerSaveGame& Data);
 	// 2025.12.05 ウー end
 
 protected:  // private から protected に変更
@@ -374,6 +374,12 @@ private:
 	/// 動物をファイルに保存
 	/// </summary>
 	void SaveAnimalToFile(FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// ファイルから動物をゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadAnimalFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// 一ゲーム内でついてくる動物

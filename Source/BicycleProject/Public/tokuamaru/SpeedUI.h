@@ -34,7 +34,11 @@ public:
 	void Init(float init, float max, float danger, float safe, float avalage);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void SubTherd(float delta);
+	void DecayCurrentYOverDuration(float delta);
+
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void InterpolateCurrentYToTarget(float delta);
 
 	/// <summary>
 	/// UIの針を動かすための数値

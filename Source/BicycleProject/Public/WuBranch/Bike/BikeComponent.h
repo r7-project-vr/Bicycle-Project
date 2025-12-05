@@ -135,6 +135,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsInPenalty() const;
 
+	/// <summary>
+	/// ペナルティの持続時間をゲット
+	/// </summary>
+	/// <returns>持続時間</returns>
+	float GetPenaltyDuration() const;
+
 private:
 
 	/// <summary>

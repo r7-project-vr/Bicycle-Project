@@ -9,6 +9,7 @@
 class UDeviceManager;
 struct FQuestion;
 class AAnimal;
+struct FPlayerSaveGame;
 
 /**
  * 
@@ -117,12 +118,12 @@ private:
 	/// <summary>
 	/// コインをファイルに保存
 	/// </summary>
-	void SaveCoinsToFile();
+	void SaveCoinsToFile(FPlayerSaveGame* Data);
 
 	/// <summary>
 	/// ファイルからコインを読み込む
 	/// </summary>
-	void ReadCoinFromFile();
+	void ReadCoinFromFile(FPlayerSaveGame* Data);
 
 	/// <summary>
 	/// コインの数を更新
@@ -261,6 +262,18 @@ private:
 	void NotifyUpdateRPM();
 
 	/// <summary>
+	/// RPMデータをファイルに保存
+	/// </summary>
+	/// <param name="Data"></param>
+	void SaveRPMToFile(FPlayerSaveGame* Data);
+
+	/// <summary>
+	/// ファイルからRPMデータをゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadRPMFromFile(FPlayerSaveGame* Data);
+
+	/// <summary>
 	/// 回転数の標準値
 	/// </summary>
 	int StandardRPM;
@@ -289,9 +302,34 @@ public:
 	void SetNumOfSets(int Value);
 
 	/// <summary>
+	/// セット数をゲット
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	int32 GetNumOfSets() const;
+
+private:
+
+	// 2025.12.05 ウー start
+	/// <summary>
+	/// セット数をファイルに保存
+	/// </summary>
+	/// <param name="Data"></param>
+	void SaveSetsToFile(FPlayerSaveGame* Data);
+
+	/// <summary>
+	/// ファイルからセット数をゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadSetsFromFile(FPlayerSaveGame* Data);
+	// 2025.12.05 ウー end
+
+protected:  // private から protected に変更
+
+	/// <summary>
 	/// セット数
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int32 NumOfSets;
 #pragma endregion
 // 2025.11.12 谷村 end
@@ -324,12 +362,18 @@ public:
 	/// <param name="Amount">数</param>
 	void SetMaxAnimalCount(int Amount);
 
+	/// <summary>
+	/// すでに最大量の動物を持っているか
+	/// </summary>
+	/// <returns>true: はい, false: いいえ</returns>
+	bool HasMaxAnimals() const;
+
 private:
 	
 	/// <summary>
 	/// 動物をファイルに保存
 	/// </summary>
-	void SaveAnimalToFile();
+	void SaveAnimalToFile(FPlayerSaveGame* Data);
 
 	/// <summary>
 	/// 一ゲーム内でついてくる動物
@@ -340,6 +384,7 @@ private:
 	/// <summary>
 	/// 最大ついて来れる動物の数
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int MaxAnimalCount;
 #pragma endregion
 
@@ -380,5 +425,28 @@ private:
 	/// すべてのデータを読み込む
 	/// </summary>
 	void ReadAll();
+
+	/// <summary>
+	/// セーフ完了
+	/// </summary>
+	/// <param name="SlotName">ファイル</param>
+	/// <param name="UserIndex"></param>
+	/// <param name="bResult">保存結果</param>
+	UFUNCTION()
+	void OnSaveComplete(const FString& SlotName, const int32 UserIndex, bool bResult);
+
+	/// <summary>
+	/// ロード完了
+	/// </summary>
+	/// <param name="SlotName">ファイル</param>
+	/// <param name="UserIndex"></param>
+	/// <param name="Data">ロードデータ</param>
+	UFUNCTION()
+	void OnLoadComplete(const FString& SlotName, const int32 UserIndex, USaveGame* Data);
+
+	/// <summary>
+	/// ファイル名
+	/// </summary>
+	FString FileName;
 #pragma endregion
 };

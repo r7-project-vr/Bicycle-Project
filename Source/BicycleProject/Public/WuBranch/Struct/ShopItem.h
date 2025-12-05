@@ -1,0 +1,40 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WuBranch/Actor/Pet.h"
+#include "ShopItem.generated.h"
+
+/**
+ * 
+ */
+USTRUCT(BlueprintType)
+struct BICYCLEPROJECT_API FShopItem : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// ID
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 ID;
+
+	/// <summary>
+	/// ショップの中のアイコン
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<UTexture2D> Icon;
+
+	/// <summary>
+	/// 値段。条件や状況によって値段が違う場合は-1
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 Price;
+
+	/// <summary>
+	/// 実際の動物クラス
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<APet> Animal;
+};

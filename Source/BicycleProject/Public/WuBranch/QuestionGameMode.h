@@ -49,6 +49,11 @@ public:
 	void AnsweredQuestion();
 
 	/// <summary>
+	/// ゲーム終了
+	/// </summary>
+	void FinishGame();
+
+	/// <summary>
 	/// 正解した答えの数をゲット
 	/// </summary>
 	/// <returns></returns>

@@ -152,6 +152,12 @@ private:
 	void HandleRevolutionData(const TArray<uint8>& Data);
 
 	/// <summary>
+	/// もらったデータを表示する(デバッグ用)
+	/// </summary>
+	/// <param name="Data">データ</param>
+	void DebugReceiveData(const TArray<uint8>& Data);
+
+	/// <summary>
 	/// 移動イベントを通知
 	/// </summary>
 	/// <param name="MoveData">移動量</param>

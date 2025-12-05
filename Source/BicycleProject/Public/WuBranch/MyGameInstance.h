@@ -324,6 +324,8 @@ private:
 	void ReadSetsFromFile(FPlayerSaveGame* Data);
 	// 2025.12.05 ウー end
 
+protected:  // private から protected に変更
+
 	/// <summary>
 	/// セット数
 	/// </summary>

@@ -40,6 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void InterpolateCurrentYToTarget(float delta);
 
+	UFUNCTION(BlueprintCallable)
+	void CheckCurrentYOverDanger();
+
 	/// <summary>
 	/// UIの針を動かすための数値
 	/// </summary>

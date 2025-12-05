@@ -5,16 +5,22 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <UntakuBranch/Question.h>
 #include "WuBranch/Actor/Animal.h"
+#include <Kismet/GameplayStatics.h>
+#include "WuBranch/Struct/PlayerSaveGame.h"
+#include "WuBranch/System/SaveGameManager.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
+	, CoinsPerGame(0)
+	, CoinHeight(475.f)
 	, IsClear(false)
 	, StandardRPM(50)
 	, RPMThreshold(10)
 	, MaxStandardRPM(60)
 	// 2025.11.09 谷村 start
-	, NumOfSets(1)
+	, NumOfSets(4)
 	// 2025.11.09 谷村 end
+	, MaxAnimalCount(10)
 {
 	DeviceManager = nullptr;
 }
@@ -86,14 +92,22 @@ void UMyGameInstance::ResetCoinHeight()
 	UpdateCoinHeight();
 }
 
-void UMyGameInstance::SaveCoinsToFile()
+void UMyGameInstance::SaveCoinsToFile(FPlayerSaveGame* Data)
 {
-
+	Data->Coins = TotalCoins;
 }
 
-void UMyGameInstance::ReadCoinFromFile()
+void UMyGameInstance::ReadCoinFromFile(FPlayerSaveGame* Data)
 {
-	TotalCoins = 0; // 初期化
+	if (Data)
+	{
+		TotalCoins = Data->Coins;
+	}
+	else
+	{
+		// 初期化
+		TotalCoins = 0; 
+	}
 	CoinHeight = 475.f;
 }
 
@@ -185,6 +199,28 @@ void UMyGameInstance::NotifyUpdateRPM()
 	if (OnUpdateRPM.IsBound())
 		OnUpdateRPM.Broadcast(GetStandardRPM(), GetDangerRPM(), GetSafeRPM());
 }
+
+void UMyGameInstance::SaveRPMToFile(FPlayerSaveGame* Data)
+{
+	Data->RPMLimit = StandardRPM;
+	Data->RPMThreshold = RPMThreshold;
+}
+
+void UMyGameInstance::ReadRPMFromFile(FPlayerSaveGame* Data)
+{
+	if (Data)
+	{
+		StandardRPM = Data->RPMLimit;
+		RPMThreshold = Data->RPMThreshold;
+	}
+	else
+	{
+		// 初期化
+		StandardRPM = 50;
+		RPMThreshold = 10;
+		MaxStandardRPM = 60;
+	}
+}
 #pragma endregion
 
 // 2025.11.12 谷村 start
@@ -198,6 +234,26 @@ int32 UMyGameInstance::GetNumOfSets() const
 {
 	return NumOfSets;
 }
+
+// 2025.12.05 ウー start
+void UMyGameInstance::SaveSetsToFile(FPlayerSaveGame* Data)
+{
+	Data->MapSets = NumOfSets;
+}
+
+void UMyGameInstance::ReadSetsFromFile(FPlayerSaveGame* Data)
+{
+	if (Data)
+	{
+		NumOfSets = Data->MapSets;
+	}
+	else
+	{
+		// 初期化
+		NumOfSets = 4;
+	}
+}
+// 2025.12.05 ウー end
 #pragma endregion
 // 2025.11.12 谷村 end
 
@@ -209,7 +265,7 @@ void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)
 		return;
 
 	// もう入れられない
-	if (Animals.Num() >= MaxAnimalCount)
+	if (HasMaxAnimals())
 		return;
 
 	// 追加
@@ -240,8 +296,14 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 	MaxAnimalCount = Amount;
 }
 
-void UMyGameInstance::SaveAnimalToFile()
+bool UMyGameInstance::HasMaxAnimals() const
 {
+	return Animals.Num() >= MaxAnimalCount;
+}
+
+void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame* Data)
+{
+	
 }
 #pragma endregion
 
@@ -260,12 +322,33 @@ FVector UMyGameInstance::GetBikeOffset() const
 #pragma region セーブ
 void UMyGameInstance::SaveAllToFile()
 {
-	SaveAnimalToFile();
-	SaveCoinsToFile();
+	// データ作り
+	//FPlayerSaveGame* Data = Cast<FPlayerSaveGame>(UGameplayStatics::CreateSaveGameObject(FPlayerSaveGame::StaticClass()));
+	//SaveAnimalToFile(Data);
+	//SaveCoinsToFile(Data);
+
+	//FAsyncSaveGameToSlotDelegate Func;
+	//Func.BindUFunction(this, "OnSaveComplete");
+	//SaveGameManager::SaveFile(FileName, 0, Data, Func);
 }
 
 void UMyGameInstance::ReadAll()
 {
-	ReadCoinFromFile();
+	//FAsyncLoadGameFromSlotDelegate Func;
+	//Func.BindUFunction(this, "OnLoadComplete");
+	//SaveGameManager::LoadFile(FileName, 0, Func);
+}
+
+void UMyGameInstance::OnSaveComplete(const FString& SlotName, const int32 UserIndex, bool bResult)
+{
+	if (!bResult)
+		UE_LOG(LogTemp, Error, TEXT("Save file error"));
+}
+
+void UMyGameInstance::OnLoadComplete(const FString& SlotName, const int32 UserIndex, USaveGame* Data)
+{
+	//FPlayerSaveGame* PlayerData = Cast<FPlayerSaveGame>(Data);
+	//ReadCoinFromFile(PlayerData);
+	//ReadRPMFromFile(PlayerData);
 }
 #pragma endregion

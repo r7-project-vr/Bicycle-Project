@@ -45,7 +45,8 @@ struct BICYCLEPROJECT_API FSettingVolume
 };
 
 /**
- *
+ * セーフデータ
+ * *構造を変更したら、変えられた構造のデータが変になる
  */
 USTRUCT(BlueprintType)
 struct BICYCLEPROJECT_API FPlayerSaveGame

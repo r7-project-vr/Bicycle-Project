@@ -340,21 +340,22 @@ public:
 	/// <summary>
 	/// 動物を追加
 	/// </summary>
-	/// <param name="Animal">対象動物</param>
+	/// <param name="AnimalID">対象動物ID</param>
 	UFUNCTION(BlueprintCallable)
-	void AddAnimal(TSubclassOf<AAnimal> Animal);
+	void AddAnimal(int32 AnimalID);
 
 	/// <summary>
 	/// 動物を削除
 	/// </summary>
-	/// <param name="Animal">対象動物</param>
-	void RemoveAnimal(TSubclassOf<AAnimal> Animal);
+	/// <param name="Animal">対象動物ID</param>
+	void RemoveAnimal(int32 AnimalID);
 
 	/// <summary>
 	/// 全動物をゲット
 	/// </summary>
 	/// <returns>全動物</returns>
 	TArray<TSubclassOf<AAnimal>> GetAnimals() const;
+	TArray<int32> GetOwnedAnimals() const;
 
 	/// <summary>
 	/// ついてこれる動物の数を設定
@@ -388,10 +389,51 @@ private:
 	TArray<TSubclassOf<AAnimal>> Animals;
 
 	/// <summary>
+	/// プレイヤーが持っている動物
+	/// </summary>
+	TArray<int32> OwnedAnimals;
+
+	/// <summary>
 	/// 最大ついて来れる動物の数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int MaxAnimalCount;
+#pragma endregion
+
+#pragma region 写真
+public:
+
+	/// <summary>
+	/// 動物の写真を追加
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <param name="Nums">枚数</param>
+	void AddAnimalPhoto(int32 AnimalID, int32 Nums);
+
+	/// <summary>
+	/// 動物の写真をリセット
+	/// </summary>
+	void ResetAnimalPhoto();
+
+private:
+
+	/// <summary>
+	/// 写真枚数をファイルに保存
+	/// </summary>
+	/// <param name="Data"></param>
+	void SavePhotoToFile(FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// ファイルから写真枚数をゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadPhotoFromFile(const FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// 動物の写真数
+	/// </summary>
+	TMap<int32, int32> AnimalPhotoNums;
+
 #pragma endregion
 
 #pragma region 自転車調整

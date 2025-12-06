@@ -85,6 +85,11 @@ void AAnimal::ChangeOffset(FVector Offset)
 	RelativeOffset = Offset;
 }
 
+int32 AAnimal::GetMyID() const
+{
+	return ID;
+}
+
 void AAnimal::DecideBehavior()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Did not implement"));

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WuBranch/Actor/Pet.h"
 #include "ShopItem.generated.h"
 
 /**
@@ -27,14 +26,13 @@ struct BICYCLEPROJECT_API FShopItem : public FTableRowBase
 	TObjectPtr<UTexture2D> Icon;
 
 	/// <summary>
-	/// 値段。条件や状況によって値段が違う場合は-1
+	/// 値段
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 Price;
 
 	/// <summary>
-	/// 実際の動物クラス
+	/// 解放する写真枚数
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<APet> Animal;
+	int32 UnLockLimit;
 };

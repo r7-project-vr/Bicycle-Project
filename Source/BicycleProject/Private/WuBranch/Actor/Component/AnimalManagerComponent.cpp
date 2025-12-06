@@ -28,7 +28,9 @@ void UAnimalManagerComponent::BeginPlay()
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
-		ArrangeAroundTarget(GameInstance->GetAnimals());
+		TArray<int32> Owned = GameInstance->GetOwnedAnimals();
+		TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
+		ArrangeAroundTarget(Animals);
 	}
 }
 
@@ -48,7 +50,7 @@ void UAnimalManagerComponent::ReduceAnimal(AAnimal* Animal)
 	FollowingAnimals.Remove(Animal);
 
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	GameInstance->RemoveAnimal(Animal->StaticClass());
+	GameInstance->RemoveAnimal(Animal->GetMyID());
 }
 
 void UAnimalManagerComponent::SetTarget()

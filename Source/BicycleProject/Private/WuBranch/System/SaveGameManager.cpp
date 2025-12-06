@@ -21,6 +21,7 @@ void USaveGameManager::LoadFile(FString FilePath)
 			FString JsonStr;
 			if (!FFileHelper::LoadFileToString(JsonStr, *FilePath))
 			{
+				UE_LOG(LogTemp, Error, TEXT("load file failed"));
 				return;
 			}
 
@@ -33,6 +34,10 @@ void USaveGameManager::LoadFile(FString FilePath)
 						NotifyLoadComplete(LoadedData);
 					});
 			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Convert json string to struct failed"));
+			}
 		});
 }
 
@@ -42,7 +47,11 @@ void USaveGameManager::SaveFile(FString FilePath, const FPlayerSaveGame& Data)
 	Async(EAsyncExecution::ThreadPool, [this, Data, FilePath]()
 		{
 			FString OutputString;
-			FJsonObjectConverter::UStructToJsonObjectString(Data, OutputString);
+			if (!FJsonObjectConverter::UStructToJsonObjectString(Data, OutputString))
+			{
+				UE_LOG(LogTemp, Error, TEXT("Convert struct to json string failed"));
+				return;
+			}
 
 			bool bResult = FFileHelper::SaveStringToFile(OutputString, *FilePath);
 			AsyncTask(ENamedThreads::GameThread, [this, bResult]()

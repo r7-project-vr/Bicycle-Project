@@ -56,10 +56,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		GameInstance->GetDeviceManager()->DisableDefaultActions();
 		GameInstance->GetDeviceManager()->DisConnectAllDevices();
-		/*if (_playerController)
-		{
-			_playerController->SetPlayerEnabledState(false);
-		}*/
+
 		_player->GetBikeComponent()->ReduceVelocityTo0();
 
 		if (CurrentState == QuestionGameState::Playing)
@@ -68,15 +65,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		// ゴールに到達したらゲームクリア
 		//GameOver(true);
 
-		//5秒後に次の世界に行く
-		// 注意!!レベル名は間違わないように!!
-		FTimerDelegate timerDelegate;
-		if(CurrentState == QuestionGameState::Successed)
-			timerDelegate.BindUFunction(this, "ChangeLevel", true);
-		else if (CurrentState == QuestionGameState::Failed)
-			timerDelegate.BindUFunction(this, "ChangeLevel", false);
-		FTimerHandle timerHandle;
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
+		GoNextLevel();
 	}
 }
 
@@ -132,13 +121,8 @@ void AQuestionGameMode::AnsweredQuestion()
 	// UI更新
 	UpdateAnswerUI();
 
-	// ゲームオーバー
-	if (IsGameFailed())
-	{
-		EndGame(false);
-	}
 	// ゲームクリア
-	else if (IsGameClear())
+	if (IsGameClear())
 	{
 		EndGame(true);
 	}
@@ -146,7 +130,19 @@ void AQuestionGameMode::AnsweredQuestion()
 
 void AQuestionGameMode::FinishGame()
 {
-
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game Over"));
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	CurrentState = QuestionGameState::Failed;
+	// 自転車への制御を強制的にオフにする
+	GameInstance->GetDeviceManager()->DisableDefaultActions();
+	GameInstance->GetDeviceManager()->DisConnectAllDevices();
+	// 自転車の止める
+	_player->GetBikeComponent()->ReduceVelocityTo0();
+	// 結果を記録
+	GameInstance->SetGameResult(false);
+	// コインの決算
+	GameInstance->SetTotalCoins(GameInstance->GetTotalCoins() + GameInstance->GetCoinsPerGame());
+	GoNextLevel();
 }
 
 int AQuestionGameMode::GetCurrectNumber() const
@@ -230,12 +226,12 @@ void AQuestionGameMode::EndGame(bool GameResult)
 	if (GameResult)
 	{
 		CurrentState = QuestionGameState::Successed;
-		UKismetSystemLibrary::PrintString(this, "GameClear!", true, false, FColor::Green, 10.f);
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, TEXT("Game Clear"));
 	}
 	else
 	{
 		CurrentState = QuestionGameState::Failed;
-		UKismetSystemLibrary::PrintString(this, "GameOver!", true, false, FColor::Red, 10.f);
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game Over"));
 	}
 	// すべての問題を無効にする
 	DisableAllQuestions();
@@ -281,15 +277,15 @@ void AQuestionGameMode::HandleGameFailed(int32 questionID)
 	PlaceGoal(questionID);
 }
 
-void AQuestionGameMode::ChangeLevel(bool IsSucc)
+void AQuestionGameMode::ChangeLevel()
 {
 	// クリア
-	if (IsSucc)
+	if (CurrentState == QuestionGameState::Successed)
 	{
 		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadSuccLevel);
 	}
 	// 失敗
-	else
+	else if (CurrentState == QuestionGameState::Failed)
 	{
 		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), LoadFailLevel);
 	}
@@ -383,4 +379,14 @@ AQuestionUIActor* AQuestionGameMode::FindQuestion()
 		}
 	}
 	return nullptr;
+}
+
+void AQuestionGameMode::GoNextLevel()
+{
+	//5秒後に次の世界に行く
+	// 注意!!レベル名は間違わないように!!
+	FTimerDelegate timerDelegate;
+	timerDelegate.BindUFunction(this, "ChangeLevel");
+	FTimerHandle timerHandle;
+	GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 5.f, false);
 }

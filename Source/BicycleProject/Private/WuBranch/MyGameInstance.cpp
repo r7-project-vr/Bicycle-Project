@@ -239,37 +239,37 @@ void UMyGameInstance::ReadSetsFromFile(const FPlayerSaveGame& Data)
 // 2025.11.12 谷村 end
 
 #pragma region 動物
-void UMyGameInstance::AddAnimal(TSubclassOf<AAnimal> Animal)
+void UMyGameInstance::AddAnimal(int32 AnimalID)
 {
-	// ヌール検査
-	if (!Animal)
-		return;
-
 	// もう入れられない
 	if (HasMaxAnimals())
 		return;
 
 	// 追加
-	Animals.Add(Animal);
+	OwnedAnimals.Add(AnimalID);
 }
 
-void UMyGameInstance::RemoveAnimal(TSubclassOf<AAnimal> Animal)
+void UMyGameInstance::RemoveAnimal(int32 AnimalID)
 {
-	// ヌール検査
-	if (!Animal)
+	if (OwnedAnimals.Num() <= 0)
 		return;
 
 	// 配列のなかに見当たらない
-	if (Animals.Num() > 0 && Animals.Contains(Animal))
+	if (!OwnedAnimals.Contains(AnimalID))
 		return;
 
 	// 削除
-	Animals.Remove(Animal);
+	OwnedAnimals.RemoveSingle(AnimalID);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
 {
 	return Animals;
+}
+
+TArray<int32> UMyGameInstance::GetOwnedAnimals() const
+{
+	return OwnedAnimals;
 }
 
 void UMyGameInstance::SetMaxAnimalCount(int Amount)
@@ -279,17 +279,42 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 
 bool UMyGameInstance::HasMaxAnimals() const
 {
-	return Animals.Num() >= MaxAnimalCount;
+	return OwnedAnimals.Num() >= MaxAnimalCount;
 }
 
 void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame& Data)
 {
-	
+	Data.OwnedAnimals = OwnedAnimals;
 }
 
 void UMyGameInstance::ReadAnimalFromFile(const FPlayerSaveGame& Data)
 {
+	OwnedAnimals = Data.OwnedAnimals;
+}
+#pragma endregion
 
+#pragma region 写真
+void UMyGameInstance::AddAnimalPhoto(int32 AnimalID, int32 Nums)
+{
+	if (AnimalPhotoNums.Contains(AnimalID))
+		AnimalPhotoNums[AnimalID] += Nums;
+	else
+		AnimalPhotoNums[AnimalID] = Nums;
+}
+
+void UMyGameInstance::ResetAnimalPhoto()
+{
+	AnimalPhotoNums.Empty();
+}
+
+void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
+{
+	Data.AnimalPhotos = AnimalPhotoNums;
+}
+
+void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
+{
+	AnimalPhotoNums = Data.AnimalPhotos;
 }
 #pragma endregion
 
@@ -314,6 +339,7 @@ void UMyGameInstance::SaveAllToFile()
 	SaveCoinsToFile(Data);
 	SaveSetsToFile(Data);
 	SaveRPMToFile(Data);
+	SavePhotoToFile(Data);
 	
 	FString Path = FPaths::ProjectSavedDir() / FileName;
 	GetSubsystem<USaveGameManager>()->SaveFile(Path, Data);
@@ -339,5 +365,6 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 	ReadRPMFromFile(Data);
 	ReadSetsFromFile(Data);
 	ReadAnimalFromFile(Data);
+	ReadPhotoFromFile(Data);
 }
 #pragma endregion

@@ -36,6 +36,7 @@ public:
 
 	/// <summary>
 	/// 答え合わせ
+	/// 今使わない
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">解答</param>

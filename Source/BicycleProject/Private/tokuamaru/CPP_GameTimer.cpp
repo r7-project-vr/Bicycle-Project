@@ -27,13 +27,13 @@ void UCPP_GameTimer::NativeOnInitialized()
 		if (UMyGameInstance* GI = Cast<UMyGameInstance>(World->GetGameInstance()))
 		{
 			TotalGameTime = GI->GetNumOfSets();
-			CurrentGameTime = TotalGameTime * 60.0f;
+			CurrentGameTime = TotalGameTime * 60.0f * StandardStageTime;
 		}
 		else {
 
 			UE_LOG(LogTemp, Error, TEXT("Could not got MyGameInstance GameTimer"));
 			TotalGameTime = 1.0f;
-			CurrentGameTime = TotalGameTime * 60.0f;
+			CurrentGameTime = TotalGameTime * 60.0f * StandardStageTime;
 		}
 	}
 	else {
@@ -89,7 +89,10 @@ void UCPP_GameTimer::DecreaseGameTime(float delta)
 	}
 	else {
 		if (QuestionGameMode) {
-			QuestionGameMode->FinishGame();
+			if (IsGameScene) {
+				QuestionGameMode->FinishGame();
+				IsGameScene = false;
+			}
 		}
 	}
 

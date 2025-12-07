@@ -49,6 +49,8 @@ public:
 
 protected:
 
+    bool IsGameScene = true;
+
     float TotalGameTime = 0.0f;
 
     float CurrentGameTime = 0.0f;
@@ -72,6 +74,8 @@ protected:
     UTextBlock* TimerText;
 
     int32 LastPlayedSecond;
+
+
 
 	
 };

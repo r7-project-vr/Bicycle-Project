@@ -53,6 +53,12 @@ public:
 	/// <param name="Offset">偏移量</param>
 	void ChangeOffset(FVector Offset);
 
+	/// <summary>
+	/// IDをゲット
+	/// </summary>
+	/// <returns>ID</returns>
+	int32 GetMyID() const;
+
 protected:
 
 	enum BehaviorState
@@ -106,6 +112,12 @@ protected:
 	/// 管理者
 	/// </summary>
 	UAnimalManagerComponent* AnimalManager;
+
+	/// <summary>
+	/// ID
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	int32 ID;
 
 	/// <summary>
 	/// 行動状態

@@ -36,6 +36,7 @@ public:
 
 	/// <summary>
 	/// 答え合わせ
+	/// 今使わない
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">解答</param>
@@ -49,7 +50,7 @@ public:
 	void AnsweredQuestion();
 
 	/// <summary>
-	/// ゲーム終了
+	/// ゲーム終了(時間切れ)
 	/// </summary>
 	void FinishGame();
 
@@ -150,9 +151,8 @@ private:
 	/// <summary>
 	/// 次のレベルに移動
 	/// </summary>
-	/// <param name="IsSucc">クリアしたか</param>
 	UFUNCTION()
-	void ChangeLevel(bool IsSucc);
+	void ChangeLevel();
 
 	/// <summary>
 	/// すべての問題を無効にする
@@ -176,6 +176,11 @@ private:
 	/// <param name="QuestionID">クイズのID</param>
 	AQuestionUIActor* FindQuestion(int32 QuestionID);
 	AQuestionUIActor* FindQuestion();
+
+	/// <summary>
+	/// 次のレベルに行く
+	/// </summary>
+	void GoNextLevel();
 
 	/// <summary>
 	/// プレイヤー

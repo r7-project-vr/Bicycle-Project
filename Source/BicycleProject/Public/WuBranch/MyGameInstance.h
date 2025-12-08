@@ -118,12 +118,12 @@ private:
 	/// <summary>
 	/// コインをファイルに保存
 	/// </summary>
-	void SaveCoinsToFile(FPlayerSaveGame* Data);
+	void SaveCoinsToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからコインを読み込む
 	/// </summary>
-	void ReadCoinFromFile(FPlayerSaveGame* Data);
+	void ReadCoinFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// コインの数を更新
@@ -165,7 +165,7 @@ public:
 	/// 一ゲームの結果を記録
 	/// </summary>
 	/// <param name="Result">true: クリア, false: 失敗</param>
-	void SetGameResult(bool Result);
+	void SetGameResult(bool bResult);
 
 private:
 
@@ -265,13 +265,13 @@ private:
 	/// RPMデータをファイルに保存
 	/// </summary>
 	/// <param name="Data"></param>
-	void SaveRPMToFile(FPlayerSaveGame* Data);
+	void SaveRPMToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからRPMデータをゲット
 	/// </summary>
 	/// <param name="Data"></param>
-	void ReadRPMFromFile(FPlayerSaveGame* Data);
+	void ReadRPMFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// 回転数の標準値
@@ -315,13 +315,13 @@ private:
 	/// セット数をファイルに保存
 	/// </summary>
 	/// <param name="Data"></param>
-	void SaveSetsToFile(FPlayerSaveGame* Data);
+	void SaveSetsToFile(FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイルからセット数をゲット
 	/// </summary>
 	/// <param name="Data"></param>
-	void ReadSetsFromFile(FPlayerSaveGame* Data);
+	void ReadSetsFromFile(const FPlayerSaveGame& Data);
 	// 2025.12.05 ウー end
 
 protected:  // private から protected に変更
@@ -340,21 +340,22 @@ public:
 	/// <summary>
 	/// 動物を追加
 	/// </summary>
-	/// <param name="Animal">対象動物</param>
+	/// <param name="AnimalID">対象動物ID</param>
 	UFUNCTION(BlueprintCallable)
-	void AddAnimal(TSubclassOf<AAnimal> Animal);
+	void AddAnimal(int32 AnimalID);
 
 	/// <summary>
 	/// 動物を削除
 	/// </summary>
-	/// <param name="Animal">対象動物</param>
-	void RemoveAnimal(TSubclassOf<AAnimal> Animal);
+	/// <param name="Animal">対象動物ID</param>
+	void RemoveAnimal(int32 AnimalID);
 
 	/// <summary>
 	/// 全動物をゲット
 	/// </summary>
 	/// <returns>全動物</returns>
 	TArray<TSubclassOf<AAnimal>> GetAnimals() const;
+	TArray<int32> GetOwnedAnimals() const;
 
 	/// <summary>
 	/// ついてこれる動物の数を設定
@@ -373,7 +374,13 @@ private:
 	/// <summary>
 	/// 動物をファイルに保存
 	/// </summary>
-	void SaveAnimalToFile(FPlayerSaveGame* Data);
+	void SaveAnimalToFile(FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// ファイルから動物をゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadAnimalFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// 一ゲーム内でついてくる動物
@@ -382,10 +389,51 @@ private:
 	TArray<TSubclassOf<AAnimal>> Animals;
 
 	/// <summary>
+	/// プレイヤーが持っている動物
+	/// </summary>
+	TArray<int32> OwnedAnimals;
+
+	/// <summary>
 	/// 最大ついて来れる動物の数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int MaxAnimalCount;
+#pragma endregion
+
+#pragma region 写真
+public:
+
+	/// <summary>
+	/// 動物の写真を追加
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <param name="Nums">枚数</param>
+	void AddAnimalPhoto(int32 AnimalID, int32 Nums);
+
+	/// <summary>
+	/// 動物の写真をリセット
+	/// </summary>
+	void ResetAnimalPhoto();
+
+private:
+
+	/// <summary>
+	/// 写真枚数をファイルに保存
+	/// </summary>
+	/// <param name="Data"></param>
+	void SavePhotoToFile(FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// ファイルから写真枚数をゲット
+	/// </summary>
+	/// <param name="Data"></param>
+	void ReadPhotoFromFile(const FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// 動物の写真数
+	/// </summary>
+	TMap<int32, int32> AnimalPhotoNums;
+
 #pragma endregion
 
 #pragma region 自転車調整
@@ -433,7 +481,7 @@ private:
 	/// <param name="UserIndex"></param>
 	/// <param name="bResult">保存結果</param>
 	UFUNCTION()
-	void OnSaveComplete(const FString& SlotName, const int32 UserIndex, bool bResult);
+	void OnSaveComplete(bool bResult);
 
 	/// <summary>
 	/// ロード完了
@@ -442,7 +490,7 @@ private:
 	/// <param name="UserIndex"></param>
 	/// <param name="Data">ロードデータ</param>
 	UFUNCTION()
-	void OnLoadComplete(const FString& SlotName, const int32 UserIndex, USaveGame* Data);
+	void OnLoadComplete(const FPlayerSaveGame& Data);
 
 	/// <summary>
 	/// ファイル名

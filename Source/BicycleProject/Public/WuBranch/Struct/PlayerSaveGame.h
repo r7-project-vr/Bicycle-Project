@@ -6,28 +6,47 @@
 #include "PlayerSaveGame.generated.h"
 
 /// <summary>
-/// 動物関連のデータ
+/// 音関連の設定データ
 /// </summary>
 USTRUCT(BlueprintType)
-struct BICYCLEPROJECT_API FAnimalDatas
+struct BICYCLEPROJECT_API FSettingVolume
 {
     GENERATED_BODY()
 
     /// <summary>
-    /// 持っている数
+    /// 全音量
     /// </summary>
     UPROPERTY()
-    int32 Count = 0;
+    float Total = 0.5f;
 
     /// <summary>
-    /// 解放状況
+    /// BGM
     /// </summary>
     UPROPERTY()
-    float UnlockProgress = 0.0f; 
+    float BGM = 0.5f;
+
+    /// <summary>
+    /// SE音量
+    /// </summary>
+    UPROPERTY()
+    float SE = 0.5f;
+
+    /// <summary>
+    /// 動物の鳴き音量
+    /// </summary>
+    UPROPERTY()
+    float Voice = 0.5f;
+
+    /// <summary>
+    /// 動物の足音の音量
+    /// </summary>
+    UPROPERTY()
+    float FootSE = 0.5f;
 };
 
 /**
- *
+ * セーフデータ
+ * *構造を変更したら、変えられた構造のデータが変になる
  */
 USTRUCT(BlueprintType)
 struct BICYCLEPROJECT_API FPlayerSaveGame
@@ -41,41 +60,23 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     int32 Coins = 0;
 
     /// <summary>
-    /// 動物関連のデータ
-    /// Map<動物ID, データ>
+    /// 飼っている動物,動物ID
     /// </summary>
     UPROPERTY()
-    TMap<int32, FAnimalDatas> AnimalData;
+    TArray<int32> OwnedAnimals;
 
     /// <summary>
-    /// 全音量
+    /// 全動物の写真枚数
+    /// Map<動物ID, 枚数>
     /// </summary>
     UPROPERTY()
-    float TotalVolume = 1.0f;
+    TMap<int32, int32> AnimalPhotos;
 
     /// <summary>
-    /// BGM音量
+    /// 音量
     /// </summary>
     UPROPERTY()
-    float BGMVolume = 1.0f;
-
-    /// <summary>
-    /// SE音量
-    /// </summary>
-    UPROPERTY()
-    float SEVolume = 1.0f;
-
-    /// <summary>
-    /// 動物の鳴き音量
-    /// </summary>
-    UPROPERTY()
-    float VoiceVolume = 1.0f;
-
-    /// <summary>
-    /// 動物の足音の音量
-    /// </summary>
-    UPROPERTY()
-    float FootSEVolume = 1.0f;
+    FSettingVolume Volume;
 
     /// <summary>
     /// マップのセット数
@@ -87,7 +88,7 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     /// 制限した回転数
     /// </summary>
     UPROPERTY()
-    float RPMLimit = 10.0f;
+    float RPMLimit = 50.0f;
 
     /// <summary>
     /// 回転数の閾値

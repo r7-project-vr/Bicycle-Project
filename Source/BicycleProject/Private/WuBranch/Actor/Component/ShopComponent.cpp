@@ -61,7 +61,7 @@ void UShopComponent::BuyItem(int ItemID)
 
 		// 購入
 		GameInstance->SetTotalCoins(CurrentCoins - ShopItem->Price);
-		GameInstance->AddAnimal(ShopItem->Animal);
+		GameInstance->AddAnimal(ShopItem->ID);
 	}
 }
 

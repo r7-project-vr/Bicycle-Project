@@ -31,18 +31,19 @@ public:
 	/// <param name="Buyer">購入者</param>
 	/// <param name="ItemID">アイテムID</param>
 	UFUNCTION(BlueprintCallable)
-	void BuyItem(int ItemID);
+	bool BuyItem(int ItemID);
 
 	/// <summary>
 	/// すべてのアイテムをゲット
 	/// </summary>
 	/// <returns>アイテム</returns>
-	TArray<FShopItem*> GetShopItems() const;
+	UFUNCTION(BlueprintCallable)
+	TArray<FShopItem> GetShopItems() const;
 
 	/// <summary>
 	/// アイテム更新の通知
 	/// </summary>
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateShopItemsDelegate,const TArray<FShopItem>, Items);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateShopItemsDelegate,const TArray<FShopItem>&, Items);
 
 	UPROPERTY(BlueprintAssignable)
 	FUpdateShopItemsDelegate OnUpdateItems;

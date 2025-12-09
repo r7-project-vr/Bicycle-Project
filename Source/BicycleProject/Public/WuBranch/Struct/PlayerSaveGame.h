@@ -60,10 +60,11 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     int32 Coins = 0;
 
     /// <summary>
-    /// 飼っている動物,動物ID
+    /// 飼っている動物
+    /// <動物ID, 数>
     /// </summary>
     UPROPERTY()
-    TArray<int32> OwnedAnimals;
+    TMap<int32, int32> OwnedAnimals;
 
     /// <summary>
     /// 全動物の写真枚数

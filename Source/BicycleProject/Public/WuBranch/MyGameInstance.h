@@ -355,7 +355,15 @@ public:
 	/// </summary>
 	/// <returns>全動物</returns>
 	TArray<TSubclassOf<AAnimal>> GetAnimals() const;
-	TArray<int32> GetOwnedAnimals() const;
+	TMap<int32, int32> GetOwnedAnimals() const;
+
+	/// <summary>
+	/// 動物IDによる動物の数をゲット
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>持っている数</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetAnimalNumByID(int32 AnimalID) const;
 
 	/// <summary>
 	/// ついてこれる動物の数を設定
@@ -369,8 +377,23 @@ public:
 	/// <returns>true: はい, false: いいえ</returns>
 	bool HasMaxAnimals() const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateAnimalNumDelegate, int32, AnimalID, int, Nums);
+
+	/// <summary>
+	/// 持っている動物の数が更新した通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateAnimalNumDelegate OnUpdateAnimalNum;
+
 private:
 	
+	/// <summary>
+	/// 持っている動物の数が更新したのを通知
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <param name="Nums">数</param>
+	void NotifyUpdateAnimalNum(int32 AnimalID, int Nums);
+
 	/// <summary>
 	/// 動物をファイルに保存
 	/// </summary>
@@ -390,8 +413,9 @@ private:
 
 	/// <summary>
 	/// プレイヤーが持っている動物
+	/// <動物ID, 数>
 	/// </summary>
-	TArray<int32> OwnedAnimals;
+	TMap<int32, int32> OwnedAnimals;
 
 	/// <summary>
 	/// 最大ついて来れる動物の数
@@ -409,6 +433,14 @@ public:
 	/// <param name="AnimalID">動物ID</param>
 	/// <param name="Nums">枚数</param>
 	void AddAnimalPhoto(int32 AnimalID, int32 Nums);
+
+	/// <summary>
+	/// 持っている動物の写真の数をゲット
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>写真の数</returns>
+	UFUNCTION(BlueprintCallable)
+	int GetAnimalPhotoNum(int32 AnimalID) const;
 
 	/// <summary>
 	/// 動物の写真をリセット

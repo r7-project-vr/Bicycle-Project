@@ -246,20 +246,23 @@ void UMyGameInstance::AddAnimal(int32 AnimalID)
 		return;
 
 	// 追加
-	OwnedAnimals.Add(AnimalID);
+	if (OwnedAnimals.Contains(AnimalID))
+		OwnedAnimals[AnimalID] += 1;
+	else
+		OwnedAnimals.Add(AnimalID, 1);
 }
 
 void UMyGameInstance::RemoveAnimal(int32 AnimalID)
 {
-	if (OwnedAnimals.Num() <= 0)
-		return;
-
 	// 配列のなかに見当たらない
 	if (!OwnedAnimals.Contains(AnimalID))
 		return;
 
 	// 削除
-	OwnedAnimals.RemoveSingle(AnimalID);
+	OwnedAnimals[AnimalID] -= 1;
+	
+	if(OwnedAnimals[AnimalID] == 0)
+		OwnedAnimals.Remove(AnimalID);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
@@ -267,9 +270,17 @@ TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
 	return Animals;
 }
 
-TArray<int32> UMyGameInstance::GetOwnedAnimals() const
+TMap<int32, int32> UMyGameInstance::GetOwnedAnimals() const
 {
 	return OwnedAnimals;
+}
+
+int UMyGameInstance::GetAnimalNumByID(int32 AnimalID) const
+{
+	if (!OwnedAnimals.Contains(AnimalID))
+		return 0;
+
+	return OwnedAnimals[AnimalID];
 }
 
 void UMyGameInstance::SetMaxAnimalCount(int Amount)
@@ -279,7 +290,20 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 
 bool UMyGameInstance::HasMaxAnimals() const
 {
-	return OwnedAnimals.Num() >= MaxAnimalCount;
+	int Sum = 0;
+	for (const auto& Pair : OwnedAnimals)
+	{
+		Sum += Pair.Value;
+	}
+	return Sum >= MaxAnimalCount;
+}
+
+void UMyGameInstance::NotifyUpdateAnimalNum(int32 AnimalID, int Nums)
+{
+	if (OnUpdateAnimalNum.IsBound())
+	{
+		OnUpdateAnimalNum.Broadcast(AnimalID, Nums);
+	}
 }
 
 void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame& Data)
@@ -300,6 +324,14 @@ void UMyGameInstance::AddAnimalPhoto(int32 AnimalID, int32 Nums)
 		AnimalPhotoNums[AnimalID] += Nums;
 	else
 		AnimalPhotoNums[AnimalID] = Nums;
+}
+
+int UMyGameInstance::GetAnimalPhotoNum(int32 AnimalID) const
+{
+	if (AnimalPhotoNums.Contains(AnimalID))
+		return AnimalPhotoNums[AnimalID];
+	else
+		return 0;
 }
 
 void UMyGameInstance::ResetAnimalPhoto()

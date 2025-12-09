@@ -28,7 +28,7 @@ void UAnimalManagerComponent::BeginPlay()
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
-		TArray<int32> Owned = GameInstance->GetOwnedAnimals();
+		TMap<int32, int32> Owned = GameInstance->GetOwnedAnimals();
 		TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
 		ArrangeAroundTarget(Animals);
 	}

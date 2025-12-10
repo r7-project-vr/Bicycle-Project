@@ -133,9 +133,9 @@ void UDeviceManager::EnableDefaultActions()
 	//IMoveProvider::Execute_EnableMoveAction(Device);
 
 	// 複数の装置の場合
-	UDevice* D = GetDevice(EDevicePart::Foot);
-	if(D)
-		IMoveProvider::Execute_EnableMoveAction(D);
+	UDevice* Device = GetDevice(EDevicePart::Foot);
+	if(Device)
+		IMoveProvider::Execute_EnableMoveAction(Device);
 }
 
 void UDeviceManager::DisableDefaultActions()

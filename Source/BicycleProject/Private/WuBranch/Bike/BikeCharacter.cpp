@@ -80,6 +80,10 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		DeviceManager->BindMoveEvent(_bike, "OnMove");
 		DeviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
 		DeviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
+		// スクリーンショットイベントを接続
+		DeviceManager->BindScreenshotEvent(GameInstance, FName("CaptureVRScreenshot"));
+		// スクリーンショット後の表示イベントも接続
+		DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
 	}
 }
 
@@ -225,4 +229,23 @@ bool ABikeCharacter::CheckOverSpeed() const
 {
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
+}
+
+void ABikeCharacter::OnScreenshotTaken()
+{
+	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		FVector PlayerLoc = GetActorLocation();
+		FVector PlayerForward = GetActorForwardVector();
+		
+		// スクリーンショットを3D空間に表示
+		GameInstance->DisplayLastScreenshot(PlayerLoc, PlayerForward);
+		
+		UE_LOG(LogTemp, Log, TEXT("Screenshot displayed after capture!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameInstance is null in OnScreenshotTaken!"));
+	}
 }

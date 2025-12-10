@@ -37,6 +37,18 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
+	// 注意: OnMoveEvent, OnSelectLeftEvent, OnSelectRightEvent は親クラスUDeviceで既に定義されているため、
+	// ここでは宣言しません
+
+	// Screenshot Event（新規追加のみ）
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenshotEvent);
+
+	UPROPERTY(BlueprintAssignable, Category = "Input Events")
+	FOnScreenshotEvent OnScreenshotEvent;
+
+public:
+	void OnScreenshot();
+
 private:
 
 	/// <summary>
@@ -91,4 +103,10 @@ private:
 	/// 右の答えを選択するアクション
 	/// </summary>
 	UInputAction* SelectRightAction;
+
+	/// <summary>
+	/// スクリーンショットアクション
+	/// </summary>
+	UPROPERTY()
+	UInputAction* ScreenshotAction;
 };

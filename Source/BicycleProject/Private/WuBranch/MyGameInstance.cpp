@@ -8,6 +8,15 @@
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Struct/PlayerSaveGame.h"
 #include "WuBranch/System/SaveGameManager.h"
+#include "Engine/Texture2D.h"
+#include "Engine/GameViewportClient.h"
+#include "Kismet/GameplayStatics.h"
+#include "UnrealClient.h"
+#include "NarisawaBranch/ScreenshotDisplayActor.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/SceneCapture2D.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -366,5 +375,168 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 	ReadSetsFromFile(Data);
 	ReadAnimalFromFile(Data);
 	ReadPhotoFromFile(Data);
+}
+#pragma endregion
+
+#pragma region スクリーンショット
+void UMyGameInstance::CaptureVRScreenshot()
+{
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("World is null!"));
+		return;
+	}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC || !PC->PlayerCameraManager)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerController or CameraManager is null!"));
+		return;
+	}
+
+	// カメラの位置と向きを取得
+	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
+	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
+
+	// Scene Capture 2D アクターを一時的に生成
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	ASceneCapture2D* SceneCapture = GetWorld()->SpawnActor<ASceneCapture2D>(ASceneCapture2D::StaticClass(), CameraLocation, CameraRotation, SpawnParams);
+	
+	if (!SceneCapture || !SceneCapture->GetCaptureComponent2D())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create SceneCapture2D!"));
+		return;
+	}
+
+	// レンダーターゲットを作成
+	int32 Width = 1920;  // 解像度を指定
+	int32 Height = 1080;
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+	RenderTarget->InitAutoFormat(Width, Height);
+	RenderTarget->UpdateResourceImmediate(true);
+
+	// Scene Capture の設定
+	USceneCaptureComponent2D* CaptureComponent = SceneCapture->GetCaptureComponent2D();
+	CaptureComponent->TextureTarget = RenderTarget;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	CaptureComponent->bCaptureEveryFrame = false;
+	CaptureComponent->bCaptureOnMovement = false;
+	
+	// キャプチャを実行
+	CaptureComponent->CaptureScene();
+
+	// レンダーターゲットからピクセルデータを読み取る
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
+	
+	if (!RenderTargetResource)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RenderTargetResource is null!"));
+		SceneCapture->Destroy();
+		return;
+	}
+
+	TArray<FColor> OutBitmap;
+	if (RenderTargetResource->ReadPixels(OutBitmap))
+	{
+		// UTexture2Dを作成
+		UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+		if (NewTexture)
+		{
+#if WITH_EDITORONLY_DATA
+			NewTexture->MipGenSettings = TMGS_NoMipmaps;
+#endif
+			NewTexture->NeverStream = true;
+			NewTexture->SRGB = true;
+
+			// テクスチャにピクセルデータをコピー
+			void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+			FMemory::Memcpy(TextureData, OutBitmap.GetData(), OutBitmap.Num() * sizeof(FColor));
+			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+			NewTexture->UpdateResource();
+
+			// 配列に保存
+			CapturedScreenshots.Add(NewTexture);
+			
+			UE_LOG(LogTemp, Log, TEXT("VR Screenshot captured from camera! Size: %dx%d, Total screenshots: %d"), 
+				Width, Height, CapturedScreenshots.Num());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to create texture!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to read pixels from RenderTarget!"));
+	}
+
+	// Scene Capture アクターを削除
+	SceneCapture->Destroy();
+}
+
+UTexture2D* UMyGameInstance::GetLastScreenshot() const
+{
+	if (CapturedScreenshots.Num() > 0)
+	{
+		return CapturedScreenshots.Last();
+	}
+	return nullptr;
+}
+
+int32 UMyGameInstance::GetScreenshotCount() const
+{
+	return CapturedScreenshots.Num();
+}
+
+UTexture2D* UMyGameInstance::GetScreenshotAtIndex(int32 Index) const
+{
+	if (CapturedScreenshots.IsValidIndex(Index))
+	{
+		return CapturedScreenshots[Index];
+	}
+	return nullptr;
+}
+
+AScreenshotDisplayActor* UMyGameInstance::DisplayLastScreenshot(FVector PlayerLocation, FVector PlayerForward)
+{
+	UTexture2D* LastScreenshot = GetLastScreenshot();
+	if (!LastScreenshot)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No screenshot to display!"));
+		return nullptr;
+	}
+
+	if (!ScreenshotDisplayActorClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ScreenshotDisplayActorClass is not set!"));
+		return nullptr;
+	}
+
+	// アクターをスポーン
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
+		ScreenshotDisplayActorClass,
+		FVector::ZeroVector,
+		FRotator::ZeroRotator,
+		SpawnParams
+	);
+
+	if (DisplayActor)
+	{
+		// スクリーンショットを設定
+		DisplayActor->SetScreenshot(LastScreenshot);
+		// プレイヤーの前に配置
+		DisplayActor->PlaceInFrontOfPlayer(PlayerLocation, PlayerForward);
+
+		UE_LOG(LogTemp, Log, TEXT("Screenshot displayed in 3D space!"));
+		return DisplayActor;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Failed to spawn ScreenshotDisplayActor!"));
+	return nullptr;
 }
 #pragma endregion

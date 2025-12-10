@@ -33,6 +33,10 @@ UKeyboardDevice::UKeyboardDevice()
 	SelectRightAction = nullptr;
 	Path = "/Game/WuBranch/Input/Action/SelectRightAction";
 	SelectRightAction = LoadObject<UInputAction>(nullptr, *Path);
+
+	ScreenshotAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/ScreenshotAction";
+	ScreenshotAction = LoadObject<UInputAction>(nullptr, *Path);
 }
 
 void UKeyboardDevice::Init()
@@ -171,9 +175,6 @@ void UKeyboardDevice::SetupAction()
 	}
 
 	// Set up action bindings
-	// ここはプレイヤコントローラのInputComponentではなく、プレイヤのアクターのInputComponentを利用する
-	// そうすると、Unreal本来の設計通り、PawnのEnableInput、DisableInputでコントロールできる
-	// *PlayerControllerとPawn両方ともActorの派生クラスなので、両方ともInputComponent持っています。ここは間違われやすい。
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(Controller->GetPawn()->InputComponent))
 	{
 		// 移動
@@ -184,10 +185,16 @@ void UKeyboardDevice::SetupAction()
 
 		// 右の答えを選択するアクション
 		EnhancedInputComponent->BindAction(SelectRightAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectRightAnswer);
+
+		// スクリーンショットアクション
+		if (ScreenshotAction)
+		{
+			EnhancedInputComponent->BindAction(ScreenshotAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnScreenshot);
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogTemplateDevice, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
 }
 
@@ -216,4 +223,11 @@ void UKeyboardDevice::OnSelectRightAnswer()
 	// notify
 	if (OnSelectRightEvent.IsBound())
 		OnSelectRightEvent.Broadcast();
+}
+
+void UKeyboardDevice::OnScreenshot()
+{
+	// notify
+	if (OnScreenshotEvent.IsBound())
+		OnScreenshotEvent.Broadcast();
 }

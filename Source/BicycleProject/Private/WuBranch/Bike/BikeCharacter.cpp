@@ -80,9 +80,9 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		DeviceManager->BindMoveEvent(_bike, "OnMove");
 		DeviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
 		DeviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
-		// スクリーンショットイベントを接続
-		DeviceManager->BindScreenshotEvent(GameInstance, FName("CaptureVRScreenshot"));
-		// スクリーンショット後の表示イベントも接続
+		
+		// スクリーンショットイベントは1回だけバインド
+		// BikeCharacterで撮影と表示を両方行う
 		DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
 	}
 }
@@ -236,13 +236,17 @@ void ABikeCharacter::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
+		// スクリーンショットを撮影
+		GameInstance->CaptureVRScreenshot();
+		
+		// プレイヤーの位置を取得
 		FVector PlayerLoc = GetActorLocation();
 		FVector PlayerForward = GetActorForwardVector();
 		
 		// スクリーンショットを3D空間に表示
 		GameInstance->DisplayLastScreenshot(PlayerLoc, PlayerForward);
 		
-		UE_LOG(LogTemp, Log, TEXT("Screenshot displayed after capture!"));
+		UE_LOG(LogTemp, Log, TEXT("Screenshot captured and displayed!"));
 	}
 	else
 	{

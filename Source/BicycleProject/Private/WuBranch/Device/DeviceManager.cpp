@@ -227,9 +227,10 @@ void UDeviceManager::BindScreenshotEvent(UObject* obj, FName funcName)
 		return;
 	}
 
-	for (auto& DevicePair : Devices)
+	// Handデバイスのみにバインド
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
 	{
-		UDevice* Device = DevicePair.Value;
 		if (UKeyboardDevice* KeyboardDevice = Cast<UKeyboardDevice>(Device))
 		{
 			FScriptDelegate Delegate;

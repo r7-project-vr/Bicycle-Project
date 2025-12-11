@@ -17,7 +17,7 @@ AScreenshotDisplayActor::AScreenshotDisplayActor()
 	DisplayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisplayMesh"));
 	RootComponent = DisplayMesh;
 
-	// 平面メッシュを設定（Engine標準のPlane）
+	// 平面メッシュを設定
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("/Engine/BasicShapes/Plane"));
 	if (PlaneMesh.Succeeded())
 	{
@@ -73,13 +73,13 @@ void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
 
 void AScreenshotDisplayActor::PlaceInFrontOfPlayer(FVector PlayerLocation, FVector PlayerForward, float Distance)
 {
-	// プレイヤーの前方に配置（高さは変えない）
+	// プレイヤーの前方に配置
 	FVector NewLocation = PlayerLocation + (PlayerForward.GetSafeNormal() * Distance);
 	
 	SetActorLocation(NewLocation);
 	
 	// プレイヤーの向きに基づいて回転を計算
-	// PlayerForwardからYaw（水平回転）を取得
+	// PlayerForwardからYawを取得
 	FRotator BaseRotation = PlayerForward.Rotation();
 	
 	// 目標の回転を設定: Pitch=0, Yaw=PlayerのYaw-270, Roll=-270

@@ -19,15 +19,9 @@ class BICYCLEPROJECT_API AScreenshotDisplayActor : public AActor
 	GENERATED_BODY()
 
 public:
-	/// <summary>
-	/// コンストラクタ
-	/// </summary>
 	AScreenshotDisplayActor();
 
 protected:
-	/// <summary>
-	/// ゲーム開始時
-	/// </summary>
 	virtual void BeginPlay() override;
 
 public:
@@ -55,7 +49,7 @@ private:
 	UStaticMeshComponent* DisplayMesh;
 
 	/// <summary>
-	/// ベースマテリアル（Editorで設定）
+	/// ベースマテリアル（BPで設定）
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	UMaterial* BaseMaterial;

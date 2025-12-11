@@ -454,7 +454,7 @@ void UMyGameInstance::CaptureVRScreenshot()
 			void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 			FMemory::Memcpy(TextureData, OutBitmap.GetData(), OutBitmap.Num() * sizeof(FColor));
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
-			NewTexture->UpdateResource();
+			NewTexture->UpdateResource(); 
 
 			// 配列に保存
 			CapturedScreenshots.Add(NewTexture);

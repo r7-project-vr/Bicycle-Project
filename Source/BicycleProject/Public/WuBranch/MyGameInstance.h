@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Engine/Texture2D.h"
 #include "MyGameInstance.generated.h"
 
 class UDeviceManager;
@@ -497,4 +498,56 @@ private:
 	/// </summary>
 	FString FileName;
 #pragma endregion
+
+public:
+	/// <summary>
+	/// スクリーンショットをキャプチャ
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	void CaptureVRScreenshot();
+
+	/// <summary>
+	/// 最後のスクリーンショットを取得
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	UTexture2D* GetLastScreenshot() const;
+
+	/// <summary>
+	/// スクリーンショットの枚数を取得
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	int32 GetScreenshotCount() const;
+
+	/// <summary>
+	/// インデックス指定でスクリーンショットを取得
+	/// </summary>
+	/// <param name="Index">インデックス</param>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	UTexture2D* GetScreenshotAtIndex(int32 Index) const;
+
+	/// <summary>
+	/// 最後のスクリーンショットを3D空間に配置
+	/// </summary>
+	/// <param name="PlayerLocation">プレイヤーの位置</param>
+	/// <param name="PlayerForward">プレイヤーの前方向</param>
+	/// <returns>生成したアクター</returns>
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	class AScreenshotDisplayActor* DisplayLastScreenshot(FVector PlayerLocation, FVector PlayerForward);
+
+private:
+	
+	/// <summary>
+	/// キャプチャしたスクリーンショットの配列
+	/// </summary>
+	UPROPERTY()
+	TArray<UTexture2D*> CapturedScreenshots;
+
+	/// <summary>
+	/// スクリーンショット表示用のアクタークラス
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AScreenshotDisplayActor> ScreenshotDisplayActorClass;
 };

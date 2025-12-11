@@ -129,6 +129,13 @@ public:
 	UFUNCTION()
 	void BindSelectRightEvent(UObject* Object, FName FunctionName);
 
+	/// <summary>
+	/// スクリーンショットイベントをバインド
+	/// </summary>
+	/// <param name="obj">対象オブジェクト</param>
+	/// <param name="funcName">関数名</param>
+	void BindScreenshotEvent(UObject* obj, FName funcName);
+
 private:
 
 	/// <summary>

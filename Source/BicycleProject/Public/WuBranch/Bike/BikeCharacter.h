@@ -82,6 +82,12 @@ public:
 	/// </summary>
 	void ResetOverSpeed();
 
+	/// <summary>
+	/// スクリーンショット撮影後に呼ばれる
+	/// </summary>
+	UFUNCTION()
+	void OnScreenshotTaken();
+
 private:
 
 	/// <summary>

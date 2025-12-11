@@ -219,6 +219,29 @@ void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 	}
 }
 
+void UDeviceManager::BindScreenshotEvent(UObject* obj, FName funcName)
+{
+	if (!obj)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BindScreenshotEvent: Object is null!"));
+		return;
+	}
+
+	// Handデバイスのみにバインド
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device)
+	{
+		if (UKeyboardDevice* KeyboardDevice = Cast<UKeyboardDevice>(Device))
+		{
+			FScriptDelegate Delegate;
+			Delegate.BindUFunction(obj, funcName);
+			KeyboardDevice->OnScreenshotEvent.Add(Delegate);
+			
+			UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *obj->GetName(), *funcName.ToString());
+		}
+	}
+}
+
 UDevice* UDeviceManager::CreateKeyBoardDevice()
 {
 	UDevice* Device = NewObject<UKeyboardDevice>(this);

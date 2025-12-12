@@ -3,9 +3,11 @@
 
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
 #include "WuBranch/MyGameInstance.h"
-#include "WuBranch/Actor/Animal.h"
+#include "WuBranch/Actor/Pet.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include <Engine/AssetManager.h>
+#include <WuBranch/DataAssets/AnimalDataAsset.h>
 
 // Sets default values for this component's properties
 UAnimalManagerComponent::UAnimalManagerComponent()
@@ -25,13 +27,21 @@ void UAnimalManagerComponent::BeginPlay()
 	// ...
 	RandomStream.Initialize(FDateTime::Now().GetTicks());
 	SetTarget();
-	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	if (GameInstance)
+
+	TArray<FPrimaryAssetId> AnimalIDs = GetAllAnimalID();
+	LoadedAnimalCount = AnimalIDs.Num();
+	for (const FPrimaryAssetId& ID : AnimalIDs)
 	{
-		TMap<int32, int32> Owned = GameInstance->GetOwnedAnimals();
-		TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
-		ArrangeAroundTarget(Animals);
+		UAssetManager::Get().LoadPrimaryAsset(ID, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UAnimalManagerComponent::OnAnimalLoaded, ID));
 	}
+
+	//UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	//if (GameInstance)
+	//{
+	//	// <動物ID, 数>
+	//	TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
+	//	ArrangeAroundTarget(Animals);
+	//}
 }
 
 // Called every frame
@@ -58,6 +68,64 @@ void UAnimalManagerComponent::SetTarget()
 	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))
 	{
 		Target = Character;
+	}
+}
+
+TMap<int32, int32> UAnimalManagerComponent::GetOwnedAnimals() const
+{
+	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (GameInstance)
+	{
+		return GameInstance->GetOwnedAnimals();
+	}
+	return TMap<int32, int32>();
+}
+
+TArray<FPrimaryAssetId> UAnimalManagerComponent::GetAllAnimalID() const
+{
+	TArray<FPrimaryAssetId> AnimalIDs;
+	UAssetManager::Get().GetPrimaryAssetIdList(FPrimaryAssetType("AnimalData"), AnimalIDs);
+	return AnimalIDs;
+}
+
+void UAnimalManagerComponent::OnAnimalLoaded(FPrimaryAssetId LoadedId)
+{
+	UAssetManager& AM = UAssetManager::Get();
+	UObject* LoadedObj = AM.GetPrimaryAssetObject(LoadedId);
+	if (UAnimalDataAsset* Data = Cast<UAnimalDataAsset>(LoadedObj))
+	{
+		AnimalDataMap.Add(Data->AnimalID, Data);
+	}
+	LoadedAnimalCount--;
+
+	if (LoadedAnimalCount == 0)
+	{
+		OnLoadAnimalCompleted();
+	}
+}
+
+void UAnimalManagerComponent::OnLoadAnimalCompleted()
+{
+	TMap<int32, int32> Owned = GetOwnedAnimals();
+	if (Owned.Num() <= 0)
+		return;
+
+	for (const TPair<int32, int32>& Pair : Owned)
+	{
+		if (AnimalDataMap.Contains(Pair.Key))
+		{
+			UAnimalDataAsset* Data = AnimalDataMap[Pair.Key];
+			if (Data->AnimalType != EAnimalType::Pet)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Use Wrong Animal ID or Type"));
+				continue;
+			}
+
+			for (int Indedx = 0; Indedx < Pair.Value; Indedx++)
+			{
+				ArrangeAroundTarget(APet::StaticClass(), Data);
+			}
+		}
 	}
 }
 
@@ -101,6 +169,37 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 			Animal->ChangeOffset(FVector(Offset.X, Offset.Y, 0));
 			FollowingAnimals.Add(Animal);
 		}
+	}
+}
+
+void UAnimalManagerComponent::ArrangeAroundTarget(TSubclassOf<AAnimal> AnimalClass, UAnimalDataAsset* Data)
+{
+	// DataAssetからカプセルの高さの半分をゲット
+	float CapsuleHalfHeight = Data->CollisionSize.X;
+	float CapsuleRadius = Data->CollisionSize.Z;
+	
+	// おいていける位置を探す
+	FVector GroundLocation;
+	bool bIsValidLocation = false;
+	do {
+		FVector NewLocation = GetRandomLocationNearPlayer();
+		bIsValidLocation = CheckLocation(CapsuleRadius, NewLocation, GroundLocation);
+	} while (!bIsValidLocation);
+
+	// 高さの調整
+	FVector SpawnLocation = GroundLocation + FVector(0, 0, CapsuleHalfHeight);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	AAnimal* Animal = GetWorld()->SpawnActor<AAnimal>(AnimalClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+
+	if (Animal)
+	{
+		// 設定
+		Animal->Init(Target, this, Data);
+		FVector Offset = GroundLocation - Target->GetActorLocation();
+		Animal->ChangeOffset(FVector(Offset.X, Offset.Y, 0));
+		FollowingAnimals.Add(Animal);
 	}
 }
 

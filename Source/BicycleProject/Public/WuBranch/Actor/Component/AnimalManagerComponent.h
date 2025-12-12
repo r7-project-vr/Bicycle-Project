@@ -7,6 +7,7 @@
 #include "AnimalManagerComponent.generated.h"
 
 class AAnimal;
+class UAnimalDataAsset;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UAnimalManagerComponent : public UActorComponent
@@ -39,9 +40,29 @@ private:
 	void SetTarget();
 
 	/// <summary>
+	/// 持っている動物をゲット
+	/// </summary>
+	/// <returns>動物のマップ</returns>
+	TMap<int32, int32> GetOwnedAnimals() const;
+
+	/// <summary>
+	/// すべての動物IDをゲット
+	/// </summary>
+	/// <returns></returns>
+	TArray<FPrimaryAssetId> GetAllAnimalID() const;
+
+	/// <summary>
+	/// 動物ロード完了
+	/// </summary>
+	void OnAnimalLoaded(FPrimaryAssetId LoadedId);
+
+	void OnLoadAnimalCompleted();
+
+	/// <summary>
 	/// 動物を対象の周りに配置
 	/// </summary>
 	void ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> Animals);
+	void ArrangeAroundTarget(TSubclassOf<AAnimal> AnimalClass, UAnimalDataAsset* Data);
 
 	/// <summary>
 	/// 対象の周りの位置をランダムで一つをとる
@@ -62,6 +83,13 @@ private:
 	/// ついていく対象
 	/// </summary>
 	TObjectPtr<ACharacter> Target;
+
+	/// <summary>
+	/// 動物データマップ <動物ID, データアセット>
+	/// </summary>
+	TMap<int32, UAnimalDataAsset*> AnimalDataMap;
+
+	int LoadedAnimalCount;
 
 	/// <summary>
 	/// ついてくる動物

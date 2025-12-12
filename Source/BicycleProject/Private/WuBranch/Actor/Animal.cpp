@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
+#include "WuBranch/DataAssets/AnimalDataAsset.h"
 
 // Sets default values
 AAnimal::AAnimal()
@@ -78,6 +79,18 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager)
 {
 	CurrentTarget = Target;
 	AnimalManager = Manager;
+}
+
+void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data)
+{
+	CurrentTarget = Target;
+	AnimalManager = Manager;
+	AIControllerClass = Data->AIControllerClass;
+	if (Data)
+	{
+		ID = Data->AnimalID;
+		Speed = Data->MoveSpeed;
+	}
 }
 
 void AAnimal::ChangeOffset(FVector Offset)

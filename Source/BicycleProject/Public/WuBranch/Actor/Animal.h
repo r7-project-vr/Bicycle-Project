@@ -11,6 +11,7 @@
 class USkeletalMeshComponent;
 class UCapsuleComponent;
 class UAnimalManagerComponent;
+class UAnimalDataAsset;
 
 UCLASS()
 class BICYCLEPROJECT_API AAnimal : public ACharacter, public IPauseInterface
@@ -46,6 +47,7 @@ public:
 	/// <param name="Target">目標</param>
 	/// <param name="Manager">管理者</param>
 	void Init(ACharacter* Target, UAnimalManagerComponent* Manager);
+	virtual void Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data);
 
 	/// <summary>
 	/// 偏移を変える

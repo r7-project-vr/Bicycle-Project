@@ -68,11 +68,8 @@ private:
 	/// ショップの商品テーブル
 	/// </summary>
 	/// 実行する時読み込まれてないことがわかった、一旦ソフト参照を使わない、あとでAsset Managerを使う
-	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/SimpleShooter.ShopItemTableRow"))
+	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.ShopItem"))
 	TSoftObjectPtr<UDataTable> ShopItemsTable;
-
-	/*UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/SimpleShooter.ShopItemTableRow"))
-	UDataTable* ShopItemsTable;*/
 
 	/// <summary>
 	/// 商品データ

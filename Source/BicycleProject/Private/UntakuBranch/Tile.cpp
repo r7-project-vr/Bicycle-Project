@@ -88,12 +88,16 @@ void ATile::SpawnEnvironmentals(int Seed)
 	FoliageSpawner->SetSeed(Seed);
 	FoliageSpawner->StartSpawnFoliage();
 	// コイン
-	FTimerHandle CreateCoinHandle;
-	GetWorld()->GetTimerManager().SetTimer(CreateCoinHandle, FTimerDelegate::CreateWeakLambda(this, [this, Seed]() {
-		QuestionUI->GetQuestionFromManger();
-		CoinSpawner->SetSeed(Seed);
-		CoinSpawner->Spawn(QuestionUI->GetNowQuestion()->Level);
-	}), 0.5f, false);
+	if (QuestionUI)
+	{
+		FTimerHandle CreateCoinHandle;
+		GetWorld()->GetTimerManager().SetTimer(CreateCoinHandle, FTimerDelegate::CreateWeakLambda(this, [this, Seed]() {
+			QuestionUI->GetQuestionFromManger();
+			CoinSpawner->SetSeed(Seed);
+			CoinSpawner->Spawn(QuestionUI->GetNowQuestion()->Level);
+			}), 0.5f, false);
+	}
+	
 }
 // 2025.08.19 ウー end
 

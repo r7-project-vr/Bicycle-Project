@@ -37,6 +37,15 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
+	// Screenshot Event
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenshotEvent);
+
+	UPROPERTY(BlueprintAssignable, Category = "Input Events")
+	FOnScreenshotEvent OnScreenshotEvent;
+
+public:
+	void OnScreenshot();
+
 private:
 
 	/// <summary>
@@ -91,4 +100,10 @@ private:
 	/// 右の答えを選択するアクション
 	/// </summary>
 	UInputAction* SelectRightAction;
+
+	/// <summary>
+	/// スクリーンショットアクション
+	/// </summary>
+	UPROPERTY()
+	UInputAction* ScreenshotAction;
 };

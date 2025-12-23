@@ -2,6 +2,9 @@
 
 
 #include "WindowsSerial/WindowsSerial.h"
+//#include "Windows/AllowWindowsPlatformTypes.h"
+#include <Windows.h>
+//#include "Windows/HideWindowsPlatformTypes.h"
 
 // public
 WindowsSerial::WindowsSerial(int baudrate) { m_baudrate = baudrate; }

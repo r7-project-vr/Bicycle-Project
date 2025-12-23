@@ -4,7 +4,6 @@
 #include "WuBranch/QuestionGameMode.h"
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Bike/BikeCharacter.h"
-#include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/BikePlayerController.h"
 #include "WuBranch/Actor/Firework.h"
 #include "WuBranch/UI/QuestionUIActor.h"
@@ -15,7 +14,6 @@
 #include "UntakuBranch/QuestionManager.h"
 #include <ShiiBranch/OptionUIWidget.h>
 #include <Components/WidgetComponent.h>
-#include "WuBranch/MyGameInstance.h"
 
 void AQuestionGameMode::BeginPlay()
 {
@@ -57,7 +55,8 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		GameInstance->GetDeviceManager()->DisableDefaultActions();
 		GameInstance->GetDeviceManager()->DisConnectAllDevices();
 
-		_player->GetBikeComponent()->ReduceVelocityTo0();
+		_player->StopMove();
+
 
 		if (CurrentState == QuestionGameState::Playing)
 			return;
@@ -137,7 +136,7 @@ void AQuestionGameMode::FinishGame()
 	GameInstance->GetDeviceManager()->DisableDefaultActions();
 	GameInstance->GetDeviceManager()->DisConnectAllDevices();
 	// 自転車の止める
-	_player->GetBikeComponent()->ReduceVelocityTo0();
+	_player->StopMove();
 	// 結果を記録
 	GameInstance->SetGameResult(false);
 	// コインの決算

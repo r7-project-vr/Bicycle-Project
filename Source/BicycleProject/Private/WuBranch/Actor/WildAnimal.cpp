@@ -19,20 +19,21 @@ void AWildAnimal::BeginPlay()
 
 void AWildAnimal::DecideBehavior()
 {
-	NeedChirp = IsTargetPassed();
+	//NeedChirp = IsTargetPassed();
 }
 
 void AWildAnimal::Action(float DeltaTime)
 {
-	if (CurrentState == BehaviorState::None)
-	{
-		if (ChirpSE && NeedChirp)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
-		}
-	}
+	//
+	//if (CurrentState == BehaviorState::None)
+	//{
+	//	if (ChirpSE && NeedChirp)
+	//	{
+	//		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
+	//	}
+	//}
 
-	StareAtTarget(DeltaTime);
+	//StareAtTarget(DeltaTime);
 }
 
 bool AWildAnimal::IsTargetPassed()

@@ -18,6 +18,8 @@ public:
 
 	AWildAnimal();
 
+	virtual void Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data) override;
+
 protected:
 
 	virtual void BeginPlay() override;

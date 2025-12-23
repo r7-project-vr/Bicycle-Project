@@ -276,7 +276,7 @@ void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassO
 		Animal->SetActorScale3D(FVector(Scale, Scale, Scale));
 		
 		// プレイヤーキャラクターで初期化
-		Animal->Init(Character, nullptr);
+		Animal->Init(Character, nullptr, nullptr);
 		
 		// スポーン済みリストに追加
 		SpawnedAnimals.Add(Animal);

@@ -3,11 +3,27 @@
 
 #include "WuBranch/Actor/WildAnimal.h"
 #include <Kismet/GameplayStatics.h>
+#include "WuBranch/DataAssets/AnimalDataAsset.h"
 
 AWildAnimal::AWildAnimal()
 	: AAnimal()
 	, Face(FVector::ZeroVector)
 {
+}
+
+void AWildAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data)
+{
+	if (Data)
+	{
+		Super::Init(Target, Manager, Data);
+		FWildAnimalSettings WildSettings = Data->WildSettings;
+		RotationSpeed = WildSettings.RotationSpeed;
+		ChirpSE = Data->ChirpSE;
+	}
+	else
+	{
+		Super::Init(Target, Manager);
+	}
 }
 
 void AWildAnimal::BeginPlay()
@@ -19,20 +35,21 @@ void AWildAnimal::BeginPlay()
 
 void AWildAnimal::DecideBehavior()
 {
-	NeedChirp = IsTargetPassed();
+	//NeedChirp = IsTargetPassed();
 }
 
 void AWildAnimal::Action(float DeltaTime)
 {
-	if (CurrentState == BehaviorState::None)
-	{
-		if (ChirpSE && NeedChirp)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
-		}
-	}
+	//
+	//if (CurrentState == BehaviorState::None)
+	//{
+	//	if (ChirpSE && NeedChirp)
+	//	{
+	//		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
+	//	}
+	//}
 
-	StareAtTarget(DeltaTime);
+	//StareAtTarget(DeltaTime);
 }
 
 bool AWildAnimal::IsTargetPassed()

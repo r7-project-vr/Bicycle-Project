@@ -52,6 +52,7 @@ public:
 	/// コインを取得
 	/// </summary>
 	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
 	int GetTotalCoins() const;
 
 	/// <summary>
@@ -75,6 +76,7 @@ public:
 	/// 一ゲームあたりにもらえるコインを取得
 	/// </summary>
 	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
 	int GetCoinsPerGame() const;
 
 	/// <summary>
@@ -105,6 +107,14 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FUpdateCoinDelegate OnUpdateCoin;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinPerGameDelegate, int, Num);
+
+	/// <summary>
+	/// 一ゲームあたりにもらえたコインの数の更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateCoinPerGameDelegate OnUpdateCoinPerGame;
+
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateCoinHeightDelegate, float, Height);
 
@@ -129,12 +139,17 @@ private:
 	/// <summary>
 	/// コインの数を更新
 	/// </summary>
-	void UpdateCoin();
+	void NotifyUpdateCoin();
+
+	/// <summary>
+	/// 一ゲームあたりにもらえたコインの数を更新
+	/// </summary>
+	void NotifyUpdateCoinPerGame();
 
 	/// <summary>
 	/// コインの高さを更新
 	/// </summary>
-	void UpdateCoinHeight();
+	void NotifyUpdateCoinHeight();
 
 	/// <summary>
 	/// 持ってるコイン
@@ -143,7 +158,7 @@ private:
 	int TotalCoins;
 
 	/// <summary>
-	/// 一ゲームあたりにもらえるコインの数
+	/// 一ゲームあたりにもらえたコインの数
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int CoinsPerGame;

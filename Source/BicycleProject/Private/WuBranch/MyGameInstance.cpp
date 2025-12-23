@@ -66,7 +66,7 @@ int UMyGameInstance::GetTotalCoins() const
 void UMyGameInstance::SetTotalCoins(int Amount)
 {
 	TotalCoins = FMath::Clamp(Amount, 0, INT32_MAX);
-	UpdateCoin();
+	NotifyUpdateCoin();
 }
 
 void UMyGameInstance::AddCoinsPerGame(int Amount)
@@ -76,11 +76,13 @@ void UMyGameInstance::AddCoinsPerGame(int Amount)
 		return;
 
 	CoinsPerGame += Amount;
+	NotifyUpdateCoinPerGame();
 }
 
 void UMyGameInstance::ResetCoinsPerGame()
 {
 	CoinsPerGame = 0;
+	NotifyUpdateCoinPerGame();
 }
 
 int UMyGameInstance::GetCoinsPerGame() const
@@ -96,13 +98,13 @@ float UMyGameInstance::GetCoinHeight() const
 void UMyGameInstance::SetCoinHeight(float Height)
 {
 	CoinHeight = Height;
-	UpdateCoinHeight();
+	NotifyUpdateCoinHeight();
 }
 
 void UMyGameInstance::ResetCoinHeight()
 {
 	CoinHeight = 100.f;
-	UpdateCoinHeight();
+	NotifyUpdateCoinHeight();
 }
 
 void UMyGameInstance::SaveCoinsToFile(FPlayerSaveGame& Data)
@@ -114,10 +116,10 @@ void UMyGameInstance::ReadCoinFromFile(const FPlayerSaveGame& Data)
 {
 	TotalCoins = Data.Coins;
 	CoinHeight = 100.f;
-	UpdateCoinHeight();
+	NotifyUpdateCoinHeight();
 }
 
-void UMyGameInstance::UpdateCoin()
+void UMyGameInstance::NotifyUpdateCoin()
 {
 	if (OnUpdateCoin.IsBound())
 	{
@@ -125,7 +127,15 @@ void UMyGameInstance::UpdateCoin()
 	}
 }
 
-void UMyGameInstance::UpdateCoinHeight()
+void UMyGameInstance::NotifyUpdateCoinPerGame()
+{
+	if (OnUpdateCoinPerGame.IsBound())
+	{
+		OnUpdateCoinPerGame.Broadcast(CoinsPerGame);
+	}
+}
+
+void UMyGameInstance::NotifyUpdateCoinHeight()
 {
 	if (OnUpdateCoinHeight.IsBound())
 	{

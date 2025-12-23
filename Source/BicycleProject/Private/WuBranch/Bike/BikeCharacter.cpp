@@ -47,8 +47,8 @@ void ABikeCharacter::BeginPlay()
 	IsOverSpeed = false;
 	IsPause = false;
 
-	BikeMovement = GetComponentByClass<UBikeMovementComponent>();
-	Responder = GetComponentByClass<UResponderComponent>();
+	//BikeMovement = GetComponentByClass<UBikeMovementComponent>();
+	//Responder = GetComponentByClass<UResponderComponent>();
 }
 
 // Called every frame
@@ -81,13 +81,16 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
 		DeviceManager->CreateAllDevices();
-		if(BikeMovement)
+		DeviceManager->BindMoveEvent(Bike, "OnMove");
+		DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
+		DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
+		/*if(BikeMovement)
 			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
 		if (Responder)
 		{
 			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
 			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
-		}
+		}*/
 		
 		// スクリーンショットイベントは1回だけバインド
 		// BikeCharacterで撮影と表示を両方行う
@@ -98,7 +101,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ABikeCharacter::Pause_Implementation()
 {
 	IsPause = true;
-	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
+	if (!Bike->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -115,7 +118,7 @@ void ABikeCharacter::Pause_Implementation()
 void ABikeCharacter::ReStart_Implementation()
 {
 	IsPause = false;
-	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
+	if (!Bike->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -170,8 +173,7 @@ void ABikeCharacter::DisableHintLine()
 
 void ABikeCharacter::StopMove()
 {
-	if(BikeMovement)
-		BikeMovement->ReduceVelocityTo0();
+	Bike->ReduceVelocityTo0();
 }
 
 bool ABikeCharacter::HasOverSpeed() const

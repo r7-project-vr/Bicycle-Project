@@ -105,10 +105,28 @@ public:
 	void HandleSelectAnswer(FRotator dir);
 
 	/// <summary>
+	/// マップを生成
+	/// </summary>
+	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
+	void SpawnNextMap(bool IsLeft);
+
+	/// <summary>
+	/// コインの処理
+	/// </summary>
+	/// <param name="Result">クイズの結果</param>
+	/// <param name="NeedBonus">ボーナスを加算するか</param>
+	void HandleCoin(bool Result, bool NeedBonus);
+
+	/// <summary>
 	/// コインを手に入れた
 	/// </summary>
 	/// <param name="Amount">数</param>
 	void AddCoins(int Amount);
+
+	/// <summary>
+	/// ペナルティを起動
+	/// </summary>
+	void ApplyPenalty();
 
 	/// <summary>
 	/// ペナルティ中か
@@ -143,32 +161,14 @@ private:
 	void DisableSelectAnswerAction();
 
 	/// <summary>
-	/// マップを生成
-	/// </summary>
-	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
-	void SpawnMap(bool IsLeft);
-
-	/// <summary>
 	/// 今踏んでいるマップを探す
 	/// </summary>
 	ATile* FindCurrentTile();
 
 	/// <summary>
-	/// コインの処理
-	/// </summary>
-	/// <param name="Result">クイズの結果</param>
-	/// <param name="NeedBonus">ボーナスを加算するか</param>
-	void HandleCoin(bool Result, bool NeedBonus);
-
-	/// <summary>
 	/// オートプレイの更新を通知
 	/// </summary>
 	void NotifyAutoPlay();
-
-	/// <summary>
-	/// ペナルティの処理
-	/// </summary>
-	void HandlePenalty();
 
 	/// <summary>
 	/// ペナルティをキャンセル

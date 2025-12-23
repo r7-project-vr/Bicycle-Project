@@ -8,8 +8,9 @@
 #include "WuBranch/Device/DeviceManager.h"
 #include <WuBranch/Bike/BikeComponent.h>
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
-#include <WuBranch/QuestionGameMode.h>
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
+#include "WuBranch/Bike/BikeMovementComponent.h"
+#include "WuBranch/Bike/ResponderComponent.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -19,7 +20,7 @@ ABikeCharacter::ABikeCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	_bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
+	Bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
@@ -28,7 +29,7 @@ ABikeCharacter::ABikeCharacter()
 
 	_handlebarCenteringSpeed = 1.0f;
 	_isRotate = false;
-	_handlebarsAngle = 0.0f;
+	HandleBarsAngle = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +46,9 @@ void ABikeCharacter::BeginPlay()
 	//_handlebarsAngle = 0.0f;
 	IsOverSpeed = false;
 	IsPause = false;
+
+	BikeMovement = GetComponentByClass<UBikeMovementComponent>();
+	Responder = GetComponentByClass<UResponderComponent>();
 }
 
 // Called every frame
@@ -77,9 +81,13 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
 		DeviceManager->CreateAllDevices();
-		DeviceManager->BindMoveEvent(_bike, "OnMove");
-		DeviceManager->BindSelectLeftEvent(_bike, "OnSelectLeftAnswer");
-		DeviceManager->BindSelectRightEvent(_bike, "OnSelectRightAnswer");
+		if(BikeMovement)
+			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
+		if (Responder)
+		{
+			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
+			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
+		}
 		
 		// スクリーンショットイベントは1回だけバインド
 		// BikeCharacterで撮影と表示を両方行う
@@ -90,7 +98,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ABikeCharacter::Pause_Implementation()
 {
 	IsPause = true;
-	if (!_bike->GetIsAutoPlay())
+	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -100,14 +108,14 @@ void ABikeCharacter::Pause_Implementation()
 				DeviceManager->DisableDefaultActions();
 			}
 		}
-		_bike->ReduceVelocityTo0();
+		StopMove();
 	}
 }
 
 void ABikeCharacter::ReStart_Implementation()
 {
 	IsPause = false;
-	if (!_bike->GetIsAutoPlay())
+	if (BikeMovement && !BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -137,7 +145,7 @@ float ABikeCharacter::GetSpeed()
 
 float ABikeCharacter::GetHandlerAngle() const
 {
-	return _handlebarsAngle;
+	return HandleBarsAngle;
 }
 
 void ABikeCharacter::SetTurningAngle(FRotator angle)
@@ -145,10 +153,10 @@ void ABikeCharacter::SetTurningAngle(FRotator angle)
 	_targetRotator = GetActorRotation() + angle;
 	// 右折
 	if (angle.Yaw > 0)
-		_handlebarsAngle = -30.0f;
+		HandleBarsAngle = -30.0f;
 	// 左折
 	else if (angle.Yaw < 0)
-		_handlebarsAngle = 30.0f;
+		HandleBarsAngle = 30.0f;
 	_isRotate = true;
 }
 
@@ -160,9 +168,10 @@ void ABikeCharacter::DisableHintLine()
 	}
 }
 
-UBikeComponent* ABikeCharacter::GetBikeComponent()
+void ABikeCharacter::StopMove()
 {
-	return _bike;
+	if(BikeMovement)
+		BikeMovement->ReduceVelocityTo0();
 }
 
 bool ABikeCharacter::HasOverSpeed() const
@@ -205,7 +214,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	{
 		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
 		SetActorRelativeRotation(_targetRotator);
-		_handlebarsAngle = 0.0f;
+		HandleBarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
 		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
@@ -222,7 +231,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	SetActorRelativeRotation(angle);
 
 	// ハンドルの戻り角度の計算
-	_handlebarsAngle = FMath::FInterpTo(_handlebarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
+	HandleBarsAngle = FMath::FInterpTo(HandleBarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
 }
 
 bool ABikeCharacter::CheckOverSpeed() const

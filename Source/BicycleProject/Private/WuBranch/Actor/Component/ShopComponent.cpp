@@ -41,6 +41,13 @@ bool UShopComponent::BuyItem(int ItemID)
 		return Item->ID == ItemID;
 		}));
 
+	// 見つからない
+	if (!ShopItem)
+	{
+		BuyFailed();
+		return false;
+	}
+	
 	if (UMyGameInstance* GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
 		// 金をチェック
@@ -60,6 +67,10 @@ bool UShopComponent::BuyItem(int ItemID)
 		}
 
 		// 購入
+		if (ShopItem->BuySuccSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), ShopItem->BuySuccSound);
+		}
 		GameInstance->SetTotalCoins(CurrentCoins - ShopItem->Price);
 		GameInstance->AddAnimal(ShopItem->ID);
 		return true;

@@ -36,4 +36,10 @@ struct BICYCLEPROJECT_API FShopItem : public FTableRowBase
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 UnLockLimit;
+
+	/// <summary>
+	/// 購入成功のSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USoundBase* BuySuccSound;
 };

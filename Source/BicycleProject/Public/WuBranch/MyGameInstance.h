@@ -393,6 +393,7 @@ private:
 	/// </summary>
 	/// <param name="AnimalID">動物ID</param>
 	/// <param name="Nums">数</param>
+	void NotifyUpdateAnimalNum(int32 AnimalID);
 	void NotifyUpdateAnimalNum(int32 AnimalID, int Nums);
 
 	/// <summary>
@@ -498,6 +499,7 @@ public:
 	/// <summary>
 	/// すべてのデータをセーブ
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void SaveAllToFile();
 
 private:

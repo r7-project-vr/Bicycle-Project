@@ -198,7 +198,7 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 		{
 			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *DeviceInterface->GetDeviceName());
 			MyDevice = DeviceInterface;
-			
+
 			// 接続する
 			Connect();
 			//　スキャンを止める
@@ -218,8 +218,11 @@ void UCustomDevice::OnConnectSucc()
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	MyDevice->BindToCharacteristicNotificationEvent(ReceiveFunction);
-	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
-	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
+	MyDevice->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
+	MyDevice->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
+
+	MyDevice->BindToCharacteristicReadEvent(ReceiveFunction);
+	MyDevice->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
 #endif
 }
 
@@ -260,12 +263,14 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 void UCustomDevice::OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Receive %s data"), *CharacteristicUUID));
-	if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPM_CHARACTERISTIC_UUID))
+	if (ServiceUUID.Equals(IO_BIKE_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPM_CHARACTERISTIC_UUID))
 		HandleRPMData(Data);
-	else if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPS_CHARACTERISTIC_UUID))
+	else if (ServiceUUID.Equals(IO_BIKE_SERVICE_UUID) && CharacteristicUUID.Equals(IO_RPS_CHARACTERISTIC_UUID))
 		HandleRPSData(Data);
-	else if (ServiceUUID.Equals(IO_SERVICE_UUID) && CharacteristicUUID.Equals(IO_REVOLUTION_CHARACTERISTIC_UUID))
+	else if (ServiceUUID.Equals(IO_BIKE_SERVICE_UUID) && CharacteristicUUID.Equals(IO_REVOLUTION_CHARACTERISTIC_UUID))
 		HandleRevolutionData(Data);
+	else if (ServiceUUID.Equals(IO_PAIR_SERVICE_UUID) && CharacteristicUUID.Equals(IO_LED_COLOR_CHARACTERISTIC_UUID))
+		HandleLEDData(Data);
 }
 
 void UCustomDevice::HandleRPMData(const TArray<uint8>& Data)
@@ -290,6 +295,15 @@ void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
 {
 	uint32 Revolution = TransformDataToInt<uint32>(Data.GetData(), Data.Num());
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Revolution: %d"), Revolution));
+}
+
+void UCustomDevice::HandleLEDData(const TArray<uint8>& Data)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("Get Data Length: %d"), Data.Num()));
+	uint32 LED[2];
+	LED[0] = TransformDataToInt<uint32>(Data.GetData(), 4);
+	LED[1] = TransformDataToInt<uint32>(&Data[4], 4);
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("LED 1: %u, LED 2 : %u"), LED[0], LED[1]));
 }
 
 void UCustomDevice::DebugReceiveData(const TArray<uint8>& Data)

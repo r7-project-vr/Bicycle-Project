@@ -24,6 +24,9 @@
 #define ANDROID_BLUETOOTH_CONNECT_PERMISSION "android.permission.BLUETOOTH_CONNECT"
 #define ANDROID_BLUETOOTH_SCAN_PERMISSION "android.permission.BLUETOOTH_SCAN"
 
+class IBleManagerInterface;
+class IBleDeviceInterface;
+
 /**
  * 
  */
@@ -87,7 +90,7 @@ private:
 	/// </summary>
 	/// <param name="Device">デバイス</param>
 	UFUNCTION()
-	void OnDeviceFound(TScriptInterface<class IBleDeviceInterface> Device);
+	void OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device);
 
 	/// <summary>
 	/// コネクションが成功した時
@@ -181,7 +184,8 @@ private:
 	/// <summary>
 	/// BLEマネジャー
 	/// </summary>
-	class IBleManagerInterface* BleManager;
+	UPROPERTY()
+	TScriptInterface<IBleManagerInterface> BleManager;
 
 	/// <summary>
 	/// 目標のサービス
@@ -191,7 +195,8 @@ private:
 	/// <summary>
 	/// 目標のデバイス(今のところ一つしかない)
 	/// </summary>
-	IBleDeviceInterface* MyDevice;
+	UPROPERTY()
+	TScriptInterface<IBleDeviceInterface> MyDevice;
 
 	/// <summary>
 	/// 移動機能のスイッチ

@@ -34,5 +34,6 @@ struct BICYCLEPROJECT_API FShopItem : public FTableRowBase
 	/// <summary>
 	/// 解放する写真枚数
 	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 UnLockLimit;
 };

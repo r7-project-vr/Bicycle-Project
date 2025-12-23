@@ -31,18 +31,19 @@ public:
 	/// <param name="Buyer">購入者</param>
 	/// <param name="ItemID">アイテムID</param>
 	UFUNCTION(BlueprintCallable)
-	void BuyItem(int ItemID);
+	bool BuyItem(int ItemID);
 
 	/// <summary>
 	/// すべてのアイテムをゲット
 	/// </summary>
 	/// <returns>アイテム</returns>
-	TArray<FShopItem*> GetShopItems() const;
+	UFUNCTION(BlueprintCallable)
+	TArray<FShopItem> GetShopItems() const;
 
 	/// <summary>
 	/// アイテム更新の通知
 	/// </summary>
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateShopItemsDelegate,const TArray<FShopItem>, Items);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateShopItemsDelegate,const TArray<FShopItem>&, Items);
 
 	UPROPERTY(BlueprintAssignable)
 	FUpdateShopItemsDelegate OnUpdateItems;
@@ -67,11 +68,8 @@ private:
 	/// ショップの商品テーブル
 	/// </summary>
 	/// 実行する時読み込まれてないことがわかった、一旦ソフト参照を使わない、あとでAsset Managerを使う
-	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/SimpleShooter.ShopItemTableRow"))
+	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.ShopItem"))
 	TSoftObjectPtr<UDataTable> ShopItemsTable;
-
-	/*UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=/Script/SimpleShooter.ShopItemTableRow"))
-	UDataTable* ShopItemsTable;*/
 
 	/// <summary>
 	/// 商品データ

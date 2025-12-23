@@ -34,7 +34,7 @@ void UShopComponent::BeginPlay()
 //	// ...
 //}
 
-void UShopComponent::BuyItem(int ItemID)
+bool UShopComponent::BuyItem(int ItemID)
 {
 	// アイテムを特定
 	FShopItem* ShopItem = *(ShopItemsDatas.FindByPredicate([ItemID](const FShopItem* Item) {
@@ -49,25 +49,32 @@ void UShopComponent::BuyItem(int ItemID)
 		{
 			// 購入失敗　金足りない
 			BuyFailed();
-			return;
+			return false;
 		}
 
 		// 動物の数が最大に持っているか
 		if (GameInstance->HasMaxAnimals())
 		{
 			BuyFailed();
-			return;
+			return false;
 		}
 
 		// 購入
 		GameInstance->SetTotalCoins(CurrentCoins - ShopItem->Price);
 		GameInstance->AddAnimal(ShopItem->ID);
+		return true;
 	}
+	// 購入失敗
+	BuyFailed();
+	return false;
 }
 
-TArray<FShopItem*> UShopComponent::GetShopItems() const
+TArray<FShopItem> UShopComponent::GetShopItems() const
 {
-	return ShopItemsDatas;
+	TArray<FShopItem> Items;
+	for (const FShopItem* Item : ShopItemsDatas)
+		Items.Add(*Item);
+	return Items;
 }
 
 void UShopComponent::LoadShopItemTable()
@@ -96,10 +103,6 @@ void UShopComponent::NotifyUpdateItems()
 {
 	if (OnUpdateItems.IsBound())
 	{
-		TArray<FShopItem> Items;
-		for (const FShopItem* Item : ShopItemsDatas)
-			Items.Add(*Item);
-
-		OnUpdateItems.Broadcast(Items);
+		OnUpdateItems.Broadcast(GetShopItems());
 	}
 }

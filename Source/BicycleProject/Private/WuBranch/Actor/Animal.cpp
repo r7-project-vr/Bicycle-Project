@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
+#include "WuBranch/DataAssets/AnimalDataAsset.h"
 
 // Sets default values
 AAnimal::AAnimal()
@@ -78,6 +79,29 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager)
 {
 	CurrentTarget = Target;
 	AnimalManager = Manager;
+}
+
+void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data)
+{
+	CurrentTarget = Target;
+	AnimalManager = Manager;
+	if (Data)
+	{
+		ID = Data->AnimalID;
+		Speed = Data->MoveSpeed;
+		GetMesh()->SetSkeletalMesh(Data->Mesh);
+		GetMesh()->SetRelativeTransform(Data->MeshTransform);
+		GetCapsuleComponent()->SetCapsuleSize(Data->CollisionSize.X, Data->CollisionSize.Z);
+		GetMesh()->SetAnimInstanceClass(Data->AnimClass);
+		// コントローラの入れ替え
+		AController* MyController = GetController();
+		MyController->UnPossess();
+		MyController->Destroy();
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		AAIController* AIController = GetWorld()->SpawnActor<AAIController>(Data->AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+		AIController->Possess(this);
+	}
 }
 
 void AAnimal::ChangeOffset(FVector Offset)

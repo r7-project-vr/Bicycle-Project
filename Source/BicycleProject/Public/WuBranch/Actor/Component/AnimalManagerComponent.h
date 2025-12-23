@@ -32,6 +32,14 @@ public:
 	/// <param name="Animal"></param>
 	void ReduceAnimal(AAnimal* Animal);
 
+	/// <summary>
+	/// 野生動物か
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>true: はい, false: いいえ</returns>
+
+	bool IsWildAnimal(int AnimalID) const;
+
 private:
 
 	/// <summary>
@@ -56,6 +64,9 @@ private:
 	/// </summary>
 	void OnAnimalLoaded(FPrimaryAssetId LoadedId);
 
+	/// <summary>
+	/// 全部ロード完了
+	/// </summary>
 	void OnLoadAnimalCompleted();
 
 	/// <summary>

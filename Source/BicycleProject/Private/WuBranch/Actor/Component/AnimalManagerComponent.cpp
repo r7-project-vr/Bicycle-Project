@@ -63,6 +63,15 @@ void UAnimalManagerComponent::ReduceAnimal(AAnimal* Animal)
 	GameInstance->RemoveAnimal(Animal->GetMyID());
 }
 
+bool UAnimalManagerComponent::IsWildAnimal(int AnimalID) const
+{
+	UAnimalDataAsset* const * Data = AnimalDataMap.Find(AnimalID);
+	if (!Data)
+		return false;
+
+	return (*Data)->AnimalType == EAnimalType::Wild;
+}
+
 void UAnimalManagerComponent::SetTarget()
 {
 	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))

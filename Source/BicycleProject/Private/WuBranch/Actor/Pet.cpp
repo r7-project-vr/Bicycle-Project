@@ -4,6 +4,7 @@
 #include "WuBranch/Actor/Pet.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Kismet/GameplayStatics.h>
+#include "WuBranch/DataAssets/AnimalDataAsset.h"
 
 APet::APet()
 	: AAnimal()
@@ -15,6 +16,20 @@ APet::APet()
 	, IsPlayedChirp(false)
 {
 	
+}
+
+void APet::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data)
+{
+	Super::Init(Target, Manager, Data);
+
+	if (Data)
+	{
+		FPetAnimalSettings PetSettings = Data->PetSettings;
+		TargetChaseRate = PetSettings.TargetChaseRate;
+		StartChaseDistance = PetSettings.StartChaseDistance;
+		GiveUpDistance = PetSettings.GiveUpDistance;
+		ChirpSE = Data->ChirpSE;
+	}
 }
 
 void APet::BeginPlay()

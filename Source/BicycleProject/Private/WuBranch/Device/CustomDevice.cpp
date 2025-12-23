@@ -41,7 +41,7 @@ void UCustomDevice::Init()
 #endif
 
 #if PLATFORM_ANDROID
-	BleManager = UBleUtils::CreateBleManager().GetInterface();
+	BleManager = UBleUtils::CreateBleManager();
 	
 	if (!CheckBluetooth())
 		return;
@@ -68,7 +68,7 @@ bool UCustomDevice::Connect()
 	SuccFunction.BindUFunction(this, FName("OnConnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnConnectError"));
-	MyDevice->Connect(SuccFunction, ErrFunction);
+	MyDevice.GetInterface()->Connect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Connecting;
 #endif
 	return true;
@@ -81,7 +81,7 @@ bool UCustomDevice::Disconnect()
 	SuccFunction.BindUFunction(this, FName("OnDisconnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
-	MyDevice->Disconnect(SuccFunction, ErrFunction);
+	MyDevice.GetInterface()->Disconnect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Disconnecting;
 #endif
 	return true;
@@ -110,17 +110,17 @@ bool UCustomDevice::CheckBluetooth()
 #if PLATFORM_ANDROID
 	if (BleManager)
 	{
-		if (!BleManager->IsBleSupported())
+		if (!BleManager.GetInterface()->IsBleSupported())
 		{
 			UE_LOG(LogTemplateDevice, Error, TEXT("This device is not support Bluetooth low energy"));
 			return false;
 		}
 
-		if (!BleManager->IsBluetoothEnabled())
+		if (!BleManager.GetInterface()->IsBluetoothEnabled())
 		{
 			UE_LOG(LogTemplateDevice, Warning, TEXT("This device did not open bluetooth"));
 			UE_LOG(LogTemplateDevice, Warning, TEXT("Open bluetooth"));
-			BleManager->SetBluetoothState(true);
+			BleManager.GetInterface()->SetBluetoothState(true);
 		}
 		return true;
 	}
@@ -169,7 +169,7 @@ void UCustomDevice::FindDeviceByServices()
 	{
 		FBleOnDeviceFoundDelegate Function;
 		Function.BindUFunction(this, FName("OnDeviceFound"));
-		BleManager->ScanForDevices(Services, Function);
+		BleManager.GetInterface()->ScanForDevices(Services, Function);
 	}
 #endif
 }
@@ -177,10 +177,10 @@ void UCustomDevice::FindDeviceByServices()
 void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 {
 #if PLATFORM_ANDROID
-	if (IBleDeviceInterface* DeviceInterface = Device.GetInterface())
+	if (Device)
 	{
 		// デバイスの名前で接続したいデバイスかどうかを判別する
-		if (!DeviceInterface->GetDeviceName().Equals(IO_DEVICE_NAME))
+		if (!Device.GetInterface()->GetDeviceName().Equals(IO_DEVICE_NAME))
 			return;
 
 		// 新しく見つけたデバイスを使用する
@@ -196,13 +196,13 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 		}
 		else
 		{
-			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *DeviceInterface->GetDeviceName());
-			MyDevice = DeviceInterface;
+			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
+			MyDevice = Device;
 			
 			// 接続する
 			Connect();
 			//　スキャンを止める
-			BleManager->StopScan();
+			BleManager.GetInterface()->StopScan();
 		}
 	}
 #endif
@@ -212,14 +212,14 @@ void UCustomDevice::OnConnectSucc()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
-	Name = MyDevice->GetDeviceName();
-	UUID = MyDevice->GetDeviceId();
+	Name = MyDevice.GetInterface()->GetDeviceName();
+	UUID = MyDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
-	MyDevice->BindToCharacteristicNotificationEvent(ReceiveFunction);
-	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
-	MyDevice->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
+	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
+	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
+	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
 #endif
 }
 

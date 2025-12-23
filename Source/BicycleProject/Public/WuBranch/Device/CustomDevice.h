@@ -10,14 +10,16 @@
 // BLE IO_SERVICE
 //===================================================
 // Service UUID
-#define IO_SERVICE_UUID "682a0468-1482-63be-dc47-4296d65ad4b8"
+#define IO_BIKE_SERVICE_UUID "682a0468-1482-63be-dc47-4296d65ad4b8"
+#define IO_PAIR_SERVICE_UUID "52f93fe3-013b-4256-8d87-fdcea414b533"
 #define IO_DEVICE_NAME "BicycleDevice"
 // Write Characteristic UUID
-#define IO_WRITE_CHARACTERISTIC_UUID "72063c8c-a816-4e9a-8627-e9a689952370"
+#define IO_REVOLUTION_RESET_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4bc"
 // Read Characteristic UUID
 #define IO_RPM_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4b9"
 #define IO_RPS_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4ba"
 #define IO_REVOLUTION_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4bd"
+#define IO_LED_COLOR_CHARACTERISTIC_UUID "df59a71f-82c2-0f07-1fdf-f7777c822823"
 
 // Android Permission
 #define ANDROID_FILE_LOCATION_PERMISSION "android.permission.ACCESS_FINE_LOCATION"
@@ -153,6 +155,12 @@ private:
 	/// </summary>
 	/// <param name="Data">データ</param>
 	void HandleRevolutionData(const TArray<uint8>& Data);
+
+	/// <summary>
+	/// ペアリングのLED色データを処理
+	/// </summary>
+	/// <param name="Data">色データ</param>
+	void HandleLEDData(const TArray<uint8>& Data);
 
 	/// <summary>
 	/// もらったデータを表示する(デバッグ用)

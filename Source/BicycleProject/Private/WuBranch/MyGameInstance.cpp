@@ -250,6 +250,9 @@ void UMyGameInstance::AddAnimal(int32 AnimalID)
 		OwnedAnimals[AnimalID] += 1;
 	else
 		OwnedAnimals.Add(AnimalID, 1);
+
+	// 通知
+	NotifyUpdateAnimalNum(AnimalID);
 }
 
 void UMyGameInstance::RemoveAnimal(int32 AnimalID)
@@ -260,9 +263,12 @@ void UMyGameInstance::RemoveAnimal(int32 AnimalID)
 
 	// 削除
 	OwnedAnimals[AnimalID] -= 1;
-	
+
 	if(OwnedAnimals[AnimalID] == 0)
 		OwnedAnimals.Remove(AnimalID);
+
+	// 通知
+	NotifyUpdateAnimalNum(AnimalID);
 }
 
 TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
@@ -296,6 +302,15 @@ bool UMyGameInstance::HasMaxAnimals() const
 		Sum += Pair.Value;
 	}
 	return Sum >= MaxAnimalCount;
+}
+
+void UMyGameInstance::NotifyUpdateAnimalNum(int32 AnimalID)
+{
+	if (OnUpdateAnimalNum.IsBound())
+	{
+		int Nums = GetAnimalNumByID(AnimalID);
+		OnUpdateAnimalNum.Broadcast(AnimalID, Nums);
+	}
 }
 
 void UMyGameInstance::NotifyUpdateAnimalNum(int32 AnimalID, int Nums)

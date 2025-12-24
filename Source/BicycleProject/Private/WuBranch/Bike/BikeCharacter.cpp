@@ -32,7 +32,7 @@ ABikeCharacter::ABikeCharacter()
 	PhotoCaptureBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	PhotoCaptureBox->SetCollisionObjectType(ECC_WorldDynamic);
 	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Overlap);
 	PhotoCaptureBox->SetGenerateOverlapEvents(true);
 	
 	// サイズ設定

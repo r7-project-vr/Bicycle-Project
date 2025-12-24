@@ -59,7 +59,7 @@ struct FPetAnimalSettings
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class BICYCLEPROJECT_API UAnimalDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()

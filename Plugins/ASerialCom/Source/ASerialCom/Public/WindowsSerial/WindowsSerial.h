@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <Windows.h>
+// 2025.12.23 ウー start
+//#include <Windows.h>
+// 2025.12.23 ウー end
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -91,7 +93,10 @@ private:
     static const int ASERIAL_WRITETIMEOUT_NORMAL = 200;          // デフォルト送信タイムアウト時間[ms]
     static const int ASERIAL_READ_INTERVAL_TIMEOUT_NORMAL = 50;  // デフォルト読み込みインターバルタイム
 
-    HANDLE m_serial_handle = nullptr;  // シリアル通信ハンドル
+    // 2025.12.23 ウー start
+    //HANDLE m_serial_handle = nullptr;  // シリアル通信ハンドル
+    void* m_serial_handle = nullptr;  // シリアル通信ハンドル
+    // 2025.12.23 ウー end
     int m_connect_comnum = 0;          // 接続しているポート番号
     bool m_connect_state = false;  // 接続ステータス
     int m_baudrate = 0;                // 通信速度(ボーレート)

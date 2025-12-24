@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,14 +11,14 @@ class USceneComponent;
 class AWildAnimal;
 
 /**
- * –ì¶“®•¨‚ÌƒXƒ|[ƒ“ê—pƒAƒNƒ^[
+ * é‡ç”Ÿå‹•ç‰©ã®ã‚¹ãƒãƒ¼ãƒ³å°‚ç”¨ã‚¢ã‚¯ã‚¿ãƒ¼
  * 
- * ResultTest ƒ}ƒbƒv‚È‚Ç‚Å“®•¨‚ğ¶¬‚·‚é‚½‚ß‚Ég—pB
+ * ResultTest ãƒãƒƒãƒ—ãªã©ã§å‹•ç‰©ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã«ä½¿ç”¨ã€‚
  * 
- * g—p•û–@:
- * 1. ƒŒƒxƒ‹‚É”z’u
- * 2. WildAnimalManager‚Å“®•¨‚Ìí—Ş‚ÆŠm—¦‚ğİ’è(‰Šú’l‚ÍBP‚Åİ’è)
- * 3. BeginPlay ‚Å©“®“I‚ÉƒXƒ|[ƒ“A‚Ü‚½‚Íè“®‚Å StartSpawnAnimals ‚ğŒÄ‚Ño‚µ
+ * ä½¿ç”¨æ–¹æ³•:
+ * 1. ãƒ¬ãƒ™ãƒ«ã«é…ç½®
+ * 2. WildAnimalManagerã§å‹•ç‰©ã®ç¨®é¡ã¨ç¢ºç‡ã‚’è¨­å®š(åˆæœŸå€¤ã¯BPã§è¨­å®š)
+ * 3. BeginPlay ã§è‡ªå‹•çš„ã«ã‚¹ãƒãƒ¼ãƒ³ã€ã¾ãŸã¯æ‰‹å‹•ã§ StartSpawnAnimals ã‚’å‘¼ã³å‡ºã—
  */
 UCLASS()
 class BICYCLEPROJECT_API AWildAnimalSpawner : public AActor
@@ -27,105 +27,107 @@ class BICYCLEPROJECT_API AWildAnimalSpawner : public AActor
 	
 public:	
 	/// <summary>
-	/// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	/// SceneRoot‚ÆWildAnimalManagerComponent‚ğì¬‚µA
-	/// ƒfƒtƒHƒ‹ƒgİ’è‚ğ‰Šú‰»
+	/// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	/// SceneRootã¨WildAnimalManagerComponentã‚’ä½œæˆã—ã€
+	/// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè¨­å®šã‚’åˆæœŸåŒ–
 	/// </summary>
 	AWildAnimalSpawner();
 
 protected:
 	/// <summary>
-	/// ƒQ[ƒ€ŠJn‚Ìˆ—
-	/// ©“®ƒXƒ|[ƒ“‚ª—LŒø‚Èê‡Aw’è‚³‚ê‚½’x‰„Œã‚É“®•¨‚ğƒXƒ|[ƒ“
+	/// ã‚²ãƒ¼ãƒ é–‹å§‹æ™‚ã®å‡¦ç†
+	/// è‡ªå‹•ã‚¹ãƒãƒ¼ãƒ³ãŒæœ‰åŠ¹ãªå ´åˆã€æŒ‡å®šã•ã‚ŒãŸé…å»¶å¾Œã«å‹•ç‰©ã‚’ã‚¹ãƒãƒ¼ãƒ³
 	/// </summary>
 	virtual void BeginPlay() override;
 
 public:
 	/// <summary>
-	/// “®•¨‚ÌƒXƒ|[ƒ“‚ğŠJn
-	/// WildAnimalManager ‚É“®•¨‚Ìİ’è‚ğƒRƒs[i•K—v‚Èê‡j‚µ‚Ä‚©‚çA
-	/// ƒXƒ|[ƒ“ˆ—‚ğÀs
+	/// å‹•ç‰©ã®ã‚¹ãƒãƒ¼ãƒ³ã‚’é–‹å§‹
+	/// WildAnimalManager ã«å‹•ç‰©ã®è¨­å®šã‚’ã‚³ãƒ”ãƒ¼ï¼ˆå¿…è¦ãªå ´åˆï¼‰ã—ã¦ã‹ã‚‰ã€
+	/// ã‚¹ãƒãƒ¼ãƒ³å‡¦ç†ã‚’å®Ÿè¡Œ
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Wild Animal Spawner")
 	void StartSpawnAnimals();
 
 	/// <summary>
-	/// ‚·‚×‚Ä‚Ì“®•¨‚ğíœ
-	/// WildAnimalManager‚Éíœ‚ğˆÏ÷
+	/// ã™ã¹ã¦ã®å‹•ç‰©ã‚’å‰Šé™¤
+	/// WildAnimalManagerã«å‰Šé™¤ã‚’å§”è­²
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Wild Animal Spawner")
 	void DestroyAllAnimals();
 
 	/// <summary>
-	/// ƒ‰ƒ“ƒ_ƒ€ƒV[ƒh‚ğİ’è
-	/// “®•¨‚ÌoŒ»ƒpƒ^[ƒ“‚ğÄŒ»‰Â”\‚É‚·‚é
+	/// ãƒ©ãƒ³ãƒ€ãƒ ã‚·ãƒ¼ãƒ‰ã‚’è¨­å®š
+	/// å‹•ç‰©ã®å‡ºç¾ãƒ‘ã‚¿ãƒ¼ãƒ³ã‚’å†ç¾å¯èƒ½ã«ã™ã‚‹
 	/// </summary>
-	/// <param name="Seed">ƒV[ƒh’l</param>
+	/// <param name="Seed">ã‚·ãƒ¼ãƒ‰å€¤</param>
 	UFUNCTION(BlueprintCallable, Category = "Wild Animal Spawner")
 	void SetRandomSeed(int32 Seed);
 
 protected:
 	/// <summary>
-	/// ƒ‹[ƒgƒRƒ“ƒ|[ƒlƒ“ƒg
-	/// ‚±‚ÌƒAƒNƒ^[‚ÌŠî€“_‚Æ‚È‚éƒV[ƒ“ƒRƒ“ƒ|[ƒlƒ“ƒg
+	/// ãƒ«ãƒ¼ãƒˆã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
+	/// ã“ã®ã‚¢ã‚¯ã‚¿ãƒ¼ã®åŸºæº–ç‚¹ã¨ãªã‚‹ã‚·ãƒ¼ãƒ³ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* SceneRoot;
 
 	/// <summary>
-	/// “®•¨ƒ}ƒl[ƒWƒƒ[ƒRƒ“ƒ|[ƒlƒ“ƒg
-	/// ÀÛ‚Ì“®•¨‚ÌƒXƒ|[ƒ“ˆ—‚ğŠÇ—
+	/// å‹•ç‰©ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
+	/// å®Ÿéš›ã®å‹•ç‰©ã®ã‚¹ãƒãƒ¼ãƒ³å‡¦ç†ã‚’ç®¡ç†
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UWildAnimalManagerComponent* WildAnimalManager;
 
 	/// <summary>
-	/// BeginPlay‚Å©“®“I‚ÉƒXƒ|[ƒ“‚·‚é‚©
-	/// true‚Ìê‡AƒQ[ƒ€ŠJn‚É©“®“I‚É“®•¨‚ğƒXƒ|[ƒ“‚·‚é
+	/// BeginPlayã§è‡ªå‹•çš„ã«ã‚¹ãƒãƒ¼ãƒ³ã™ã‚‹ã‹
+	/// trueã®å ´åˆã€ã‚²ãƒ¼ãƒ é–‹å§‹æ™‚ã«è‡ªå‹•çš„ã«å‹•ç‰©ã‚’ã‚¹ãƒãƒ¼ãƒ³ã™ã‚‹
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Settings")
 	bool bAutoSpawnOnBeginPlay;
 
 	/// <summary>
-	/// ©“®ƒXƒ|[ƒ“‚Ì’x‰„ŠÔi•bj
-	/// BeginPlay‚©‚çƒXƒ|[ƒ“‚Ü‚Å‚Ì‘Ò‹@ŠÔ‚ğw’è‚µ‚Ü‚·B
-	/// BoxComponent‚Ì‰Šú‰»‚ğ‘Ò‚Â‚½‚ß‚ÉÅ’á1.0 •b‚Éİ’è‚³‚ê‚Ü‚·B
+	/// è‡ªå‹•ã‚¹ãƒãƒ¼ãƒ³æ™‚ã®é…å»¶æ™‚é–“ï¼ˆç§’ï¼‰
+	/// BeginPlayã‹ã‚‰ã‚¹ãƒãƒ¼ãƒ³ã¾ã§ã®å¾…æ©Ÿæ™‚é–“ã‚’æŒ‡å®šã—ã¾ã™ã€‚
+	/// BoxComponentã®åˆæœŸåŒ–ã‚’å¾…ã¤ãŸã‚ã«æœ€ä½1.0 ç§’ã«è¨­å®šã•ã‚Œã¾ã™ã€‚
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Settings", meta = (EditCondition = "bAutoSpawnOnBeginPlay", ClampMin = "0.0", UIMin = "0.0"))
 	float AutoSpawnDelay;
 
 	/// <summary>
-	/// •’Ê“®•¨‚ÌƒŠƒXƒgiWildAnimalSpawner‚Åİ’è‚·‚éê‡j
-	/// WildAnimalManager‚Éİ’è‚ª‚È‚¢ê‡A‚±‚Ì”z—ñ‚Ì“à—e‚ªƒRƒs[‚³‚ê‚Ü‚·
+	/// æ™®é€šå‹•ç‰©ã®ãƒªã‚¹ãƒˆï¼ˆWildAnimalSpawnerã§è¨­å®šã™ã‚‹å ´åˆï¼‰
+	/// WildAnimalManagerã«è¨­å®šãŒãªã„å ´åˆã€ã“ã®é…åˆ—ã®å†…å®¹ãŒã‚³ãƒ”ãƒ¼ã•ã‚Œã¾ã™
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Animal Settings")
-	TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;
+	//TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;
+	TArray<int32> NormalAnimalTypes;
 
 	/// <summary>
-	/// ƒŒƒA“®•¨‚ÌƒŠƒXƒgiWildAnimalSpawner ‚Åİ’è‚·‚éê‡j
-	/// WildAnimalManager‚Éİ’è‚ª‚È‚¢ê‡A‚±‚Ì”z—ñ‚Ì“à—e‚ªƒRƒs[‚³‚ê‚Ü‚·
+	/// ãƒ¬ã‚¢å‹•ç‰©ã®ãƒªã‚¹ãƒˆï¼ˆWildAnimalSpawner ã§è¨­å®šã™ã‚‹å ´åˆï¼‰
+	/// WildAnimalManagerã«è¨­å®šãŒãªã„å ´åˆã€ã“ã®é…åˆ—ã®å†…å®¹ãŒã‚³ãƒ”ãƒ¼ã•ã‚Œã¾ã™
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Animal Settings")
-	TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
+	//TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
+	TArray<int32> RareAnimalTypes;
 
 	/// <summary>
-	/// •’Ê“®•¨‚Ìd‚İ
-	/// WildAnimalManager‚Éİ’è‚ª‚È‚¢ê‡A‚±‚Ì’l‚ªƒRƒs[‚³‚ê‚Ü‚·
+	/// æ™®é€šå‹•ç‰©ã®é‡ã¿
+	/// WildAnimalManagerã«è¨­å®šãŒãªã„å ´åˆã€ã“ã®å€¤ãŒã‚³ãƒ”ãƒ¼ã•ã‚Œã¾ã™
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Animal Settings", meta = (ClampMin = "0.1", UIMin = "0.1"))
 	float NormalAnimalWeight = 6.0f;
 
 	/// <summary>
-	/// ƒŒƒA“®•¨‚Ìd‚İ
-	/// WildAnimalManager‚Éİ’è‚ª‚È‚¢ê‡A‚±‚Ì’l‚ªƒRƒs[‚³‚ê‚Ü‚·
+	/// ãƒ¬ã‚¢å‹•ç‰©ã®é‡ã¿
+	/// WildAnimalManagerã«è¨­å®šãŒãªã„å ´åˆã€ã“ã®å€¤ãŒã‚³ãƒ”ãƒ¼ã•ã‚Œã¾ã™
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal Spawner|Animal Settings", meta = (ClampMin = "0.1", UIMin = "0.1"))
 	float RareAnimalWeight = 1.0f;
 
 private:
 	/// <summary>
-	/// ’x‰„Œã‚É“®•¨‚ğƒXƒ|[ƒ“
-	/// ƒ^ƒCƒ}[‚©‚çŒÄ‚Ño‚³‚êAStartSpawnAnimals‚ğÀs‚µ‚Ü‚·
+	/// é…å»¶å¾Œã«å‹•ç‰©ã‚’ã‚¹ãƒãƒ¼ãƒ³
+	/// ã‚¿ã‚¤ãƒãƒ¼ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã€StartSpawnAnimalsã‚’å®Ÿè¡Œã—ã¾ã™
 	/// </summary>
 	void SpawnAnimalsDelayed();
 };

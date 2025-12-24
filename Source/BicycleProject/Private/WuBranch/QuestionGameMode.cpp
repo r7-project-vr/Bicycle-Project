@@ -64,6 +64,9 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		// ゴールに到達したらゲームクリア
 		//GameOver(true);
 
+		// 保存
+		GameInstance->SaveAllToFile();
+
 		GoNextLevel();
 	}
 }
@@ -141,6 +144,8 @@ void AQuestionGameMode::FinishGame()
 	GameInstance->SetGameResult(false);
 	// コインの決算
 	GameInstance->SetTotalCoins(GameInstance->GetTotalCoins() + GameInstance->GetCoinsPerGame());
+	// 保存
+	GameInstance->SaveAllToFile();
 	GoNextLevel();
 }
 

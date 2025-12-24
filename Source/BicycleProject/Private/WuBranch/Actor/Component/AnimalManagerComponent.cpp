@@ -35,13 +35,13 @@ void UAnimalManagerComponent::BeginPlay()
 		UAssetManager::Get().LoadPrimaryAsset(ID, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UAnimalManagerComponent::OnAnimalLoaded, ID));
 	}
 
-	//UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	//if (GameInstance)
-	//{
-	//	// <動物ID, 数>
-	//	TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
-	//	ArrangeAroundTarget(Animals);
-	//}
+//	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+//	if (GameInstance)
+//	{
+//		// <動物ID, 数>
+//		TArray<TSubclassOf<AAnimal>> Animals = GameInstance->GetAnimals();
+//		ArrangeAroundTarget(Animals);
+//	}
 }
 
 // Called every frame
@@ -132,7 +132,8 @@ void UAnimalManagerComponent::OnLoadAnimalCompleted()
 
 			for (int Indedx = 0; Indedx < Pair.Value; Indedx++)
 			{
-				ArrangeAroundTarget(APet::StaticClass(), Data);
+				if(PetSample)
+					ArrangeAroundTarget(PetSample, Data);
 			}
 		}
 	}

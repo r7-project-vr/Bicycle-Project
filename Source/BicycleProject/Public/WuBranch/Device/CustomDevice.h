@@ -15,6 +15,7 @@
 #define IO_DEVICE_NAME "BicycleDevice"
 // Write Characteristic UUID
 #define IO_REVOLUTION_RESET_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4bc"
+#define IO_PAIR_CHARACTERISTIC_UUID "abaae5f2-4829-121c-1595-0e80c6f0e78a"
 // Read Characteristic UUID
 #define IO_RPM_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4b9"
 #define IO_RPS_CHARACTERISTIC_UUID "682a0468-1482-63be-dc47-4296d65ad4ba"
@@ -128,6 +129,14 @@ private:
 	/// <returns>数値</returns>
 	template<typename T>
 	T TransformDataToInt(const uint8_t* Data, int Size) const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="ServiceUUID"></param>
+	/// <param name="CharacteristicUUID"></param>
+	UFUNCTION()
+	void OnWriteData(FString ServiceUUID, FString CharacteristicUUID);
 
 	/// <summary>
 	/// 通知が来た時

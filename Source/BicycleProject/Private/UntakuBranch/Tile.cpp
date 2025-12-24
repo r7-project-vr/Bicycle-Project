@@ -35,12 +35,7 @@ ATile::ATile()
 	QuestionSpawnLocation = CreateDefaultSubobject<UBoxComponent>("Question Spawn Location");
 	QuestionSpawnLocation->SetupAttachment(RootComponent);
 
-	for (int Index = 0; Index < 34; Index++)
-	{
-		UEnvironmentalObjectComponent* Building = CreateDefaultSubobject<UEnvironmentalObjectComponent>(FName("Building_" + FString::FromInt(Index)));
-		Building->SetupAttachment(RootComponent);
-		Buildings.Add(Building);
-	}
+	bForceUpdateBuilds = false;
 
 	// 2025.08.18 ウー start
 	FoliageSpawner = CreateDefaultSubobject<URandomFoliageSpawner>("Foliage Spawner");
@@ -77,6 +72,8 @@ void ATile::SpawnEnvironmentals(int Seed)
 	// クイズUI
 	CreateQuestionUI();
 	// 建物
+	if (Buildings.Num() == 0)
+		FindBuildingLocation();
 	for (UEnvironmentalObjectComponent* Building : Buildings)
 	{
 		Building->StartSpawnEnvironmentalObject();
@@ -106,6 +103,8 @@ void ATile::BeginPlay()
 {
 	Super::BeginPlay();
 	TriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &ATile::OnOverlapBegin);
+
+	FindBuildingLocation();
 }
 
 void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
@@ -117,6 +116,24 @@ void ATile::OnOverlapBegin(UPrimitiveComponent* Overlapped,
 	if (Other->IsA(ABikeCharacter::StaticClass()) && TileManager)
 	{
 		TileManager->OnPlayerSteppedOnTile(this);
+	}
+}
+
+void ATile::FindBuildingLocation()
+{
+	if (Buildings.Num() == 0 || bForceUpdateBuilds)
+	{
+		TArray<USceneComponent*> ChildComponents;
+		GetRootComponent()->GetChildrenComponents(false, ChildComponents);
+
+		for (USceneComponent* Child : ChildComponents)
+		{
+			if (UEnvironmentalObjectComponent* BoxComp = Cast<UEnvironmentalObjectComponent>(Child))
+			{
+				Buildings.Add(BoxComp);
+			}
+		}
+		bForceUpdateBuilds = false;
 	}
 }
 

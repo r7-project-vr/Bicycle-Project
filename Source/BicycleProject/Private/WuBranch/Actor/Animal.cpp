@@ -93,14 +93,20 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimal
 		GetMesh()->SetRelativeTransform(Data->MeshTransform);
 		GetCapsuleComponent()->SetCapsuleSize(Data->CollisionSize.X, Data->CollisionSize.Z);
 		GetMesh()->SetAnimInstanceClass(Data->AnimClass);
-		// コントローラの入れ替え
-		AController* MyController = GetController();
-		MyController->UnPossess();
-		MyController->Destroy();
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		AAIController* AIController = GetWorld()->SpawnActor<AAIController>(Data->AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnParams);
-		AIController->Possess(this);
+		if (Data->AIControllerClass)
+		{
+			// コントローラの入れ替え
+			if (AAIController* OldController = Cast<AAIController>(GetController()))
+			{
+				OldController->UnPossess();
+				OldController->Destroy();
+			}
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			AAIController* AIController = GetWorld()->SpawnActor<AAIController>(Data->AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+			if (AIController)
+				AIController->Possess(this);
+		}
 	}
 }
 

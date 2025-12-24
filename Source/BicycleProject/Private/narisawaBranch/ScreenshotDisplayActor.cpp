@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "NarisawaBranch/ScreenshotDisplayActor.h"
 #include "Components/StaticMeshComponent.h"
@@ -8,33 +8,45 @@
 #include "UObject/ConstructorHelpers.h"
 
 AScreenshotDisplayActor::AScreenshotDisplayActor()
-	: DisplayWidth(200.0f)
-	, DisplayHeight(150.0f)
+	: DisplayWidth(192.0f)
+	, DisplayHeight(108.0f)
+	, DynamicMaterial(nullptr)
+	, BaseMaterial(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// ƒƒbƒVƒ…ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ìì¬
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®ä½œæˆ
 	DisplayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisplayMesh"));
 	RootComponent = DisplayMesh;
 
-	// •½–ÊƒƒbƒVƒ…‚ğİ’è
+	// å¹³é¢ãƒ¡ãƒƒã‚·ãƒ¥ã‚’è¨­å®š
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("/Engine/BasicShapes/Plane"));
 	if (PlaneMesh.Succeeded())
 	{
 		DisplayMesh->SetStaticMesh(PlaneMesh.Object);
 	}
 
-	// ƒRƒŠƒWƒ‡ƒ“‚ğ–³Œø‰»
+	// ã‚³ãƒªã‚¸ãƒ§ãƒ³ã‚’ç„¡åŠ¹åŒ–
 	DisplayMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DisplayMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 
-	// ƒfƒtƒHƒ‹ƒg‚ÌƒXƒP[ƒ‹İ’è
-	SetActorScale3D(FVector(DisplayWidth / 100.0f, DisplayHeight / 100.0f, 1.0f));
+	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ã‚¹ã‚±ãƒ¼ãƒ«è¨­å®š
+	FVector DesiredScale = FVector(DisplayWidth / 100.0f, DisplayHeight / 100.0f, 1.0f);
+	SetActorScale3D(DesiredScale);
+	
+	// ãƒ‡ãƒãƒƒã‚°ãƒ­ã‚°è¿½åŠ 
+	UE_LOG(LogTemp, Log, TEXT("ScreenshotDisplayActor Constructor: Width=%.2f, Height=%.2f, Scale=(%.2f, %.2f, %.2f)"), 
+		DisplayWidth, DisplayHeight, DesiredScale.X, DesiredScale.Y, DesiredScale.Z);
 }
 
 void AScreenshotDisplayActor::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// BeginPlayã§ã‚‚ã‚¹ã‚±ãƒ¼ãƒ«ã‚’ç¢ºèª
+	FVector CurrentScale = GetActorScale3D();
+	UE_LOG(LogTemp, Log, TEXT("ScreenshotDisplayActor BeginPlay: Current Scale=(%.2f, %.2f, %.2f)"), 
+		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
 }
 
 void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
@@ -51,7 +63,7 @@ void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
 		return;
 	}
 
-	// “®“Iƒ}ƒeƒŠƒAƒ‹ƒCƒ“ƒXƒ^ƒ“ƒX‚ğì¬
+	// å‹•çš„ãƒãƒ†ãƒªã‚¢ãƒ«ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ä½œæˆ
 	if (!DynamicMaterial)
 	{
 		DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
@@ -62,34 +74,39 @@ void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
 		}
 	}
 
-	// ƒeƒNƒXƒ`ƒƒƒpƒ‰ƒ[ƒ^‚ğİ’è
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’è¨­å®š
 	DynamicMaterial->SetTextureParameterValue(FName("ScreenshotTexture"), Screenshot);
 
-	// ƒƒbƒVƒ…‚Éƒ}ƒeƒŠƒAƒ‹‚ğ“K—p
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã«ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’é©ç”¨
 	DisplayMesh->SetMaterial(0, DynamicMaterial);
 
-	UE_LOG(LogTemp, Log, TEXT("Screenshot set successfully!"));
+	// ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å†åº¦ç¢ºèª
+	FVector CurrentScale = GetActorScale3D();
+	UE_LOG(LogTemp, Log, TEXT("Screenshot set successfully! Current Scale=(%.2f, %.2f, %.2f)"), 
+		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
 }
 
 void AScreenshotDisplayActor::PlaceInFrontOfPlayer(FVector PlayerLocation, FVector PlayerForward, float Distance)
 {
-	// ƒvƒŒƒCƒ„[‚Ì‘O•û‚É”z’u
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‰æ–¹ã«é…ç½®
 	FVector NewLocation = PlayerLocation + (PlayerForward.GetSafeNormal() * Distance);
 	
 	SetActorLocation(NewLocation);
 	
-	// ƒvƒŒƒCƒ„[‚ÌŒü‚«‚ÉŠî‚Ã‚¢‚Ä‰ñ“]‚ğŒvZ
-	// PlayerForward‚©‚çYaw‚ğæ“¾
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‘ãã«åŸºã¥ã„ã¦å›è»¢ã‚’è¨ˆç®—
 	FRotator BaseRotation = PlayerForward.Rotation();
 	
-	// –Ú•W‚Ì‰ñ“]‚ğİ’è: Pitch=0, Yaw=Player‚ÌYaw-270, Roll=-270
+	// ç›®æ¨™ã®å›è»¢ã‚’è¨­å®š
 	FRotator NewRotation;
 	NewRotation.Pitch = 0.0f;
-	NewRotation.Yaw = BaseRotation.Yaw - 270.0f;  // ƒvƒŒƒCƒ„[‚ÌŒü‚«‚©‚ç-270“x
+	NewRotation.Yaw = BaseRotation.Yaw - 270.0f;
 	NewRotation.Roll = -270.0f;
 	
 	SetActorRotation(NewRotation);
 	
-	UE_LOG(LogTemp, Log, TEXT("Screenshot placed - Location: %s, Rotation: (Pitch=%.6f, Yaw=%.6f, Roll=%.6f)"), 
-		*NewLocation.ToString(), NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll);
+	// ã‚¹ã‚±ãƒ¼ãƒ«ã‚‚ç¢ºèª
+	FVector CurrentScale = GetActorScale3D();
+	UE_LOG(LogTemp, Log, TEXT("Screenshot placed - Location: %s, Rotation: (Pitch=%.6f, Yaw=%.6f, Roll=%.6f), Scale=(%.2f, %.2f, %.2f)"), 
+		*NewLocation.ToString(), NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll,
+		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
 }

@@ -428,6 +428,14 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 #pragma region スクリーンショット
 void UMyGameInstance::CaptureVRScreenshot()
 {
+	// 最大枚数チェック
+	if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."), 
+			CapturedScreenshots.Num(), MaxScreenshotsPerGame);
+		return;
+	}
+
 	if (!GetWorld())
 	{
 		UE_LOG(LogTemp, Error, TEXT("World is null!"));
@@ -458,7 +466,7 @@ void UMyGameInstance::CaptureVRScreenshot()
 	}
 
 	// レンダーターゲットを作成
-	int32 Width = 1920;  // 解像度を指定
+	int32 Width = 1920;
 	int32 Height = 1080;
 	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
 	RenderTarget->InitAutoFormat(Width, Height);
@@ -487,7 +495,6 @@ void UMyGameInstance::CaptureVRScreenshot()
 	TArray<FColor> OutBitmap;
 	if (RenderTargetResource->ReadPixels(OutBitmap))
 	{
-		// UTexture2Dを作成
 		UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 		if (NewTexture)
 		{
@@ -497,7 +504,6 @@ void UMyGameInstance::CaptureVRScreenshot()
 			NewTexture->NeverStream = true;
 			NewTexture->SRGB = true;
 
-			// テクスチャにピクセルデータをコピー
 			void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 			FMemory::Memcpy(TextureData, OutBitmap.GetData(), OutBitmap.Num() * sizeof(FColor));
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
@@ -506,8 +512,8 @@ void UMyGameInstance::CaptureVRScreenshot()
 			// 配列に保存
 			CapturedScreenshots.Add(NewTexture);
 			
-			UE_LOG(LogTemp, Log, TEXT("VR Screenshot captured from camera! Size: %dx%d, Total screenshots: %d"), 
-				Width, Height, CapturedScreenshots.Num());
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"), 
+				CapturedScreenshots.Num(), MaxScreenshotsPerGame, Width, Height);
 		}
 		else
 		{
@@ -519,8 +525,102 @@ void UMyGameInstance::CaptureVRScreenshot()
 		UE_LOG(LogTemp, Error, TEXT("Failed to read pixels from RenderTarget!"));
 	}
 
-	// Scene Capture アクターを削除
 	SceneCapture->Destroy();
+}
+
+int32 UMyGameInstance::GetRemainingScreenshots() const
+{
+	return MaxScreenshotsPerGame - CapturedScreenshots.Num();
+}
+
+void UMyGameInstance::ResetScreenshots()
+{
+	CapturedScreenshots.Empty();
+	UE_LOG(LogTemp, Log, TEXT("Screenshots reset for new game session."));
+}
+
+TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
+{
+	return CapturedScreenshots;
+}
+
+void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing)
+{
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("World is null!"));
+		return;
+	}
+
+	if (!ScreenshotDisplayActorClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ScreenshotDisplayActorClass is not set!"));
+		return;
+	}
+
+	if (CapturedScreenshots.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No screenshots to display!"));
+		return;
+	}
+
+	// グリッドレイアウト: 2行 x 3列
+	int32 Columns = 3;
+	int32 Rows = 2;
+
+	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
+	{
+		// グリッド位置を計算
+		int32 Row = i / Columns;
+		int32 Col = i % Columns;
+
+		// 各写真の位置を計算
+		FVector Location = StartLocation;
+		Location.X += 0.0f;
+		Location.Y += Col * GridSpacing.Y;
+		Location.Z += Row * GridSpacing.Z;
+
+		// 詳細なログ出力
+		UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f), Offset=(Y=%.2f, Z=%.2f)"), 
+			i + 1, Row, Col, Location.X, Location.Y, Location.Z, 
+			Col * GridSpacing.Y, Row * GridSpacing.Z);
+
+		// アクターをスポーン
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
+			ScreenshotDisplayActorClass,
+			Location,
+			FRotator(0.0f, 270.0f, 90.0f),
+			SpawnParams
+		);
+
+		if (DisplayActor && CapturedScreenshots[i])
+		{
+			// スケールをログに出力（スポーン直後）
+			FVector InitialScale = DisplayActor->GetActorScale3D();
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Initial Scale=(%.2f, %.2f, %.2f)"), 
+				i + 1, InitialScale.X, InitialScale.Y, InitialScale.Z);
+			
+			// スクリーンショットを設定
+			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
+			
+			// スケールを強制的に設定（SetScreenshot の後）
+			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
+			DisplayActor->SetActorScale3D(NewScale);
+			
+			// 設定後のスケールを確認
+			FVector FinalScale = DisplayActor->GetActorScale3D();
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Final Scale=(%.2f, %.2f, %.2f) - Scale change: %s"), 
+				i + 1, FinalScale.X, FinalScale.Y, FinalScale.Z,
+				FinalScale.Equals(NewScale, 0.01f) ? TEXT("SUCCESS") : TEXT("FAILED"));
+			
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] successfully"), i + 1, Row, Col);
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in grid format!"), CapturedScreenshots.Num());
 }
 
 UTexture2D* UMyGameInstance::GetLastScreenshot() const
@@ -543,47 +643,6 @@ UTexture2D* UMyGameInstance::GetScreenshotAtIndex(int32 Index) const
 	{
 		return CapturedScreenshots[Index];
 	}
-	return nullptr;
-}
-
-AScreenshotDisplayActor* UMyGameInstance::DisplayLastScreenshot(FVector PlayerLocation, FVector PlayerForward)
-{
-	UTexture2D* LastScreenshot = GetLastScreenshot();
-	if (!LastScreenshot)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No screenshot to display!"));
-		return nullptr;
-	}
-
-	if (!ScreenshotDisplayActorClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ScreenshotDisplayActorClass is not set!"));
-		return nullptr;
-	}
-
-	// アクターをスポーン
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
-		ScreenshotDisplayActorClass,
-		FVector::ZeroVector,
-		FRotator::ZeroRotator,
-		SpawnParams
-	);
-
-	if (DisplayActor)
-	{
-		// スクリーンショットを設定
-		DisplayActor->SetScreenshot(LastScreenshot);
-		// プレイヤーの前に配置
-		DisplayActor->PlaceInFrontOfPlayer(PlayerLocation, PlayerForward);
-
-		UE_LOG(LogTemp, Log, TEXT("Screenshot displayed in 3D space!"));
-		return DisplayActor;
-	}
-
-	UE_LOG(LogTemp, Error, TEXT("Failed to spawn ScreenshotDisplayActor!"));
 	return nullptr;
 }
 #pragma endregion

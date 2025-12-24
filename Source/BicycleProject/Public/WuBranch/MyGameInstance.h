@@ -442,8 +442,18 @@ private:
 #pragma endregion
 
 #pragma region 写真
-public:
+private:
+	/// <summary>
+	/// 動物の写真数
+	/// </summary>
+	TMap<int32, int32> AnimalPhotoNums;
 
+	/// <summary>
+	/// 動物の写真ポイント (AnimalID -> Points)
+	/// </summary>
+	TMap<int32, int32> AnimalPhotoPoints;
+
+public:
 	/// <summary>
 	/// 動物の写真を追加
 	/// </summary>
@@ -452,37 +462,86 @@ public:
 	void AddAnimalPhoto(int32 AnimalID, int32 Nums);
 
 	/// <summary>
-	/// 持っている動物の写真の数をゲット
+	/// 動物の写真数を取得
 	/// </summary>
 	/// <param name="AnimalID">動物ID</param>
-	/// <returns>写真の数</returns>
-	UFUNCTION(BlueprintCallable)
-	int GetAnimalPhotoNum(int32 AnimalID) const;
+	/// <returns>写真数</returns>
+	int32 GetAnimalPhotoNum(int32 AnimalID) const;
 
 	/// <summary>
 	/// 動物の写真をリセット
 	/// </summary>
 	void ResetAnimalPhoto();
 
+	/// <summary>
+	/// 動物の写真ポイントを追加
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	UFUNCTION(BlueprintCallable, Category = "Animal Photo")
+	void AddAnimalPhotoPoint(int32 AnimalID);
+
+	/// <summary>
+	/// 動物の写真ポイントを取得
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>ポイント</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Photo")
+	int32 GetAnimalPhotoPoint(int32 AnimalID) const;
+
+	/// <summary>
+	/// 動物を購入できるか確認（データテーブルのUnLockLimitを使用）
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>true: 購入可能, false: 購入不可</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
+	bool CanPurchaseAnimal(int32 AnimalID) const;
+
+	/// <summary>
+	/// 動物を購入（ポイント消費）
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>true: 購入成功, false: 購入失敗</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
+	bool PurchaseAnimal(int32 AnimalID);
+
+	/// <summary>
+	/// データテーブルから動物の購入に必要なポイント(UnLockLimit)を取得
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>必要ポイント</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
+	int32 GetRequiredPointsForAnimal(int32 AnimalID) const;
+
+	/// <summary>
+	/// 動物がすでに所有されているか確認
+	/// </summary>
+	/// <param name="AnimalID">動物ID</param>
+	/// <returns>true: 所有済み, false: 未所有</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
+	bool IsAnimalOwned(int32 AnimalID) const;
+
+	/// <summary>
+	/// すべての動物のポイント合計を取得
+	/// </summary>
+	/// <returns>合計ポイント</returns>
+	UFUNCTION(BlueprintCallable, Category = "Animal Photo")
+	int32 GetTotalPhotoPoints() const;
+
+	/// <summary>
+	/// 写真ポイントをリセット
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "Animal Photo")
+	void ResetPhotoPoints();
+
+	/// <summary>
+	/// ショップアイテムのデータテーブル (DT_ShopItems)
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Shop", meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.ShopItem"))
+	UDataTable* ShopItemsDataTable;
+
 private:
-
-	/// <summary>
-	/// 写真枚数をファイルに保存
-	/// </summary>
-	/// <param name="Data"></param>
 	void SavePhotoToFile(FPlayerSaveGame& Data);
-
-	/// <summary>
-	/// ファイルから写真枚数をゲット
-	/// </summary>
-	/// <param name="Data"></param>
 	void ReadPhotoFromFile(const FPlayerSaveGame& Data);
-
-	/// <summary>
-	/// 動物の写真数
-	/// </summary>
-	TMap<int32, int32> AnimalPhotoNums;
-
 #pragma endregion
 
 #pragma region 自転車調整
@@ -605,7 +664,7 @@ public:
 private:
 	
 	/// <summary>
-	/// キャプチャしたスクリーンショットの配列（ゲームセッションごと）
+	/// キャプチャしたスクリーンショットの配列
 	/// </summary>
 	UPROPERTY()
 	TArray<UTexture2D*> CapturedScreenshots;

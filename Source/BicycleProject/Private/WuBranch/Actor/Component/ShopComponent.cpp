@@ -50,11 +50,26 @@ bool UShopComponent::BuyItem(int ItemID)
 	
 	if (UMyGameInstance* GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
+		//UnLockLimit分の写真を撮っているかチェック
+		int32 CurrentPhotoPoints = GameInstance->GetAnimalPhotoPoint(ShopItem->ID);
+		int32 RequiredPhotoPoints = ShopItem->UnLockLimit;
+		
+		if (CurrentPhotoPoints < RequiredPhotoPoints)
+		{
+			// アンロック条件未達成
+			UE_LOG(LogTemp, Warning, TEXT("Animal ID %d is locked! Photos: %d / %d required"), 
+				ShopItem->ID, CurrentPhotoPoints, RequiredPhotoPoints);
+			BuyFailed();
+			return false;
+		}
+		
 		// 金をチェック
 		int CurrentCoins = GameInstance->GetTotalCoins();
 		if (CurrentCoins < ShopItem->Price)
 		{
 			// 購入失敗　金足りない
+			UE_LOG(LogTemp, Warning, TEXT("Not enough coins! Have: %d, Need: %d"), 
+				CurrentCoins, ShopItem->Price);
 			BuyFailed();
 			return false;
 		}
@@ -62,6 +77,7 @@ bool UShopComponent::BuyItem(int ItemID)
 		// 動物の数が最大に持っているか
 		if (GameInstance->HasMaxAnimals())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Already have maximum number of animals!"));
 			BuyFailed();
 			return false;
 		}
@@ -73,6 +89,10 @@ bool UShopComponent::BuyItem(int ItemID)
 		}
 		GameInstance->SetTotalCoins(CurrentCoins - ShopItem->Price);
 		GameInstance->AddAnimal(ShopItem->ID);
+		
+		UE_LOG(LogTemp, Log, TEXT("Animal ID %d purchased successfully! Coins remaining: %d"), 
+			ShopItem->ID, GameInstance->GetTotalCoins());
+		
 		return true;
 	}
 	// 購入失敗

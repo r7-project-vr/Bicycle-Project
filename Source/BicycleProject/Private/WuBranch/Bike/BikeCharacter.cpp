@@ -28,12 +28,11 @@ ABikeCharacter::ABikeCharacter()
 	PhotoCaptureBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PhotoCaptureBox"));
 	PhotoCaptureBox->SetupAttachment(RootComponent);
 	
-	// コリジョン設定
+	// コリジョン設定 - 動物のみを検出し、他のオブジェクトは無視
 	PhotoCaptureBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	PhotoCaptureBox->SetCollisionObjectType(ECC_WorldDynamic);
 	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	PhotoCaptureBox->SetGenerateOverlapEvents(true);
 	
 	// サイズ設定

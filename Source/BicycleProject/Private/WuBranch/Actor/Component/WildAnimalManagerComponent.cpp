@@ -4,6 +4,8 @@
 #include "Components/BoxComponent.h"
 #include "WuBranch/Actor/WildAnimal.h"
 #include <Kismet/GameplayStatics.h>
+#include <Engine/AssetManager.h>
+#include <WuBranch/DataAssets/AnimalDataAsset.h>
 
 // 初期化フラグをfalseに設定し、スポーン位置配列をクリア
 UWildAnimalManagerComponent::UWildAnimalManagerComponent()
@@ -16,17 +18,20 @@ UWildAnimalManagerComponent::UWildAnimalManagerComponent()
 void UWildAnimalManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// 子階層にいるUBoxComponentを全部参照
-	TArray<USceneComponent*> ChildComponents;
-	GetChildrenComponents(true, ChildComponents);
 	
 	// BoxComponentのみをフィルタリングして追加
-	for (USceneComponent* Child : ChildComponents)
+	if (WildAnimalSpawnLocations.Num() == 0)
 	{
-		if (UBoxComponent* BoxComp = Cast<UBoxComponent>(Child))
+		// 子階層にいるUBoxComponentを全部参照
+		TArray<USceneComponent*> ChildComponents;
+		GetChildrenComponents(true, ChildComponents);
+
+		for (USceneComponent* Child : ChildComponents)
 		{
-			WildAnimalSpawnLocations.Add(BoxComp);
+			if (UBoxComponent* BoxComp = Cast<UBoxComponent>(Child))
+			{
+				WildAnimalSpawnLocations.Add(BoxComp);
+			}
 		}
 	}
 	
@@ -97,45 +102,52 @@ void UWildAnimalManagerComponent::StartSpawnAnimal()
 		UE_LOG(LogTemp, Error, TEXT("Cannot spawn: No spawn locations!"));
 		return;
 	}
-	
-	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	
-	for(int Index = 0; Index < WildAnimalSpawnLocations.Num(); Index++)
+
+	TArray<FPrimaryAssetId> AnimalIDs = GetAllAnimalID();
+	LoadedAnimalCount = AnimalIDs.Num();
+	for (const FPrimaryAssetId& ID : AnimalIDs)
 	{
-		UBoxComponent* SpawnLocation = WildAnimalSpawnLocations[Index];
-		
-		if(!SpawnLocation)
-		{
-			continue;
-		}
-		
-		FVector Location = SpawnLocation->GetComponentLocation();
-		FRotator Rotation = SpawnLocation->GetComponentRotation();
-		
-		AActor* Owner = GetOwner();
-		if(!Owner)
-		{
-			continue;
-		}
-		
-		FVector OwnerLocation = Owner->GetActorLocation();
-		FRotator OwnerRotation = Owner->GetActorRotation();
-		
-		// 相対位置から絶対位置への変換
-		FVector LocalOffset = Location - OwnerLocation;
-		FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
-		FRotator AdjustedRotation = OwnerRotation + Rotation;
-		
-		TSubclassOf<AWildAnimal> SelectedAnimal = DecideAnimal();
-		
-		if (SelectedAnimal)
-		{
-			// SpawnLocationを渡してスケール計算できるようにする
-			CreateAnimal(Character, SelectedAnimal, AdjustedLocation, AdjustedRotation, SpawnLocation);
-		}
+		UAssetManager::Get().LoadPrimaryAsset(ID, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UWildAnimalManagerComponent::OnAnimalLoaded, ID));
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("Spawn Complete: %d animals spawned"), SpawnedAnimals.Num());
+	//ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	//
+	//for(int Index = 0; Index < WildAnimalSpawnLocations.Num(); Index++)
+	//{
+	//	UBoxComponent* SpawnLocation = WildAnimalSpawnLocations[Index];
+	//	
+	//	if(!SpawnLocation)
+	//	{
+	//		continue;
+	//	}
+	//	
+	//	FVector Location = SpawnLocation->GetComponentLocation();
+	//	FRotator Rotation = SpawnLocation->GetComponentRotation();
+	//	
+	//	AActor* Owner = GetOwner();
+	//	if(!Owner)
+	//	{
+	//		continue;
+	//	}
+	//	
+	//	FVector OwnerLocation = Owner->GetActorLocation();
+	//	FRotator OwnerRotation = Owner->GetActorRotation();
+	//	
+	//	// 相対位置から絶対位置への変換
+	//	FVector LocalOffset = Location - OwnerLocation;
+	//	FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
+	//	FRotator AdjustedRotation = OwnerRotation + Rotation;
+	//	
+	//	TSubclassOf<AWildAnimal> SelectedAnimal = DecideAnimal();
+	//	
+	//	if (SelectedAnimal)
+	//	{
+	//		// SpawnLocationを渡してスケール計算できるようにする
+	//		CreateAnimal(Character, SelectedAnimal, AdjustedLocation, AdjustedRotation, SpawnLocation);
+	//	}
+	//}
+	//
+	//UE_LOG(LogTemp, Log, TEXT("Spawn Complete: %d animals spawned"), SpawnedAnimals.Num());
 }
 
 // スポーンされたすべての動物を削除
@@ -202,7 +214,7 @@ void UWildAnimalManagerComponent::BuildProbabilityTable()
 
 	// 普通動物を確率テーブルに追加
 	float NormalAnimalProbabilityEach = (NormalAnimalWeight / TotalWeight) * 100.0f;
-	for (const TSubclassOf<AWildAnimal>& AnimalClass : NormalAnimalTypes)
+	/*for (const TSubclassOf<AWildAnimal>& AnimalClass : NormalAnimalTypes)
 	{
 		if (AnimalClass)
 		{
@@ -212,17 +224,40 @@ void UWildAnimalManagerComponent::BuildProbabilityTable()
 			Entry.CumulativeProbability = CumulativeProbability;
 			ProbabilityTable.Add(Entry);
 		}
+	}*/
+	for (const int32& AnimalID : NormalAnimalTypes)
+	{
+		if (AnimalID > -1)
+		{
+			CumulativeProbability += NormalAnimalProbabilityEach;
+			FAnimalProbabilityEntry Entry;
+			Entry.AnimalID = AnimalID;
+			Entry.CumulativeProbability = CumulativeProbability;
+			ProbabilityTable.Add(Entry);
+		}
 	}
+
 
 	// レア動物を確率テーブルに追加
 	float RareAnimalProbabilityEach = (RareAnimalWeight / TotalWeight) * 100.0f;
-	for (const TSubclassOf<AWildAnimal>& AnimalClass : RareAnimalTypes)
+	//for (const TSubclassOf<AWildAnimal>& AnimalClass : RareAnimalTypes)
+	//{
+	//	if (AnimalClass)
+	//	{
+	//		CumulativeProbability += RareAnimalProbabilityEach;
+	//		FAnimalProbabilityEntry Entry;
+	//		//Entry.AnimalClass = AnimalClass;
+	//		Entry.CumulativeProbability = CumulativeProbability;
+	//		ProbabilityTable.Add(Entry);
+	//	}
+	//}
+	for (const int32& AnimalID : RareAnimalTypes)
 	{
-		if (AnimalClass)
+		if (AnimalID > -1)
 		{
 			CumulativeProbability += RareAnimalProbabilityEach;
 			FAnimalProbabilityEntry Entry;
-			Entry.AnimalClass = AnimalClass;
+			Entry.AnimalID = AnimalID;
 			Entry.CumulativeProbability = CumulativeProbability;
 			ProbabilityTable.Add(Entry);
 		}
@@ -286,12 +321,43 @@ void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassO
 	}
 }
 
+void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox, UAnimalDataAsset* Data)
+{
+	if (!Target)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid Target Class"));
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	AWildAnimal* Animal = GetWorld()->SpawnActor<AWildAnimal>(Target, Location, Rotation, SpawnParams);
+
+	if (Animal)
+	{
+		// プレイヤーキャラクターで初期化
+		Animal->Init(Character, nullptr, Data);
+
+		// BoxComponentのサイズに基づいてスケールを設定
+		float Scale = CalculateScaleFromBoxSize(SpawnBox);
+		Animal->SetActorScale3D(FVector(Scale, Scale, Scale));
+
+		// スポーン済みリストに追加
+		SpawnedAnimals.Add(Animal);
+
+		UE_LOG(LogTemp, Log, TEXT("Spawned: %s at %s with scale %.2f"),
+			*Target->GetName(), *Location.ToString(), Scale);
+	}
+}
+
 // 確率テーブルからランダムに動物を決定
-TSubclassOf<AWildAnimal> UWildAnimalManagerComponent::DecideAnimal()
+int32 UWildAnimalManagerComponent::DecideAnimal()
 {
 	if (ProbabilityTable.Num() == 0)
 	{
-		return nullptr;
+		//return nullptr;
+		return -1;
 	}
 
 	float RandomValue = RandomStream.FRandRange(0.0f, 100.0f);
@@ -300,9 +366,82 @@ TSubclassOf<AWildAnimal> UWildAnimalManagerComponent::DecideAnimal()
 	{
 		if (RandomValue <= Entry.CumulativeProbability)
 		{
-			return Entry.AnimalClass;
+			//return Entry.AnimalClass;
+			return Entry.AnimalID;
 		}
 	}
 
-	return ProbabilityTable.Last().AnimalClass;
+	//return ProbabilityTable.Last().AnimalClass;
+	return ProbabilityTable.Last().AnimalID;
+}
+
+TArray<FPrimaryAssetId> UWildAnimalManagerComponent::GetAllAnimalID() const
+{
+	TArray<FPrimaryAssetId> AnimalIDs;
+	UAssetManager::Get().GetPrimaryAssetIdList(FPrimaryAssetType("AnimalData"), AnimalIDs);
+	return AnimalIDs;
+}
+
+void UWildAnimalManagerComponent::OnAnimalLoaded(FPrimaryAssetId LoadedId)
+{
+	UAssetManager& AM = UAssetManager::Get();
+	UObject* LoadedObj = AM.GetPrimaryAssetObject(LoadedId);
+	if (UAnimalDataAsset* Data = Cast<UAnimalDataAsset>(LoadedObj))
+	{
+		AnimalDataMap.Add(Data->AnimalID, Data);
+	}
+	LoadedAnimalCount--;
+
+	if (LoadedAnimalCount == 0)
+	{
+		OnLoadAnimalCompleted();
+	}
+}
+
+void UWildAnimalManagerComponent::OnLoadAnimalCompleted()
+{
+	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	for (int Index = 0; Index < WildAnimalSpawnLocations.Num(); Index++)
+	{
+		UBoxComponent* SpawnLocation = WildAnimalSpawnLocations[Index];
+
+		if (!SpawnLocation)
+		{
+			continue;
+		}
+
+		FVector Location = SpawnLocation->GetComponentLocation();
+		FRotator Rotation = SpawnLocation->GetComponentRotation();
+
+		AActor* Owner = GetOwner();
+		if (!Owner)
+		{
+			continue;
+		}
+
+		FVector OwnerLocation = Owner->GetActorLocation();
+		FRotator OwnerRotation = Owner->GetActorRotation();
+
+		// 相対位置から絶対位置への変換
+		FVector LocalOffset = Location - OwnerLocation;
+		FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
+		FRotator AdjustedRotation = OwnerRotation + Rotation;
+
+		int32 SelectedAnimalID = DecideAnimal();
+
+		//if (SelectedAnimal)
+		//{
+		//	// SpawnLocationを渡してスケール計算できるようにする
+		//	CreateAnimal(Character, SelectedAnimal, AdjustedLocation, AdjustedRotation, SpawnLocation);
+		//}
+		if (AnimalDataMap.Contains(SelectedAnimalID))
+		{
+			UAnimalDataAsset* Data = AnimalDataMap[SelectedAnimalID];
+			if(WildSample)
+				CreateAnimal(Character, WildSample, AdjustedLocation, AdjustedRotation, SpawnLocation, Data);
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Spawn Complete: %d animals spawned"), SpawnedAnimals.Num());
 }

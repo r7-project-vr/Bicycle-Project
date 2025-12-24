@@ -124,15 +124,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBikeComponent* Bike;
 
+	// 2025.12.24 ウー start 時間がない、今は使わない
 	/// <summary>
 	/// 移動
 	/// </summary>
-	UBikeMovementComponent* BikeMovement;
+	//UBikeMovementComponent* BikeMovement;
 
 	/// <summary>
 	/// 解答者
 	/// </summary>
-	UResponderComponent* Responder;
+	//UResponderComponent* Responder;
+	// 2025.12.24 ウー end
 
 	/// <summary>
 	/// 動物管理者

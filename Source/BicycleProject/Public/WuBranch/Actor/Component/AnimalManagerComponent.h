@@ -91,6 +91,12 @@ private:
 	bool CheckLocation(float CollisionRadius, const FVector& Location, FVector& OGroundLocation);
 
 	/// <summary>
+	/// ペットのサンプル
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AAnimal> PetSample;
+
+	/// <summary>
 	/// ついていく対象
 	/// </summary>
 	TObjectPtr<ACharacter> Target;
@@ -100,6 +106,9 @@ private:
 	/// </summary>
 	TMap<int32, UAnimalDataAsset*> AnimalDataMap;
 
+	/// <summary>
+	/// ロードが必要な数
+	/// </summary>
 	int LoadedAnimalCount;
 
 	/// <summary>

@@ -22,6 +22,8 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+public:
+
 	//Static Mesh Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tile")
 	UStaticMeshComponent* TileMesh;
@@ -76,6 +78,11 @@ private:
 	UPROPERTY()
 	ATileManager* TileManager = nullptr;
 
+	/// <summary>
+	/// ビルドの位置を探す
+	/// </summary>
+	void FindBuildingLocation();
+
 	// 2025.08.01 ウー start
 	/// <summary>
 	/// 問題UIを作る
@@ -111,7 +118,7 @@ private:
 	/// <summary>
 	/// 建物
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<UEnvironmentalObjectComponent*> Buildings;
 	// 2025.08.18 ウー end
 
@@ -133,4 +140,9 @@ private:
 	UWildAnimalManagerComponent* WildAnimalManager;
 	
 	// 2025.09.16 ウー end
+
+	/// <summary>
+	/// 建物の位置を強制的に更新
+	/// </summary>
+	bool bForceUpdateBuilds;
 };

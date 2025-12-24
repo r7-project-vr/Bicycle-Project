@@ -9,6 +9,7 @@
 class UBoxComponent;
 class AWildAnimal;
 class ACharacter;
+class UAnimalDataAsset;
 
 /**
  * 野生動物のスポーン管理コンポーネント
@@ -52,13 +53,15 @@ public:
 	/// 普通動物のリスト
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
-	TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;
+	//TArray<TSubclassOf<AWildAnimal>> NormalAnimalTypes;
+	TArray<int32> NormalAnimalTypes;
 
 	/// <summary>
 	/// レア動物のリスト
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
-	TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
+	//TArray<TSubclassOf<AWildAnimal>> RareAnimalTypes;
+	TArray<int32> RareAnimalTypes;
 
 	/// <summary>
 	/// 普通動物の確率の比率
@@ -117,7 +120,8 @@ private:
 	/// </summary>
 	struct FAnimalProbabilityEntry
 	{
-		TSubclassOf<AWildAnimal> AnimalClass;
+		//TSubclassOf<AWildAnimal> AnimalClass;
+		int32 AnimalID;
 		float CumulativeProbability;
 	};
 	
@@ -140,12 +144,14 @@ private:
 	/// <param name="Rotation">スポーン時の回転</param>
 	/// <param name="SpawnBox">スポーン元のBoxComponent（スケール計算用）</param>
 	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox);
-	
+	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox, UAnimalDataAsset* Data);
+
 	/// <summary>
 	/// ランダムに動物を決定
 	/// </summary>
 	/// <returns>選択された動物のクラス</returns>
-	TSubclassOf<AWildAnimal> DecideAnimal();
+	//TSubclassOf<AWildAnimal> DecideAnimal();
+	int32 DecideAnimal();
 	
 	/// <summary>
 	/// RandomStreamの初期化状態を確認し、必要なら初期化
@@ -159,4 +165,37 @@ private:
 	/// <param name="BoxComp">対象のBoxComponent</param>
 	/// <returns>計算されたスケール値</returns>
 	float CalculateScaleFromBoxSize(UBoxComponent* BoxComp);
+
+
+	/// <summary>
+	/// すべての動物IDをゲット
+	/// </summary>
+	/// <returns></returns>
+	TArray<FPrimaryAssetId> GetAllAnimalID() const;
+
+	/// <summary>
+	/// 動物ロード完了
+	/// </summary>
+	void OnAnimalLoaded(FPrimaryAssetId LoadedId);
+
+	/// <summary>
+	/// 全部ロード完了
+	/// </summary>
+	void OnLoadAnimalCompleted();
+
+	/// <summary>
+	/// ペットのサンプル
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWildAnimal> WildSample;
+
+	/// <summary>
+	/// ロードが必要な数
+	/// </summary>
+	int LoadedAnimalCount;
+
+	/// <summary>
+	/// 動物データマップ <動物ID, データアセット>
+	/// </summary>
+	TMap<int32, UAnimalDataAsset*> AnimalDataMap;
 };

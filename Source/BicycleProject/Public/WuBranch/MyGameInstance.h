@@ -664,7 +664,7 @@ public:
 private:
 	
 	/// <summary>
-	/// キャプチャしたスクリーンショットの配列（ゲームセッションごと）
+	/// キャプチャしたスクリーンショットの配列
 	/// </summary>
 	UPROPERTY()
 	TArray<UTexture2D*> CapturedScreenshots;

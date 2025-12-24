@@ -13,7 +13,7 @@
 #include "Components/BoxComponent.h"
 #include "WuBranch/Actor/Animal.h"
 #include "DrawDebugHelpers.h"
-#include "Kismet/GameplayStatics.h"  // ★追加
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -25,11 +25,11 @@ ABikeCharacter::ABikeCharacter()
 	Bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
-	// 撮影判定用コリジョンを作成
+	//撮影判定用コリジョンを作成
 	PhotoCaptureBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PhotoCaptureBox"));
 	PhotoCaptureBox->SetupAttachment(RootComponent);
 	
-	// ★強化：コリジョン設定を明示的に
+	//コリジョン設定を明示的に
 	PhotoCaptureBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	PhotoCaptureBox->SetCollisionObjectType(ECC_WorldDynamic);
 	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -37,11 +37,11 @@ ABikeCharacter::ABikeCharacter()
 	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	PhotoCaptureBox->SetGenerateOverlapEvents(true);  // ★重要
 	
-	// サイズを大きく設定
+	//サイズを大きく設定
 	PhotoCaptureBox->SetBoxExtent(FVector(900.0f, 150.0f, 150.0f));
 	PhotoCaptureBox->SetRelativeLocation(FVector(1500.0f, 0.0f, 0.0f));
 	
-	// デバッグ表示
+	//デバッグ表示
 	PhotoCaptureBox->SetHiddenInGame(false);
 	PhotoCaptureBox->bHiddenInGame = false;
 	PhotoCaptureBox->SetVisibility(true);
@@ -71,61 +71,7 @@ void ABikeCharacter::BeginPlay()
 	//BikeMovement = GetComponentByClass<UBikeMovementComponent>();
 	//Responder = GetComponentByClass<UResponderComponent>();
 
-	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
-	if (PhotoCaptureBox)
-	{
-		PhotoCaptureBox->SetHiddenInGame(false);
-		PhotoCaptureBox->SetVisibility(true);
-		PhotoCaptureBox->ShapeColor = FColor::Green;
-		PhotoCaptureBox->SetLineThickness(3.0f);
-		PhotoCaptureBox->bDrawOnlyIfSelected = false;
-		
-		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
-			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
-			*PhotoCaptureBox->GetComponentLocation().ToString());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
-	}
-
-	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
-	if (PhotoCaptureBox)
-	{
-		PhotoCaptureBox->SetHiddenInGame(false);
-		PhotoCaptureBox->SetVisibility(true);
-		PhotoCaptureBox->ShapeColor = FColor::Green;
-		PhotoCaptureBox->SetLineThickness(3.0f);
-		PhotoCaptureBox->bDrawOnlyIfSelected = false;
-		
-		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
-			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
-			*PhotoCaptureBox->GetComponentLocation().ToString());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
-	}
-
-	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
-	if (PhotoCaptureBox)
-	{
-		PhotoCaptureBox->SetHiddenInGame(false);
-		PhotoCaptureBox->SetVisibility(true);
-		PhotoCaptureBox->ShapeColor = FColor::Green;
-		PhotoCaptureBox->SetLineThickness(3.0f);
-		PhotoCaptureBox->bDrawOnlyIfSelected = false;
-		
-		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
-			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
-			*PhotoCaptureBox->GetComponentLocation().ToString());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
-	}
-
-	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
+	//PhotoCaptureBoxのデバッグ表示を再確認
 	if (PhotoCaptureBox)
 	{
 		PhotoCaptureBox->SetHiddenInGame(false);
@@ -181,7 +127,7 @@ void ABikeCharacter::Tick(float DeltaTime)
 			PhotoCaptureBox->SetWorldLocation(BoxLocation);
 			PhotoCaptureBox->SetWorldRotation(CameraRotation);
 			
-			// ★追加：デバッグ描画（エディタとゲーム中の両方で表示）
+			// デバッグ描画
 			if (GetWorld())
 			{
 				DrawDebugBox(
@@ -190,10 +136,10 @@ void ABikeCharacter::Tick(float DeltaTime)
 					PhotoCaptureBox->GetScaledBoxExtent(),
 					CameraRotation.Quaternion(),
 					FColor::Green,
-					false,  // persistent lines = false
-					0.0f,   // lifetime = 0 (this frame only)
-					0,      // depth priority
-					3.0f    // thickness
+					false,
+					0.0f,
+					0,
+					3.0f
 				);
 			}
 		}
@@ -212,10 +158,10 @@ void ABikeCharacter::Tick(float DeltaTime)
 			BoxExtent,
 			BoxRotation,
 			FColor::Green,
-			false,  // persistent = false (毎フレーム再描画)
-			-1.0f,  // lifetime = -1 (無期限)
+			false,
+			-1.0f,
 			0,
-			3.0f    // thickness = 3.0
+			3.0f
 		);
 	}
 }
@@ -245,8 +191,8 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
 		}*/
 		
-		// スクリーンショットイベントは1回だけバインド
-		// BikeCharacterで撮影と表示を両方行う
+
+		// BikeCharacterで撮影を行う
 		DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
 	}
 }
@@ -367,7 +313,7 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	// 曲がった
 	if (current.Equals(_targetRotator, 0.5f))
 	{
-		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定します
+		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定
 		SetActorRelativeRotation(_targetRotator);
 		HandleBarsAngle = 0.0f;
 		_isRotate = false;

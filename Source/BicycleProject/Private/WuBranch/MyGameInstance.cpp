@@ -16,7 +16,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/SceneCapture2D.h"
-#include "WuBranch/Struct/ShopItem.h"  // ★追加
+#include "WuBranch/Struct/ShopItem.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -28,7 +28,7 @@ UMyGameInstance::UMyGameInstance()
 	, MaxStandardRPM(60)
 	, NumOfSets(4)
 	, MaxAnimalCount(10)
-	, ShopItemsDataTable(nullptr)  // ★追加
+	, ShopItemsDataTable(nullptr)
 {
 	DeviceManager = nullptr;
 	FileName = TEXT("PlayerData.json");
@@ -370,7 +370,7 @@ void UMyGameInstance::ResetAnimalPhoto()
 
 void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 {
-	// ★追加：関数呼び出しのログ
+	// 関数呼び出しのログ
 	UE_LOG(LogTemp, Warning, TEXT("=== AddAnimalPhotoPoint Called ==="));
 	UE_LOG(LogTemp, Warning, TEXT("Animal ID: %d"), AnimalID);
 	
@@ -382,7 +382,7 @@ void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 	else
 		AnimalPhotoPoints.Add(AnimalID, 1);
 	
-	// ★追加：ポイント加算後の詳細ログ
+	// ポイント加算後の詳細ログ
 	int32 NewPoints = AnimalPhotoPoints[AnimalID];
 	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
 	
@@ -444,14 +444,14 @@ int32 UMyGameInstance::GetRequiredPointsForAnimal(int32 AnimalID) const
 
 bool UMyGameInstance::CanPurchaseAnimal(int32 AnimalID) const
 {
-	// 最大数チェック（これは維持）
+	// 最大数チェック
 	if (HasMaxAnimals())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Already have maximum number of animals!"));
 		return false;
 	}
 
-	// ポイントが足りているか確認（アンロック条件）
+	// ポイントが足りているか確認
 	int32 CurrentPoints = GetAnimalPhotoPoint(AnimalID);
 	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
 	

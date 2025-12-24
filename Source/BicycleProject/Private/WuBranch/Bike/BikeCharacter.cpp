@@ -35,7 +35,7 @@ ABikeCharacter::ABikeCharacter()
 	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	PhotoCaptureBox->SetGenerateOverlapEvents(true);  // ★重要
+	PhotoCaptureBox->SetGenerateOverlapEvents(true); 
 	
 	//サイズを大きく設定
 	PhotoCaptureBox->SetBoxExtent(FVector(900.0f, 150.0f, 150.0f));

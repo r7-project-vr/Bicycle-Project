@@ -11,6 +11,7 @@ class UBikeComponent;
 class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
+class UBoxComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -88,6 +89,12 @@ public:
 	/// </summary>
 	UFUNCTION()
 	void OnScreenshotTaken();
+
+	/// <summary>
+	/// デバッグ：コリジョン設定を確認
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "Debug")
+	void DebugPhotoCaptureBox();
 
 private:
 
@@ -185,4 +192,15 @@ private:
 	/// 停止中ですか
 	/// </summary>
 	bool IsPause;
+
+	/// <summary>
+	/// カメラ追従撮影判定用コリジョン
+	/// </summary>
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* PhotoCaptureBox;
+
+	/// <summary>
+	/// 撮影時に範囲内の動物を検出してポイント加算
+	/// </summary>
+	void DetectAndScoreAnimals();
 };

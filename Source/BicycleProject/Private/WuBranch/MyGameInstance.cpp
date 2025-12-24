@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Device/DeviceManager.h"
 #include <UntakuBranch/Question.h>
@@ -17,6 +16,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/SceneCapture2D.h"
+#include "WuBranch/Struct/ShopItem.h"  // ★追加
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -26,10 +26,9 @@ UMyGameInstance::UMyGameInstance()
 	, StandardRPM(50)
 	, RPMThreshold(10)
 	, MaxStandardRPM(60)
-	// 2025.11.09 谷村 start
 	, NumOfSets(4)
-	// 2025.11.09 谷村 end
 	, MaxAnimalCount(10)
+	, ShopItemsDataTable(nullptr)  // ★追加
 {
 	DeviceManager = nullptr;
 	FileName = TEXT("PlayerData.json");
@@ -231,7 +230,6 @@ void UMyGameInstance::ReadRPMFromFile(const FPlayerSaveGame& Data)
 }
 #pragma endregion
 
-// 2025.11.12 谷村 start
 #pragma region セット数
 void UMyGameInstance::SetNumOfSets(int Value)
 {
@@ -243,7 +241,6 @@ int32 UMyGameInstance::GetNumOfSets() const
 	return NumOfSets;
 }
 
-// 2025.12.05 ウー start
 void UMyGameInstance::SaveSetsToFile(FPlayerSaveGame& Data)
 {
 	Data.MapSets = NumOfSets;
@@ -253,9 +250,7 @@ void UMyGameInstance::ReadSetsFromFile(const FPlayerSaveGame& Data)
 {
 	NumOfSets = Data.MapSets;
 }
-// 2025.12.05 ウー end
 #pragma endregion
-// 2025.11.12 谷村 end
 
 #pragma region 動物
 void UMyGameInstance::AddAnimal(int32 AnimalID)
@@ -373,14 +368,157 @@ void UMyGameInstance::ResetAnimalPhoto()
 	AnimalPhotoNums.Empty();
 }
 
+void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
+{
+	// ★追加：関数呼び出しのログ
+	UE_LOG(LogTemp, Warning, TEXT("=== AddAnimalPhotoPoint Called ==="));
+	UE_LOG(LogTemp, Warning, TEXT("Animal ID: %d"), AnimalID);
+	
+	// 既存のポイント数を記録
+	int32 OldPoints = AnimalPhotoPoints.Contains(AnimalID) ? AnimalPhotoPoints[AnimalID] : 0;
+	
+	if (AnimalPhotoPoints.Contains(AnimalID))
+		AnimalPhotoPoints[AnimalID] += 1;
+	else
+		AnimalPhotoPoints.Add(AnimalID, 1);
+	
+	// ★追加：ポイント加算後の詳細ログ
+	int32 NewPoints = AnimalPhotoPoints[AnimalID];
+	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
+	
+	UE_LOG(LogTemp, Warning, TEXT("✅ Point Added Successfully!"));
+	UE_LOG(LogTemp, Warning, TEXT("   Animal ID: %d"), AnimalID);
+	UE_LOG(LogTemp, Warning, TEXT("   Old Points: %d"), OldPoints);
+	UE_LOG(LogTemp, Warning, TEXT("   New Points: %d"), NewPoints);
+	UE_LOG(LogTemp, Warning, TEXT("   Required: %d"), RequiredPoints);
+	UE_LOG(LogTemp, Warning, TEXT("   Progress: %d / %d (%.1f%%)"), 
+		NewPoints, RequiredPoints, (float)NewPoints / RequiredPoints * 100.0f);
+	
+	// アンロック達成チェック
+	if (NewPoints >= RequiredPoints)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("🎉 UNLOCKED! Animal ID %d can now be purchased!"), AnimalID);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("🔒 Still locked. Need %d more photos."), RequiredPoints - NewPoints);
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("================================="));
+}
+
+int32 UMyGameInstance::GetAnimalPhotoPoint(int32 AnimalID) const
+{
+	if (AnimalPhotoPoints.Contains(AnimalID))
+		return AnimalPhotoPoints[AnimalID];
+	else
+		return 0;
+}
+
+int32 UMyGameInstance::GetRequiredPointsForAnimal(int32 AnimalID) const
+{
+	if (!ShopItemsDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShopItemsDataTable is not set in MyGameInstance!"));
+		return 3; // デフォルト値
+	}
+
+	// データテーブルから全ての行を取得
+	TArray<FShopItem*> AllShopItems;
+	FString ContextString(TEXT("GetRequiredPointsForAnimal"));
+	ShopItemsDataTable->GetAllRows<FShopItem>(ContextString, AllShopItems);
+	
+	// 該当するIDの行を検索
+	for (FShopItem* ShopItem : AllShopItems)
+	{
+		if (ShopItem && ShopItem->ID == AnimalID)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Found UnLockLimit for Animal ID %d: %d"), AnimalID, ShopItem->UnLockLimit);
+			return ShopItem->UnLockLimit;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Animal ID %d not found in DT_ShopItems. Returning default value 3."), AnimalID);
+	return 3; // デフォルト値
+}
+
+bool UMyGameInstance::CanPurchaseAnimal(int32 AnimalID) const
+{
+	// 最大数チェック（これは維持）
+	if (HasMaxAnimals())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Already have maximum number of animals!"));
+		return false;
+	}
+
+	// ポイントが足りているか確認（アンロック条件）
+	int32 CurrentPoints = GetAnimalPhotoPoint(AnimalID);
+	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
+	
+	bool bCanPurchase = CurrentPoints >= RequiredPoints;
+	
+	if (!bCanPurchase)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not enough points for Animal ID %d: %d / %d"), 
+			AnimalID, CurrentPoints, RequiredPoints);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Can purchase Animal ID %d: Points %d >= Required %d, Currently owned: %d"), 
+			AnimalID, CurrentPoints, RequiredPoints, GetAnimalNumByID(AnimalID));
+	}
+	
+	return bCanPurchase;
+}
+
+bool UMyGameInstance::PurchaseAnimal(int32 AnimalID)
+{
+	if (!CanPurchaseAnimal(AnimalID))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot purchase Animal ID %d!"), AnimalID);
+		return false;
+	}
+
+	// 動物を追加
+	AddAnimal(AnimalID);	
+	
+	UE_LOG(LogTemp, Log, TEXT("Animal ID %d purchased successfully! Current points: %d (not consumed), Owned: %d"), 
+		AnimalID, GetAnimalPhotoPoint(AnimalID), GetAnimalNumByID(AnimalID));
+	
+	return true;
+}
+
+bool UMyGameInstance::IsAnimalOwned(int32 AnimalID) const
+{
+	return OwnedAnimals.Contains(AnimalID) && OwnedAnimals[AnimalID] > 0;
+}
+
+int32 UMyGameInstance::GetTotalPhotoPoints() const
+{
+	int32 Total = 0;
+	for (const auto& Pair : AnimalPhotoPoints)
+	{
+		Total += Pair.Value;
+	}
+	return Total;
+}
+
+void UMyGameInstance::ResetPhotoPoints()
+{
+	AnimalPhotoPoints.Empty();
+	UE_LOG(LogTemp, Log, TEXT("Animal photo points reset."));
+}
+
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 {
 	Data.AnimalPhotos = AnimalPhotoNums;
+	Data.AnimalPhotoPoints = AnimalPhotoPoints;
 }
 
 void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
 {
 	AnimalPhotoNums = Data.AnimalPhotos;
+	AnimalPhotoPoints = Data.AnimalPhotoPoints;
 }
 #pragma endregion
 
@@ -399,7 +537,6 @@ FVector UMyGameInstance::GetBikeOffset() const
 #pragma region セーブ
 void UMyGameInstance::SaveAllToFile()
 {
-	// データ作り
 	FPlayerSaveGame Data;
 	SaveAnimalToFile(Data);
 	SaveCoinsToFile(Data);
@@ -438,7 +575,6 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 #pragma region スクリーンショット
 void UMyGameInstance::CaptureVRScreenshot()
 {
-	// 最大枚数チェック
 	if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."), 
@@ -459,11 +595,9 @@ void UMyGameInstance::CaptureVRScreenshot()
 		return;
 	}
 
-	// カメラの位置と向きを取得
 	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
 	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
 
-	// Scene Capture 2D アクターを一時的に生成
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	
@@ -475,24 +609,20 @@ void UMyGameInstance::CaptureVRScreenshot()
 		return;
 	}
 
-	// レンダーターゲットを作成
 	int32 Width = 1920;
 	int32 Height = 1080;
 	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
 	RenderTarget->InitAutoFormat(Width, Height);
 	RenderTarget->UpdateResourceImmediate(true);
 
-	// Scene Capture の設定
 	USceneCaptureComponent2D* CaptureComponent = SceneCapture->GetCaptureComponent2D();
 	CaptureComponent->TextureTarget = RenderTarget;
 	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
 	
-	// キャプチャを実行
 	CaptureComponent->CaptureScene();
 
-	// レンダーターゲットからピクセルデータを読み取る
 	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
 	
 	if (!RenderTargetResource)
@@ -519,7 +649,6 @@ void UMyGameInstance::CaptureVRScreenshot()
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 			NewTexture->UpdateResource();
 			
-			// 配列に保存
 			CapturedScreenshots.Add(NewTexture);
 			
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"), 
@@ -546,7 +675,8 @@ int32 UMyGameInstance::GetRemainingScreenshots() const
 void UMyGameInstance::ResetScreenshots()
 {
 	CapturedScreenshots.Empty();
-	UE_LOG(LogTemp, Log, TEXT("Screenshots reset for new game session."));
+	ResetPhotoPoints();
+	UE_LOG(LogTemp, Log, TEXT("Screenshots and photo points reset for new game session."));
 }
 
 TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
@@ -574,28 +704,23 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 		return;
 	}
 
-	// グリッドレイアウト: 2行 x 3列
 	int32 Columns = 3;
 	int32 Rows = 2;
 
 	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
 	{
-		// グリッド位置を計算
 		int32 Row = i / Columns;
 		int32 Col = i % Columns;
 
-		// 各写真の位置を計算
 		FVector Location = StartLocation;
 		Location.X += 0.0f;
 		Location.Y += Col * GridSpacing.Y;
 		Location.Z += Row * GridSpacing.Z;
 
-		// 詳細なログ出力
 		UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f), Offset=(Y=%.2f, Z=%.2f)"), 
 			i + 1, Row, Col, Location.X, Location.Y, Location.Z, 
 			Col * GridSpacing.Y, Row * GridSpacing.Z);
 
-		// アクターをスポーン
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -608,19 +733,15 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 
 		if (DisplayActor && CapturedScreenshots[i])
 		{
-			// スケールをログに出力（スポーン直後）
 			FVector InitialScale = DisplayActor->GetActorScale3D();
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Initial Scale=(%.2f, %.2f, %.2f)"), 
 				i + 1, InitialScale.X, InitialScale.Y, InitialScale.Z);
 			
-			// スクリーンショットを設定
 			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
 			
-			// スケールを強制的に設定（SetScreenshot の後）
 			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
 			DisplayActor->SetActorScale3D(NewScale);
 			
-			// 設定後のスケールを確認
 			FVector FinalScale = DisplayActor->GetActorScale3D();
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Final Scale=(%.2f, %.2f, %.2f) - Scale change: %s"), 
 				i + 1, FinalScale.X, FinalScale.Y, FinalScale.Z,

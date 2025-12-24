@@ -96,4 +96,10 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     /// </summary>
     UPROPERTY()
     int RPMThreshold = 10;
+
+    /// <summary>
+    /// 動物の写真ポイント (AnimalID -> Points)
+    /// </summary>
+    UPROPERTY()
+    TMap<int32, int32> AnimalPhotoPoints;
 };

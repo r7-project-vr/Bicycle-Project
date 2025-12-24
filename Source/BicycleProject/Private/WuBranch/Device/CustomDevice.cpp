@@ -214,6 +214,13 @@ void UCustomDevice::OnConnectSucc()
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
 	Name = MyDevice.GetInterface()->GetDeviceName();
 	UUID = MyDevice.GetInterface()->GetDeviceId();
+
+	FBleCharacteristicDelegate WriteFunction;
+	WriteFunction.BindUFunction(this, FName("OnWriteData"));
+	TArray<uint8> Datas;
+	Datas.Add(1);
+	MyDevice.GetInterface()->WriteCharacteristic(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas);
+
 	State = EDeviceConnectType::Connected;
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
@@ -258,6 +265,11 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 		Result |= (Data[i] << (8 * (Size - 1 - i)));
 	}
 	return Result;
+}
+
+void UCustomDevice::OnWriteData(FString ServiceUUID, FString CharacteristicUUID)
+{
+
 }
 
 void UCustomDevice::OnReceiveData(FString ServiceUUID, FString CharacteristicUUID, TArray<uint8>& Data)

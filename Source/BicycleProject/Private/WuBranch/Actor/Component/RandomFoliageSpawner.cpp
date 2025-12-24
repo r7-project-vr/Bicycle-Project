@@ -154,7 +154,7 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 			FHitResult HitResult;
 
 			FCollisionShape Sphere = FCollisionShape::MakeSphere(Radius * ScaleFactor);
-			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 1000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_Visibility, Sphere);
+			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 10000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_Visibility, Sphere);
 			
 			if (!Hit)
 				continue;

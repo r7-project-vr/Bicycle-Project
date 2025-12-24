@@ -49,6 +49,13 @@ void ABikeCharacter::BeginPlay()
 
 	//BikeMovement = GetComponentByClass<UBikeMovementComponent>();
 	//Responder = GetComponentByClass<UResponderComponent>();
+
+	// ゲーム開始時
+	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+	if (GameInstance)
+	{
+		GameInstance->ResetScreenshots();
+	}
 }
 
 // Called every frame
@@ -247,17 +254,12 @@ void ABikeCharacter::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
-		// スクリーンショットを撮影
+		// スクリーンショットを撮影（表示はしない）
 		GameInstance->CaptureVRScreenshot();
 		
-		// プレイヤーの位置を取得
-		FVector PlayerLoc = GetActorLocation();
-		FVector PlayerForward = GetActorForwardVector();
-		
-		// スクリーンショットを3D空間に表示
-		GameInstance->DisplayLastScreenshot(PlayerLoc, PlayerForward);
-		
-		UE_LOG(LogTemp, Log, TEXT("Screenshot captured and displayed!"));
+		int32 Remaining = GameInstance->GetRemainingScreenshots();
+		UE_LOG(LogTemp, Log, TEXT("Screenshot taken! Remaining: %d/%d"), 
+			Remaining, UMyGameInstance::MaxScreenshotsPerGame);
 	}
 	else
 	{

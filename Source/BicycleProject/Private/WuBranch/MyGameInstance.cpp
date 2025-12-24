@@ -311,7 +311,7 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 bool UMyGameInstance::HasMaxAnimals() const
 {
 	int Sum = 0;
-	for (const auto& Pair : OwnedAnimals)
+		for (const auto& Pair : OwnedAnimals)
 	{
 		Sum += Pair.Value;
 	}
@@ -370,10 +370,6 @@ void UMyGameInstance::ResetAnimalPhoto()
 
 void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 {
-	// 関数呼び出しのログ
-	UE_LOG(LogTemp, Warning, TEXT("=== AddAnimalPhotoPoint Called ==="));
-	UE_LOG(LogTemp, Warning, TEXT("Animal ID: %d"), AnimalID);
-	
 	// 既存のポイント数を記録
 	int32 OldPoints = AnimalPhotoPoints.Contains(AnimalID) ? AnimalPhotoPoints[AnimalID] : 0;
 	
@@ -381,30 +377,6 @@ void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 		AnimalPhotoPoints[AnimalID] += 1;
 	else
 		AnimalPhotoPoints.Add(AnimalID, 1);
-	
-	// ポイント加算後の詳細ログ
-	int32 NewPoints = AnimalPhotoPoints[AnimalID];
-	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
-	
-	UE_LOG(LogTemp, Warning, TEXT("✅ Point Added Successfully!"));
-	UE_LOG(LogTemp, Warning, TEXT("   Animal ID: %d"), AnimalID);
-	UE_LOG(LogTemp, Warning, TEXT("   Old Points: %d"), OldPoints);
-	UE_LOG(LogTemp, Warning, TEXT("   New Points: %d"), NewPoints);
-	UE_LOG(LogTemp, Warning, TEXT("   Required: %d"), RequiredPoints);
-	UE_LOG(LogTemp, Warning, TEXT("   Progress: %d / %d (%.1f%%)"), 
-		NewPoints, RequiredPoints, (float)NewPoints / RequiredPoints * 100.0f);
-	
-	// アンロック達成チェック
-	if (NewPoints >= RequiredPoints)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("🎉 UNLOCKED! Animal ID %d can now be purchased!"), AnimalID);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("🔒 Still locked. Need %d more photos."), RequiredPoints - NewPoints);
-	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("================================="));
 }
 
 int32 UMyGameInstance::GetAnimalPhotoPoint(int32 AnimalID) const
@@ -419,71 +391,45 @@ int32 UMyGameInstance::GetRequiredPointsForAnimal(int32 AnimalID) const
 {
 	if (!ShopItemsDataTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopItemsDataTable is not set in MyGameInstance!"));
 		return 3; // デフォルト値
 	}
 
-	// データテーブルから全ての行を取得
 	TArray<FShopItem*> AllShopItems;
 	FString ContextString(TEXT("GetRequiredPointsForAnimal"));
 	ShopItemsDataTable->GetAllRows<FShopItem>(ContextString, AllShopItems);
 	
-	// 該当するIDの行を検索
 	for (FShopItem* ShopItem : AllShopItems)
 	{
 		if (ShopItem && ShopItem->ID == AnimalID)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Found UnLockLimit for Animal ID %d: %d"), AnimalID, ShopItem->UnLockLimit);
 			return ShopItem->UnLockLimit;
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Animal ID %d not found in DT_ShopItems. Returning default value 3."), AnimalID);
 	return 3; // デフォルト値
 }
 
 bool UMyGameInstance::CanPurchaseAnimal(int32 AnimalID) const
 {
-	// 最大数チェック
 	if (HasMaxAnimals())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Already have maximum number of animals!"));
 		return false;
 	}
 
-	// ポイントが足りているか確認
 	int32 CurrentPoints = GetAnimalPhotoPoint(AnimalID);
 	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
 	
-	bool bCanPurchase = CurrentPoints >= RequiredPoints;
-	
-	if (!bCanPurchase)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Not enough points for Animal ID %d: %d / %d"), 
-			AnimalID, CurrentPoints, RequiredPoints);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Can purchase Animal ID %d: Points %d >= Required %d, Currently owned: %d"), 
-			AnimalID, CurrentPoints, RequiredPoints, GetAnimalNumByID(AnimalID));
-	}
-	
-	return bCanPurchase;
+	return CurrentPoints >= RequiredPoints;
 }
 
 bool UMyGameInstance::PurchaseAnimal(int32 AnimalID)
 {
 	if (!CanPurchaseAnimal(AnimalID))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cannot purchase Animal ID %d!"), AnimalID);
 		return false;
 	}
 
-	// 動物を追加
-	AddAnimal(AnimalID);	
-	
-	UE_LOG(LogTemp, Log, TEXT("Animal ID %d purchased successfully! Current points: %d (not consumed), Owned: %d"), 
-		AnimalID, GetAnimalPhotoPoint(AnimalID), GetAnimalNumByID(AnimalID));
+	AddAnimal(AnimalID);
 	
 	return true;
 }
@@ -506,7 +452,6 @@ int32 UMyGameInstance::GetTotalPhotoPoints() const
 void UMyGameInstance::ResetPhotoPoints()
 {
 	AnimalPhotoPoints.Empty();
-	UE_LOG(LogTemp, Log, TEXT("Animal photo points reset."));
 }
 
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)

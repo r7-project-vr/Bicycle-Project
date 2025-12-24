@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "WuBranch/Actor/Animal.h"
 #include "WildAnimal.generated.h"
-
+class AAIController;
 /**
  * 
  */
@@ -68,4 +68,10 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float RotationSpeed;
+
+	/// <summary>
+	/// 野生動物のAIコントローラ
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AAIController> WildAnimalControllerClass;
 };

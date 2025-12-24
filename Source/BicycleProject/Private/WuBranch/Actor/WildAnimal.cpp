@@ -35,21 +35,37 @@ void AWildAnimal::BeginPlay()
 
 void AWildAnimal::DecideBehavior()
 {
-	//NeedChirp = IsTargetPassed();
+	// 現在アクターが持っているコントローラーを取得
+	AAIController* CurrentAIC = Cast<AAIController>(GetController());
+
+	// コントローラーが存在し、かつ指定したクラス型であるか判定
+	if (CurrentAIC && CurrentAIC->IsA(WildAnimalControllerClass)) {
+
+	}
+	else {
+		NeedChirp = IsTargetPassed();
+	}
 }
 
 void AWildAnimal::Action(float DeltaTime)
 {
-	//
-	//if (CurrentState == BehaviorState::None)
-	//{
-	//	if (ChirpSE && NeedChirp)
-	//	{
-	//		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
-	//	}
-	//}
+	// 現在アクターが持っているコントローラーを取得
+	AAIController* CurrentAIC = Cast<AAIController>(GetController());
 
-	//StareAtTarget(DeltaTime);
+	// コントローラーが存在し、かつ指定したクラス型であるか判定
+	if (CurrentAIC && CurrentAIC->IsA(WildAnimalControllerClass)) {
+
+	}
+	else {
+		if (CurrentState == BehaviorState::None)
+		{
+			if (ChirpSE && NeedChirp)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ChirpSE, GetActorLocation());
+			}
+		}
+		StareAtTarget(DeltaTime);
+	}
 }
 
 bool AWildAnimal::IsTargetPassed()

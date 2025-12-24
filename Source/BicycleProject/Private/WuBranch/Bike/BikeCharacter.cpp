@@ -89,6 +89,60 @@ void ABikeCharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
 	}
 
+	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
+	if (PhotoCaptureBox)
+	{
+		PhotoCaptureBox->SetHiddenInGame(false);
+		PhotoCaptureBox->SetVisibility(true);
+		PhotoCaptureBox->ShapeColor = FColor::Green;
+		PhotoCaptureBox->SetLineThickness(3.0f);
+		PhotoCaptureBox->bDrawOnlyIfSelected = false;
+		
+		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
+			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
+			*PhotoCaptureBox->GetComponentLocation().ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
+	}
+
+	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
+	if (PhotoCaptureBox)
+	{
+		PhotoCaptureBox->SetHiddenInGame(false);
+		PhotoCaptureBox->SetVisibility(true);
+		PhotoCaptureBox->ShapeColor = FColor::Green;
+		PhotoCaptureBox->SetLineThickness(3.0f);
+		PhotoCaptureBox->bDrawOnlyIfSelected = false;
+		
+		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
+			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
+			*PhotoCaptureBox->GetComponentLocation().ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
+	}
+
+	// ★追加：PhotoCaptureBox のデバッグ表示を再確認
+	if (PhotoCaptureBox)
+	{
+		PhotoCaptureBox->SetHiddenInGame(false);
+		PhotoCaptureBox->SetVisibility(true);
+		PhotoCaptureBox->ShapeColor = FColor::Green;
+		PhotoCaptureBox->SetLineThickness(3.0f);
+		PhotoCaptureBox->bDrawOnlyIfSelected = false;
+		
+		UE_LOG(LogTemp, Log, TEXT("PhotoCaptureBox initialized: Extent=%s, Location=%s"), 
+			*PhotoCaptureBox->GetScaledBoxExtent().ToString(), 
+			*PhotoCaptureBox->GetComponentLocation().ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null in BeginPlay!"));
+	}
+
 	// ゲーム開始時
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)

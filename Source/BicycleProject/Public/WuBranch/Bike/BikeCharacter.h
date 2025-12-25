@@ -203,4 +203,16 @@ private:
 	/// 撮影時に範囲内の動物を検出してポイント加算
 	/// </summary>
 	void DetectAndScoreAnimals();
+
+	/// <summary>
+	/// 写真撮れたSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
+	USoundBase* TakePhotoSucc;
+
+	/// <summary>
+	/// 写真撮れないSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
+	USoundBase* TakePhotoFail;
 };

@@ -288,8 +288,14 @@ void ABikeCharacter::OnScreenshotTaken()
 	{
 		if (GameInstance->CaptureVRScreenshot())
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, TEXT("Take screen shot succ"));
+			if (TakePhotoSucc)
+				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
 			DetectAndScoreAnimals();
+		}
+		else
+		{
+			if (TakePhotoFail)
+				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFail);
 		}
 	}
 }

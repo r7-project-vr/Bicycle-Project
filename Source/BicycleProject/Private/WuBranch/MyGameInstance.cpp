@@ -566,6 +566,9 @@ bool UMyGameInstance::CaptureVRScreenshot()
 		return false;
 	}
 
+	// エフェクト
+	PC->PlayerCameraManager->StartCameraFade(0.f, 0.8f, 0.1f, FLinearColor::White);
+
 	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
 	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
 

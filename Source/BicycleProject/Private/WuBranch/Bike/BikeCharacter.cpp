@@ -356,8 +356,6 @@ void ABikeCharacter::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
 {
 	PhotoCaptureBox->GetOverlappingActors(OverlappingActors, AAnimal::StaticClass());
 
-	//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("Find Animal: %d"), OverlappingActors.Num()));
-
 	if (OverlappingActors.Num() == 0)
 	{
 		TArray<AActor*> AllAnimals;
@@ -375,7 +373,6 @@ void ABikeCharacter::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
 				FVector AnimalLocation = Animal->GetActorLocation();
 				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
 
-				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("local pos: %s, Extent: %s"), *LocalPos.ToString(), *BoxExtent.ToString()));
 				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
 					(FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
 					(FMath::Abs(LocalPos.Z) <= BoxExtent.Z);

@@ -104,6 +104,11 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	// UI更新
 	UpdateAnswerUI();
 
+	return Result;
+}
+
+void AQuestionGameMode::CheckGameOver()
+{
 	// ゲームオーバー
 	if (IsGameFailed())
 	{
@@ -114,7 +119,6 @@ bool AQuestionGameMode::CheckAnswer(int32 questionID, int32 answer)
 	{
 		EndGame(true);
 	}
-	return Result;
 }
 
 void AQuestionGameMode::AnsweredQuestion()
@@ -122,12 +126,6 @@ void AQuestionGameMode::AnsweredQuestion()
 	CorrectNum++;
 	// UI更新
 	UpdateAnswerUI();
-
-	// ゲームクリア
-	if (IsGameClear())
-	{
-		EndGame(true);
-	}
 }
 
 void AQuestionGameMode::FinishGame()

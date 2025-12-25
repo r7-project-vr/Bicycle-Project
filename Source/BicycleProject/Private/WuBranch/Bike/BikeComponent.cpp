@@ -223,19 +223,23 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	//bool Result = GameMode->CheckAnswer(questionID, answer);
-	GameMode->AnsweredQuestion();
-	// 正解か不正解を表示
-	//_questionActor->SetResult(0, Result);
-	// コインの処理
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	//HandleCoin(Result, !Character->HasOverSpeed());
-	HandleCoin(true, !Character->HasOverSpeed());
+	if (GameMode)
+	{
+		//bool Result = GameMode->CheckAnswer(questionID, answer);
+		GameMode->AnsweredQuestion();
+		// 正解か不正解を表示
+		//_questionActor->SetResult(0, Result);
+		// コインの処理
+		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+		//HandleCoin(Result, !Character->HasOverSpeed());
+		HandleCoin(true, !Character->HasOverSpeed());
+		// 超速の記録をリセット
+		Character->ResetOverSpeed();
+		// マップの生成
+		SpawnNextMap(true);
+		GameMode->CheckGameOver();
+	}
 	// 2025.10.19 ウー end
-	// 超速の記録をリセット
-	Character->ResetOverSpeed();
-	// マップの生成
-	SpawnNextMap(true);
 }
 
 void UBikeComponent::OnSelectRightAnswer()
@@ -255,19 +259,23 @@ void UBikeComponent::SelectRightAnswer(int questionID, int answer)
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	//bool Result = GameMode->CheckAnswer(questionID, answer);
-	GameMode->AnsweredQuestion();
-	// 正解か不正解を表示
-	//_questionActor->SetResult(1, Result);
-	// コインの処理
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	//HandleCoin(Result, !Character->HasOverSpeed());
-	HandleCoin(true, !Character->HasOverSpeed());
-	// 2025.10.19 ウー end
-	// 超速の記録をリセット
-	Character->ResetOverSpeed();
-	// マップの生成
-	SpawnNextMap(false);
+	if (GameMode)
+	{
+		//bool Result = GameMode->CheckAnswer(questionID, answer);
+		GameMode->AnsweredQuestion();
+		// 正解か不正解を表示
+		//_questionActor->SetResult(1, Result);
+		// コインの処理
+		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+		//HandleCoin(Result, !Character->HasOverSpeed());
+		HandleCoin(true, !Character->HasOverSpeed());
+		// 2025.10.19 ウー end
+		// 超速の記録をリセット
+		Character->ResetOverSpeed();
+		// マップの生成
+		SpawnNextMap(false);
+		GameMode->CheckGameOver();
+	}
 }
 
 void UBikeComponent::DisableSelectAnswerAction()

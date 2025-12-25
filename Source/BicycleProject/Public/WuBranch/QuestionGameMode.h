@@ -45,6 +45,11 @@ public:
 	bool CheckAnswer(int32 questionID, int32 answer);
 
 	/// <summary>
+	/// ゲームオーバーの確認
+	/// </summary>
+	void CheckGameOver();
+
+	/// <summary>
 	/// 問題に答えた, クイズなしのバージョン
 	/// </summary>
 	void AnsweredQuestion();

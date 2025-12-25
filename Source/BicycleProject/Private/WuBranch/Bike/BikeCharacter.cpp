@@ -142,6 +142,9 @@ void ABikeCharacter::Pause_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->DisableDefaultActions();
+
+				if (Bike->GetIsAutoPlay())
+					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
 		StopMove();
@@ -159,6 +162,9 @@ void ABikeCharacter::ReStart_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->EnableDefaultActions();
+
+				if (Bike->GetIsAutoPlay())
+					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
 	}

@@ -28,12 +28,12 @@ void AWildAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAn
 
 void AWildAnimal::EnableHighlight_Implementation()
 {
-	GetMesh()->bRenderCustomDepth = true;
+	GetMesh()->SetRenderCustomDepth(true);
 }
 
 void AWildAnimal::DisableHighlight_Implementation()
 {
-	GetMesh()->bRenderCustomDepth = false;
+	GetMesh()->SetRenderCustomDepth(false);
 }
 
 void AWildAnimal::BeginPlay()

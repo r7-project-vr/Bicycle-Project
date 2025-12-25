@@ -208,8 +208,11 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 void UBikeComponent::OnSelectLeftAnswer()
 {
-	FQuestion* question = _questionActor->GetNowQuestion();
-	SelectLeftAnswer(question->ID, 0);
+	if (_questionActor)
+	{
+		FQuestion* question = _questionActor->GetNowQuestion();
+		SelectLeftAnswer(question->ID, 0);
+	}
 }
 
 void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
@@ -237,8 +240,11 @@ void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
 
 void UBikeComponent::OnSelectRightAnswer()
 {
-	FQuestion* question = _questionActor->GetNowQuestion();
-	SelectRightAnswer(question->ID, 1);
+	if (_questionActor)
+	{
+		FQuestion* question = _questionActor->GetNowQuestion();
+		SelectRightAnswer(question->ID, 1);
+	}
 }
 
 void UBikeComponent::SelectRightAnswer(int questionID, int answer)

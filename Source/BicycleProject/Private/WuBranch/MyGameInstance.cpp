@@ -17,6 +17,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/SceneCapture2D.h"
 #include "WuBranch/Struct/ShopItem.h"
+#include <WuBranch/Struct/WildPetSwitchTable.h>
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -47,6 +48,7 @@ void UMyGameInstance::Init()
 	GetSubsystem<USaveGameManager>()->OnSaveCompleted.AddDynamic(this, &UMyGameInstance::OnSaveComplete);
 
 	ReadAll();
+	LoadSwitchTable();
 }
 
 #pragma region デバイス
@@ -452,6 +454,30 @@ int32 UMyGameInstance::GetTotalPhotoPoints() const
 void UMyGameInstance::ResetPhotoPoints()
 {
 	AnimalPhotoPoints.Empty();
+}
+
+int32 UMyGameInstance::SwitchWild2Pet(int WildAnimalID)
+{
+	if (WildPetSwitchTable.Contains(WildAnimalID))
+		return WildPetSwitchTable[WildAnimalID];
+	else
+		return 3;
+		
+}
+
+void UMyGameInstance::LoadSwitchTable()
+{
+	if (!AnimalSwitchTable)
+		return;
+
+	TArray<FWildPetSwitchTable*> AnimalSwitch;
+	FString ContextString(TEXT("GetAnimalSwitchData"));
+	AnimalSwitchTable->GetAllRows<FWildPetSwitchTable>(ContextString, AnimalSwitch);
+
+	for (FWildPetSwitchTable* Data : AnimalSwitch)
+	{
+		WildPetSwitchTable.Add(Data->WildAnimalID, Data->PetAnimalID);
+	}
 }
 
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)

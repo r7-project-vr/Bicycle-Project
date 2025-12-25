@@ -5,12 +5,3 @@
 
 
 // Add default functionality here for any IIOutlineHighlightable functions that are not pure virtual.
-
-void IIOutlineHighlightable::EnableHighlight()
-{
-
-}
-
-void IIOutlineHighlightable::DisableHighlight()
-{
-}

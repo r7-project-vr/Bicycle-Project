@@ -12,6 +12,7 @@ class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
 class UBoxComponent;
+class AAnimal;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -204,6 +205,13 @@ private:
 	/// </summary>
 	void DetectAndScoreAnimals();
 
+	//
+	void FindCaptureAnimal(TArray<AActor*>& OverlappingActors);
+
+	void EnableLightAnimal(TArray<AActor*>& Animals);
+
+	void DisableLightAnimal(TArray<AActor*>& Animals);
+
 	/// <summary>
 	/// 写真撮れたSE
 	/// </summary>
@@ -215,4 +223,9 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
 	USoundBase* TakePhotoFail;
+
+	/// <summary>
+	/// 映られた動物
+	/// </summary>
+	TSet<TWeakObjectPtr<AAnimal>> CapturedAnimals;
 };

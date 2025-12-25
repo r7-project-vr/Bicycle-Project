@@ -23,9 +23,11 @@ class BICYCLEPROJECT_API IIOutlineHighlightable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void EnableHighlight();
+	UFUNCTION(BlueprintNativeEvent)
+	void EnableHighlight();
 
-	virtual void DisableHighlight();
+	UFUNCTION(BlueprintNativeEvent)
+	void DisableHighlight();
 
 
 

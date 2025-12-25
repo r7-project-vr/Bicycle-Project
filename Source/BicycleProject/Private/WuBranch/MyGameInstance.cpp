@@ -624,6 +624,7 @@ bool UMyGameInstance::CaptureVRScreenshot()
 			NewTexture->UpdateResource();
 			
 			CapturedScreenshots.Add(NewTexture);
+			NotifyUpdateScreenShotTime();
 			
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"), 
 				CapturedScreenshots.Num(), MaxScreenshotsPerGame, Width, Height);
@@ -655,6 +656,11 @@ void UMyGameInstance::ResetScreenshots()
 	CapturedScreenshots.Empty();
 	ResetPhotoPoints();
 	UE_LOG(LogTemp, Log, TEXT("Screenshots and photo points reset for new game session."));
+}
+
+int UMyGameInstance::GetMaxPhotosPerGame() const
+{
+	return MaxScreenshotsPerGame;
 }
 
 TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
@@ -753,5 +759,10 @@ UTexture2D* UMyGameInstance::GetScreenshotAtIndex(int32 Index) const
 		return CapturedScreenshots[Index];
 	}
 	return nullptr;
+}
+void UMyGameInstance::NotifyUpdateScreenShotTime()
+{
+	if (OnUpdateScreenShotTime.IsBound())
+		OnUpdateScreenShotTime.Broadcast(GetScreenshotCount());
 }
 #pragma endregion

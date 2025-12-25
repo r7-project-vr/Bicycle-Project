@@ -651,6 +651,12 @@ public:
 	void ResetScreenshots();
 
 	/// <summary>
+	/// 1ゲームで撮影可能な最大枚数をゲット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	int GetMaxPhotosPerGame() const;
+
+	/// <summary>
 	/// 1ゲームで撮影可能な最大枚数
 	/// </summary>
 	static constexpr int32 MaxScreenshotsPerGame = 6;
@@ -685,8 +691,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	UTexture2D* GetScreenshotAtIndex(int32 Index) const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScreenShotTimeDelegate, int32, Nums);
+
+	/// <summary>
+	/// 撮った写真の枚数更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateScreenShotTimeDelegate OnUpdateScreenShotTime;
+
 private:
 	
+	/// <summary>
+	/// 写真の枚数が更新されたのを通知
+	/// </summary>
+	void NotifyUpdateScreenShotTime();
+
 	/// <summary>
 	/// キャプチャしたスクリーンショットの配列
 	/// </summary>

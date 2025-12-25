@@ -453,6 +453,17 @@ private:
 	/// </summary>
 	TMap<int32, int32> AnimalPhotoPoints;
 
+	/// <summary>
+	/// 野生動物からペットへの変換表(ロードするために)
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animal　Photo", meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.WildPetSwitchTable", AllowPrivateAccess = "true"))
+	UDataTable* AnimalSwitchTable;
+
+	/// <summary>
+	/// 野生動物からペットへの変換表(ゲーム内で使用)
+	/// </summary>
+	TMap<int32, int32> WildPetSwitchTable;
+
 public:
 	/// <summary>
 	/// 動物の写真を追加
@@ -534,12 +545,25 @@ public:
 	void ResetPhotoPoints();
 
 	/// <summary>
+	/// 野生動物からペットへ変換
+	/// </summary>
+	/// <param name="WildAnimalID">野生動物ID</param>
+	/// <returns>ペットID</returns>
+	int32 SwitchWild2Pet(int WildAnimalID);
+
+	/// <summary>
 	/// ショップアイテムのデータテーブル (DT_ShopItems)
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Shop", meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.ShopItem"))
 	UDataTable* ShopItemsDataTable;
 
 private:
+
+	/// <summary>
+	/// 野生動物からペットへの変換表をロード
+	/// </summary>
+	void LoadSwitchTable();
+
 	void SavePhotoToFile(FPlayerSaveGame& Data);
 	void ReadPhotoFromFile(const FPlayerSaveGame& Data);
 #pragma endregion

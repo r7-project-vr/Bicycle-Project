@@ -636,7 +636,7 @@ public:
 	/// スクリーンショットをキャプチャ
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void CaptureVRScreenshot();
+	bool CaptureVRScreenshot();
 
 	/// <summary>
 	/// 現在のゲームで撮影可能な残り枚数を取得

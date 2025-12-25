@@ -286,8 +286,11 @@ void ABikeCharacter::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
-		GameInstance->CaptureVRScreenshot();
-		DetectAndScoreAnimals();
+		if (GameInstance->CaptureVRScreenshot())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, TEXT("Take screen shot succ"));
+			DetectAndScoreAnimals();
+		}
 	}
 }
 
@@ -348,7 +351,9 @@ void ABikeCharacter::DetectAndScoreAnimals()
 			if (!DetectedAnimalIDs.Contains(AnimalID))
 			{
 				DetectedAnimalIDs.Add(AnimalID);
-				GameInstance->AddAnimalPhotoPoint(AnimalID);
+				int32 PetID = GameInstance->SwitchWild2Pet(AnimalID);
+				GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, FString::Printf(TEXT("wild ID: %d, Pet ID: %d"), AnimalID, PetID));
+				GameInstance->AddAnimalPhotoPoint(PetID);
 			}
 		}
 	}

@@ -101,9 +101,7 @@ void AAnimal::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimal
 				OldController->UnPossess();
 				OldController->Destroy();
 			}
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			AAIController* AIController = GetWorld()->SpawnActor<AAIController>(Data->AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+			AAIController* AIController = GetWorld()->SpawnActor<AAIController>(Data->AIControllerClass, GetActorLocation(), GetActorRotation());
 			if (AIController)
 				AIController->Possess(this);
 		}

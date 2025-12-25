@@ -214,7 +214,7 @@ void UCustomDevice::OnConnectSucc()
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
 	Name = MyDevice.GetInterface()->GetDeviceName();
 	UUID = MyDevice.GetInterface()->GetDeviceId();
-
+	State = EDeviceConnectType::Connected;
 	UE_LOG(LogTemplateDevice, Display, TEXT("Do Write pair"));
 	FBleCharacteristicDelegate WriteFunction;
 	WriteFunction.BindUFunction(this, FName("OnWriteData"));
@@ -222,16 +222,6 @@ void UCustomDevice::OnConnectSucc()
 	TArray<uint8> Datas;
 	Datas.Add(1);
 	MyDevice.GetInterface()->WriteCharacteristic(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas);
-
-	/*State = EDeviceConnectType::Connected;
-	FBleCharacteristicDataDelegate ReceiveFunction;
-	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
-	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
-	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
-	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
-
-	MyDevice.GetInterface()->BindToCharacteristicReadEvent(ReceiveFunction);
-	MyDevice.GetInterface()->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);*/
 #endif
 }
 
@@ -272,7 +262,6 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 void UCustomDevice::OnWriteData(FString ServiceUUID, FString CharacteristicUUID)
 {
 #if PLATFORM_ANDROID
-	State = EDeviceConnectType::Connected;
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);

@@ -318,14 +318,26 @@ void AQuestionGameMode::PlaceGoal(int32 QuestionID)
 		return;
 
 	// 問題の出口の位置と向きをゲット
-	FVector startLocation, forward;
-	if (Target->GetExitLocationAndForward(startLocation, forward))
+	FVector StartLocation, Forward;
+	if (Target->GetExitLocationAndForward(StartLocation, Forward))
 	{
 		// ゴールを進行先に置く
-		float distance = 5000.0f;
-		startLocation.Z = 100.f;
-		Goal->SetActorLocation(startLocation + forward * distance);
-		Goal->SetActorRotation((forward * -1).Rotation());
+		float Distance = 5000.0f;
+		FVector Start = StartLocation + Forward * Distance;
+
+		FHitResult HitResult;
+		bool Hit = GetWorld()->LineTraceSingleByChannel(HitResult, Start + FVector(0, 0, 2000), Start + FVector(0, 0, -1000), ECC_Visibility);
+		if (Hit && HitResult.GetActor()->ActorHasTag("Tile"))
+		{
+			Start = HitResult.ImpactPoint;
+		}
+		else
+		{
+			Start.Z = 100.f;
+		}
+		
+		Goal->SetActorLocation(Start);
+		Goal->SetActorRotation((Forward * -1).Rotation());
 	}
 }
 

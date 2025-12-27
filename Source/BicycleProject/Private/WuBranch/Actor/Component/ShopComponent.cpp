@@ -34,7 +34,7 @@ void UShopComponent::BeginPlay()
 //	// ...
 //}
 
-bool UShopComponent::BuyItem(int ItemID)
+int UShopComponent::BuyItem(int ItemID)
 {
 	// アイテムを特定
 	FShopItem* ShopItem = *(ShopItemsDatas.FindByPredicate([ItemID](const FShopItem* Item) {
@@ -45,7 +45,7 @@ bool UShopComponent::BuyItem(int ItemID)
 	if (!ShopItem)
 	{
 		BuyFailed();
-		return false;
+		return 1;
 	}
 	
 	if (UMyGameInstance* GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
@@ -60,7 +60,7 @@ bool UShopComponent::BuyItem(int ItemID)
 			UE_LOG(LogTemp, Warning, TEXT("Animal ID %d is locked! Photos: %d / %d required"), 
 				ShopItem->ID, CurrentPhotoPoints, RequiredPhotoPoints);
 			BuyFailed();
-			return false;
+			return 2;
 		}
 		
 		// 金をチェック
@@ -71,7 +71,7 @@ bool UShopComponent::BuyItem(int ItemID)
 			UE_LOG(LogTemp, Warning, TEXT("Not enough coins! Have: %d, Need: %d"), 
 				CurrentCoins, ShopItem->Price);
 			BuyFailed();
-			return false;
+			return 3;
 		}
 
 		// 動物の数が最大に持っているか
@@ -79,7 +79,7 @@ bool UShopComponent::BuyItem(int ItemID)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Already have maximum number of animals!"));
 			BuyFailed();
-			return false;
+			return 4;
 		}
 
 		// 購入
@@ -93,11 +93,11 @@ bool UShopComponent::BuyItem(int ItemID)
 		UE_LOG(LogTemp, Log, TEXT("Animal ID %d purchased successfully! Coins remaining: %d"), 
 			ShopItem->ID, GameInstance->GetTotalCoins());
 		
-		return true;
+		return 0;
 	}
 	// 購入失敗
 	BuyFailed();
-	return false;
+	return 5;
 }
 
 TArray<FShopItem> UShopComponent::GetShopItems() const

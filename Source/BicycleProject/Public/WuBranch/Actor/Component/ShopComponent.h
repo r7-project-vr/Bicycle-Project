@@ -28,10 +28,10 @@ public:
 	/// <summary>
 	/// アイテムを購入
 	/// </summary>
-	/// <param name="Buyer">購入者</param>
 	/// <param name="ItemID">アイテムID</param>
+	/// <returns>0: 成功, 1: 失敗、対象見つからない, 2: 失敗、ロックされた, 3: 失敗、金足りない,4: 失敗、持てる最大数の足した,5: その他 </returns>
 	UFUNCTION(BlueprintCallable)
-	bool BuyItem(int ItemID);
+	int BuyItem(int ItemID);
 
 	/// <summary>
 	/// すべてのアイテムをゲット

@@ -17,6 +17,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/SceneCapture2D.h"
 #include "WuBranch/Struct/ShopItem.h"
+#include <WuBranch/Struct/WildPetSwitchTable.h>
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -47,6 +48,7 @@ void UMyGameInstance::Init()
 	GetSubsystem<USaveGameManager>()->OnSaveCompleted.AddDynamic(this, &UMyGameInstance::OnSaveComplete);
 
 	ReadAll();
+	LoadSwitchTable();
 }
 
 #pragma region デバイス
@@ -454,6 +456,30 @@ void UMyGameInstance::ResetPhotoPoints()
 	AnimalPhotoPoints.Empty();
 }
 
+int32 UMyGameInstance::SwitchWild2Pet(int WildAnimalID)
+{
+	if (WildPetSwitchTable.Contains(WildAnimalID))
+		return WildPetSwitchTable[WildAnimalID];
+	else
+		return 3;
+		
+}
+
+void UMyGameInstance::LoadSwitchTable()
+{
+	if (!AnimalSwitchTable)
+		return;
+
+	TArray<FWildPetSwitchTable*> AnimalSwitch;
+	FString ContextString(TEXT("GetAnimalSwitchData"));
+	AnimalSwitchTable->GetAllRows<FWildPetSwitchTable>(ContextString, AnimalSwitch);
+
+	for (FWildPetSwitchTable* Data : AnimalSwitch)
+	{
+		WildPetSwitchTable.Add(Data->WildAnimalID, Data->PetAnimalID);
+	}
+}
+
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 {
 	Data.AnimalPhotos = AnimalPhotoNums;
@@ -518,27 +544,30 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 #pragma endregion
 
 #pragma region スクリーンショット
-void UMyGameInstance::CaptureVRScreenshot()
+bool UMyGameInstance::CaptureVRScreenshot()
 {
 	if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."), 
 			CapturedScreenshots.Num(), MaxScreenshotsPerGame);
-		return;
+		return false;
 	}
 
 	if (!GetWorld())
 	{
 		UE_LOG(LogTemp, Error, TEXT("World is null!"));
-		return;
+		return false;
 	}
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC || !PC->PlayerCameraManager)
 	{
 		UE_LOG(LogTemp, Error, TEXT("PlayerController or CameraManager is null!"));
-		return;
+		return false;
 	}
+
+	// エフェクト
+	PC->PlayerCameraManager->StartCameraFade(0.f, 0.8f, 0.1f, FLinearColor::Black);
 
 	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
 	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
@@ -551,7 +580,7 @@ void UMyGameInstance::CaptureVRScreenshot()
 	if (!SceneCapture || !SceneCapture->GetCaptureComponent2D())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to create SceneCapture2D!"));
-		return;
+		return false;
 	}
 
 	int32 Width = 1920;
@@ -574,7 +603,7 @@ void UMyGameInstance::CaptureVRScreenshot()
 	{
 		UE_LOG(LogTemp, Error, TEXT("RenderTargetResource is null!"));
 		SceneCapture->Destroy();
-		return;
+		return false;
 	}
 
 	TArray<FColor> OutBitmap;
@@ -595,9 +624,13 @@ void UMyGameInstance::CaptureVRScreenshot()
 			NewTexture->UpdateResource();
 			
 			CapturedScreenshots.Add(NewTexture);
+			NotifyUpdateScreenShotTime();
 			
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"), 
 				CapturedScreenshots.Num(), MaxScreenshotsPerGame, Width, Height);
+
+			SceneCapture->Destroy();
+			return true;
 		}
 		else
 		{
@@ -610,6 +643,7 @@ void UMyGameInstance::CaptureVRScreenshot()
 	}
 
 	SceneCapture->Destroy();
+	return false;
 }
 
 int32 UMyGameInstance::GetRemainingScreenshots() const
@@ -622,6 +656,11 @@ void UMyGameInstance::ResetScreenshots()
 	CapturedScreenshots.Empty();
 	ResetPhotoPoints();
 	UE_LOG(LogTemp, Log, TEXT("Screenshots and photo points reset for new game session."));
+}
+
+int UMyGameInstance::GetMaxPhotosPerGame() const
+{
+	return MaxScreenshotsPerGame;
 }
 
 TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
@@ -720,5 +759,10 @@ UTexture2D* UMyGameInstance::GetScreenshotAtIndex(int32 Index) const
 		return CapturedScreenshots[Index];
 	}
 	return nullptr;
+}
+void UMyGameInstance::NotifyUpdateScreenShotTime()
+{
+	if (OnUpdateScreenShotTime.IsBound())
+		OnUpdateScreenShotTime.Broadcast(GetScreenshotCount());
 }
 #pragma endregion

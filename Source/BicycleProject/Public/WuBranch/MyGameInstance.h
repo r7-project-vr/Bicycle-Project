@@ -453,6 +453,17 @@ private:
 	/// </summary>
 	TMap<int32, int32> AnimalPhotoPoints;
 
+	/// <summary>
+	/// 野生動物からペットへの変換表(ロードするために)
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animal　Photo", meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.WildPetSwitchTable", AllowPrivateAccess = "true"))
+	UDataTable* AnimalSwitchTable;
+
+	/// <summary>
+	/// 野生動物からペットへの変換表(ゲーム内で使用)
+	/// </summary>
+	TMap<int32, int32> WildPetSwitchTable;
+
 public:
 	/// <summary>
 	/// 動物の写真を追加
@@ -534,12 +545,25 @@ public:
 	void ResetPhotoPoints();
 
 	/// <summary>
+	/// 野生動物からペットへ変換
+	/// </summary>
+	/// <param name="WildAnimalID">野生動物ID</param>
+	/// <returns>ペットID</returns>
+	int32 SwitchWild2Pet(int WildAnimalID);
+
+	/// <summary>
 	/// ショップアイテムのデータテーブル (DT_ShopItems)
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Shop", meta = (RequiredAssetDataTags = "RowStructure=/Script/BicycleProject.ShopItem"))
 	UDataTable* ShopItemsDataTable;
 
 private:
+
+	/// <summary>
+	/// 野生動物からペットへの変換表をロード
+	/// </summary>
+	void LoadSwitchTable();
+
 	void SavePhotoToFile(FPlayerSaveGame& Data);
 	void ReadPhotoFromFile(const FPlayerSaveGame& Data);
 #pragma endregion
@@ -612,7 +636,7 @@ public:
 	/// スクリーンショットをキャプチャ
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	void CaptureVRScreenshot();
+	bool CaptureVRScreenshot();
 
 	/// <summary>
 	/// 現在のゲームで撮影可能な残り枚数を取得
@@ -625,6 +649,12 @@ public:
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void ResetScreenshots();
+
+	/// <summary>
+	/// 1ゲームで撮影可能な最大枚数をゲット
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	int GetMaxPhotosPerGame() const;
 
 	/// <summary>
 	/// 1ゲームで撮影可能な最大枚数
@@ -661,8 +691,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	UTexture2D* GetScreenshotAtIndex(int32 Index) const;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScreenShotTimeDelegate, int32, Nums);
+
+	/// <summary>
+	/// 撮った写真の枚数更新通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FUpdateScreenShotTimeDelegate OnUpdateScreenShotTime;
+
 private:
 	
+	/// <summary>
+	/// 写真の枚数が更新されたのを通知
+	/// </summary>
+	void NotifyUpdateScreenShotTime();
+
 	/// <summary>
 	/// キャプチャしたスクリーンショットの配列
 	/// </summary>

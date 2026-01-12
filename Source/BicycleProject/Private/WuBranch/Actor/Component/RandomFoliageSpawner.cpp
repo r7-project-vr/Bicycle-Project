@@ -154,14 +154,21 @@ void URandomFoliageSpawner::SpawnFoliageCluster(UFoliageType_InstancedStaticMesh
 			FHitResult HitResult;
 
 			FCollisionShape Sphere = FCollisionShape::MakeSphere(Radius * ScaleFactor);
-			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 10000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_Visibility, Sphere);
+			bool Hit = GetWorld()->SweepSingleByChannel(HitResult, WorldLocation + FVector(0, 0, 20000), WorldLocation + FVector(0, 0, -2000), FQuat::Identity, ECC_Visibility, Sphere);
 			
 			if (!Hit)
+			{
+				//DrawDebugSphere(GetWorld(), WorldLocation, Radius * ScaleFactor, 12, FColor::Blue, false, 100.f, 0, 2.0f);
 				continue;
+			}
+				
 
 			// 地面の確認
 			if (!HitResult.GetActor()->ActorHasTag("Tile"))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 50.0f, FColor::Green, FString::Printf(TEXT("Hit Name: %s"), *HitResult.GetActor()->GetName()));
 				continue;
+			}
 
 			// 地面の角度を確認
 			float DotProduct = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);

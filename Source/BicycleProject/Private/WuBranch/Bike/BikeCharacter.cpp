@@ -8,11 +8,13 @@
 #include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
-#include "WuBranch/Bike/BikeMovementComponent.h"
-#include "WuBranch/Bike/ResponderComponent.h"
+//#include "WuBranch/Bike/BikeMovementComponent.h"
+//#include "WuBranch/Bike/ResponderComponent.h"
 #include "Components/BoxComponent.h"
-#include "WuBranch/Actor/Animal.h"
 #include "Kismet/GameplayStatics.h"
+#include "WuBranch/Actor/Animal.h"
+#include <tokuamaru/IOutlineHighlightable.h>
+
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -32,7 +34,7 @@ ABikeCharacter::ABikeCharacter()
 	PhotoCaptureBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	PhotoCaptureBox->SetCollisionObjectType(ECC_WorldDynamic);
 	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Overlap);
 	PhotoCaptureBox->SetGenerateOverlapEvents(true);
 	
 	// サイズ設定
@@ -98,6 +100,19 @@ void ABikeCharacter::Tick(float DeltaTime)
 			PhotoCaptureBox->SetWorldRotation(CameraRotation);
 		}
 	}
+
+	TArray<AActor*> OverlappingActors;
+	FindCaptureAnimal(OverlappingActors);
+	EnableLightAnimal(OverlappingActors);
+	DisableLightAnimal(OverlappingActors);
+	CapturedAnimals.Empty();
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (AAnimal* Animal = Cast<AAnimal>(Actor))
+		{
+			CapturedAnimals.Add(Animal);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -142,6 +157,9 @@ void ABikeCharacter::Pause_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->DisableDefaultActions();
+
+				if (Bike->GetIsAutoPlay())
+					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
 		StopMove();
@@ -159,6 +177,9 @@ void ABikeCharacter::ReStart_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->EnableDefaultActions();
+
+				if (Bike->GetIsAutoPlay())
+					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
 	}
@@ -280,8 +301,17 @@ void ABikeCharacter::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 	{
-		GameInstance->CaptureVRScreenshot();
-		DetectAndScoreAnimals();
+		if (GameInstance->CaptureVRScreenshot())
+		{
+			if (TakePhotoSucc)
+				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
+			DetectAndScoreAnimals();
+		}
+		else
+		{
+			if (TakePhotoFail)
+				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFail);
+		}
 	}
 }
 
@@ -298,37 +328,8 @@ void ABikeCharacter::DetectAndScoreAnimals()
 		return;
 	}
 
-	FVector BoxLocation = PhotoCaptureBox->GetComponentLocation();
-	FVector BoxExtent = PhotoCaptureBox->GetScaledBoxExtent();
-	FRotator BoxRotation = PhotoCaptureBox->GetComponentRotation();
-
-	TArray<AActor*> AllAnimals;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAnimal::StaticClass(), AllAnimals);
-
 	TArray<AActor*> OverlappingActors;
-	PhotoCaptureBox->GetOverlappingActors(OverlappingActors, AAnimal::StaticClass());
-
-	if (OverlappingActors.Num() == 0)
-	{
-		for (AActor* Actor : AllAnimals)
-		{
-			AAnimal* Animal = Cast<AAnimal>(Actor);
-			if (Animal)
-			{
-				FVector AnimalLocation = Animal->GetActorLocation();
-				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
-				
-				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
-				                (FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
-				                (FMath::Abs(LocalPos.Z) <= BoxExtent.Z);
-				
-				if (bInRange)
-				{
-					OverlappingActors.Add(Animal);
-				}
-			}
-		}
-	}
+	FindCaptureAnimal(OverlappingActors);
 
 	TSet<int32> DetectedAnimalIDs;
 
@@ -337,13 +338,89 @@ void ABikeCharacter::DetectAndScoreAnimals()
 		AAnimal* Animal = Cast<AAnimal>(Actor);
 		if (Animal)
 		{
-			int32 AnimalID = Animal->GetMyID();
-			
-			if (!DetectedAnimalIDs.Contains(AnimalID))
+			if (Animal->Implements<UIOutlineHighlightable>())
 			{
-				DetectedAnimalIDs.Add(AnimalID);
-				GameInstance->AddAnimalPhotoPoint(AnimalID);
+				int32 AnimalID = Animal->GetMyID();
+				if (!DetectedAnimalIDs.Contains(AnimalID))
+				{
+					DetectedAnimalIDs.Add(AnimalID);
+					int32 PetID = GameInstance->SwitchWild2Pet(AnimalID);
+					GameInstance->AddAnimalPhotoPoint(PetID);
+				}
 			}
+		}
+	}
+}
+
+void ABikeCharacter::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
+{
+	PhotoCaptureBox->GetOverlappingActors(OverlappingActors, AAnimal::StaticClass());
+
+	if (OverlappingActors.Num() == 0)
+	{
+		TArray<AActor*> AllAnimals;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAnimal::StaticClass(), AllAnimals);
+
+		FVector BoxLocation = PhotoCaptureBox->GetComponentLocation();
+		FVector BoxExtent = PhotoCaptureBox->GetScaledBoxExtent();
+		FRotator BoxRotation = PhotoCaptureBox->GetComponentRotation();
+
+		for (AActor* Actor : AllAnimals)
+		{
+			AAnimal* Animal = Cast<AAnimal>(Actor);
+			if (Animal)
+			{
+				FVector AnimalLocation = Animal->GetActorLocation();
+				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
+
+				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
+					(FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
+					(FMath::Abs(LocalPos.Z) <= BoxExtent.Z);
+
+				if (bInRange)
+				{
+					OverlappingActors.Add(Animal);
+				}
+			}
+		}
+	}
+}
+
+void ABikeCharacter::EnableLightAnimal(TArray<AActor*>& Animals)
+{
+	for (AActor* Actor : Animals)
+	{
+		if (AAnimal* Animal = Cast<AAnimal>(Actor))
+		{
+			if (Animal->Implements<UIOutlineHighlightable>())
+			{
+				IIOutlineHighlightable::Execute_EnableHighlight(Animal);
+			}
+		}
+	}
+}
+
+void ABikeCharacter::DisableLightAnimal(TArray<AActor*>& Animals)
+{
+	TArray<AAnimal*> LeftAnimals;
+	for (const TWeakObjectPtr<AAnimal>& PrevAnimal : CapturedAnimals)
+	{
+		if (!PrevAnimal.IsValid())
+		{
+			continue; // Destroyされたもの
+		}
+
+		if (!Animals.Contains(PrevAnimal))
+		{
+			LeftAnimals.Add(PrevAnimal.Get());
+		}
+	}
+
+	for (AAnimal* Animal : LeftAnimals)
+	{
+		if (Animal->Implements<UIOutlineHighlightable>())
+		{
+			IIOutlineHighlightable::Execute_DisableHighlight(Animal);
 		}
 	}
 }

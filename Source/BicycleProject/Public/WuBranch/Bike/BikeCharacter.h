@@ -12,6 +12,7 @@ class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
 class UBoxComponent;
+class AAnimal;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -203,4 +204,28 @@ private:
 	/// 撮影時に範囲内の動物を検出してポイント加算
 	/// </summary>
 	void DetectAndScoreAnimals();
+
+	//
+	void FindCaptureAnimal(TArray<AActor*>& OverlappingActors);
+
+	void EnableLightAnimal(TArray<AActor*>& Animals);
+
+	void DisableLightAnimal(TArray<AActor*>& Animals);
+
+	/// <summary>
+	/// 写真撮れたSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
+	USoundBase* TakePhotoSucc;
+
+	/// <summary>
+	/// 写真撮れないSE
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
+	USoundBase* TakePhotoFail;
+
+	/// <summary>
+	/// 映られた動物
+	/// </summary>
+	TSet<TWeakObjectPtr<AAnimal>> CapturedAnimals;
 };

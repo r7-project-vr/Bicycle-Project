@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Actor/Animal.h"
+#include "tokuamaru/IOutlineHighlightable.h"
 #include "WildAnimal.generated.h"
 class AAIController;
 /**
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API AWildAnimal : public AAnimal
+class BICYCLEPROJECT_API AWildAnimal : public AAnimal, public IIOutlineHighlightable
 {
 	GENERATED_BODY()
 	
@@ -19,6 +20,10 @@ public:
 	AWildAnimal();
 
 	virtual void Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDataAsset* Data) override;
+
+	void EnableHighlight_Implementation() override;
+
+	void DisableHighlight_Implementation() override;
 
 protected:
 

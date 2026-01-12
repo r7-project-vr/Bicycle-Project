@@ -44,6 +44,8 @@ public:
 	FOnScreenshotEvent OnScreenshotEvent;
 
 public:
+
+	UFUNCTION()
 	void OnScreenshot();
 
 private:

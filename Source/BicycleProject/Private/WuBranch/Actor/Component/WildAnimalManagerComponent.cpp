@@ -420,14 +420,16 @@ void UWildAnimalManagerComponent::OnLoadAnimalCompleted()
 			continue;
 		}
 
-		FVector OwnerLocation = Owner->GetActorLocation();
-		FRotator OwnerRotation = Owner->GetActorRotation();
-
+		//FVector OwnerLocation = Owner->GetActorLocation();
+		//FRotator OwnerRotation = Owner->GetActorRotation();
+		
 		// 相対位置から絶対位置への変換
-		FVector LocalOffset = Location - OwnerLocation;
-		FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
-		FRotator AdjustedRotation = OwnerRotation + Rotation;
-
+		//FVector LocalOffset = Location - OwnerLocation;
+		//FVector AdjustedLocation = OwnerRotation.RotateVector(LocalOffset) + OwnerLocation;
+		//FRotator AdjustedRotation = OwnerRotation + Rotation;
+		FVector AdjustedLocation = Location;
+		FRotator AdjustedRotation = Rotation;
+		
 		int32 SelectedAnimalID = DecideAnimal();
 
 		//if (SelectedAnimal)

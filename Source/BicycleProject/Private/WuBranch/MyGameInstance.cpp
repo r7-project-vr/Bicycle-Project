@@ -73,7 +73,7 @@ void UMyGameInstance::SetTotalCoins(int Amount)
 void UMyGameInstance::AddCoinsPerGame(int Amount)
 {
 	// 無効な値
-	if(Amount <= 0)
+	if (Amount <= 0)
 		return;
 
 	CoinsPerGame += Amount;
@@ -280,7 +280,7 @@ void UMyGameInstance::RemoveAnimal(int32 AnimalID)
 	// 削除
 	OwnedAnimals[AnimalID] -= 1;
 
-	if(OwnedAnimals[AnimalID] == 0)
+	if (OwnedAnimals[AnimalID] == 0)
 		OwnedAnimals.Remove(AnimalID);
 
 	// 通知
@@ -313,7 +313,7 @@ void UMyGameInstance::SetMaxAnimalCount(int Amount)
 bool UMyGameInstance::HasMaxAnimals() const
 {
 	int Sum = 0;
-		for (const auto& Pair : OwnedAnimals)
+	for (const auto& Pair : OwnedAnimals)
 	{
 		Sum += Pair.Value;
 	}
@@ -372,9 +372,6 @@ void UMyGameInstance::ResetAnimalPhoto()
 
 void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 {
-	// 既存のポイント数を記録
-	int32 OldPoints = AnimalPhotoPoints.Contains(AnimalID) ? AnimalPhotoPoints[AnimalID] : 0;
-	
 	if (AnimalPhotoPoints.Contains(AnimalID))
 		AnimalPhotoPoints[AnimalID] += 1;
 	else
@@ -399,7 +396,7 @@ int32 UMyGameInstance::GetRequiredPointsForAnimal(int32 AnimalID) const
 	TArray<FShopItem*> AllShopItems;
 	FString ContextString(TEXT("GetRequiredPointsForAnimal"));
 	ShopItemsDataTable->GetAllRows<FShopItem>(ContextString, AllShopItems);
-	
+
 	for (FShopItem* ShopItem : AllShopItems)
 	{
 		if (ShopItem && ShopItem->ID == AnimalID)
@@ -420,7 +417,7 @@ bool UMyGameInstance::CanPurchaseAnimal(int32 AnimalID) const
 
 	int32 CurrentPoints = GetAnimalPhotoPoint(AnimalID);
 	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
-	
+
 	return CurrentPoints >= RequiredPoints;
 }
 
@@ -432,7 +429,7 @@ bool UMyGameInstance::PurchaseAnimal(int32 AnimalID)
 	}
 
 	AddAnimal(AnimalID);
-	
+
 	return true;
 }
 
@@ -462,7 +459,7 @@ int32 UMyGameInstance::SwitchWild2Pet(int WildAnimalID)
 		return WildPetSwitchTable[WildAnimalID];
 	else
 		return 3;
-		
+
 }
 
 void UMyGameInstance::LoadSwitchTable()
@@ -488,8 +485,29 @@ void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 
 void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
 {
-	AnimalPhotoNums = Data.AnimalPhotos;
-	AnimalPhotoPoints = Data.AnimalPhotoPoints;
+	// 保存されたデータを累積加算する
+	for (const auto& Pair : Data.AnimalPhotos)
+	{
+		int32 AnimalID = Pair.Key;
+		int32 SavedCount = Pair.Value;
+
+		if (AnimalPhotoNums.Contains(AnimalID))
+			AnimalPhotoNums[AnimalID] += SavedCount; // 既存の値に加算
+		else
+			AnimalPhotoNums.Add(AnimalID, SavedCount);
+	}
+
+	// ポイントも累積加算する
+	for (const auto& Pair : Data.AnimalPhotoPoints)
+	{
+		int32 AnimalID = Pair.Key;
+		int32 SavedPoints = Pair.Value;
+
+		if (AnimalPhotoPoints.Contains(AnimalID))
+			AnimalPhotoPoints[AnimalID] += SavedPoints; // 既存の値に加算
+		else
+			AnimalPhotoPoints.Add(AnimalID, SavedPoints);
+	}
 }
 #pragma endregion
 
@@ -514,7 +532,7 @@ void UMyGameInstance::SaveAllToFile()
 	SaveSetsToFile(Data);
 	SaveRPMToFile(Data);
 	SavePhotoToFile(Data);
-	
+
 	FString Path = FPaths::ProjectSavedDir() / FileName;
 	GetSubsystem<USaveGameManager>()->SaveFile(Path, Data);
 }
@@ -548,7 +566,7 @@ bool UMyGameInstance::CaptureVRScreenshot()
 {
 	if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."), 
+		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."),
 			CapturedScreenshots.Num(), MaxScreenshotsPerGame);
 		return false;
 	}
@@ -574,9 +592,9 @@ bool UMyGameInstance::CaptureVRScreenshot()
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	
+
 	ASceneCapture2D* SceneCapture = GetWorld()->SpawnActor<ASceneCapture2D>(ASceneCapture2D::StaticClass(), CameraLocation, CameraRotation, SpawnParams);
-	
+
 	if (!SceneCapture || !SceneCapture->GetCaptureComponent2D())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to create SceneCapture2D!"));
@@ -594,11 +612,11 @@ bool UMyGameInstance::CaptureVRScreenshot()
 	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
-	
+
 	CaptureComponent->CaptureScene();
 
 	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
-	
+
 	if (!RenderTargetResource)
 	{
 		UE_LOG(LogTemp, Error, TEXT("RenderTargetResource is null!"));
@@ -622,11 +640,11 @@ bool UMyGameInstance::CaptureVRScreenshot()
 			FMemory::Memcpy(TextureData, OutBitmap.GetData(), OutBitmap.Num() * sizeof(FColor));
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 			NewTexture->UpdateResource();
-			
+
 			CapturedScreenshots.Add(NewTexture);
 			NotifyUpdateScreenShotTime();
-			
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"), 
+
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"),
 				CapturedScreenshots.Num(), MaxScreenshotsPerGame, Width, Height);
 
 			SceneCapture->Destroy();
@@ -653,9 +671,9 @@ int32 UMyGameInstance::GetRemainingScreenshots() const
 
 void UMyGameInstance::ResetScreenshots()
 {
+	// スクリーンショットのみをリセット（ポイントは保持）
 	CapturedScreenshots.Empty();
-	ResetPhotoPoints();
-	UE_LOG(LogTemp, Log, TEXT("Screenshots and photo points reset for new game session."));
+	UE_LOG(LogTemp, Log, TEXT("Screenshots reset for new game session (photo points preserved)."));
 }
 
 int UMyGameInstance::GetMaxPhotosPerGame() const
@@ -701,8 +719,8 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 		Location.Y += Col * GridSpacing.Y;
 		Location.Z += Row * GridSpacing.Z;
 
-		UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f), Offset=(Y=%.2f, Z=%.2f)"), 
-			i + 1, Row, Col, Location.X, Location.Y, Location.Z, 
+		UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f), Offset=(Y=%.2f, Z=%.2f)"),
+			i + 1, Row, Col, Location.X, Location.Y, Location.Z,
 			Col * GridSpacing.Y, Row * GridSpacing.Z);
 
 		FActorSpawnParameters SpawnParams;
@@ -718,19 +736,19 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 		if (DisplayActor && CapturedScreenshots[i])
 		{
 			FVector InitialScale = DisplayActor->GetActorScale3D();
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Initial Scale=(%.2f, %.2f, %.2f)"), 
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Initial Scale=(%.2f, %.2f, %.2f)"),
 				i + 1, InitialScale.X, InitialScale.Y, InitialScale.Z);
-			
+
 			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
-			
+
 			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
 			DisplayActor->SetActorScale3D(NewScale);
-			
+
 			FVector FinalScale = DisplayActor->GetActorScale3D();
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Final Scale=(%.2f, %.2f, %.2f) - Scale change: %s"), 
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Final Scale=(%.2f, %.2f, %.2f) - Scale change: %s"),
 				i + 1, FinalScale.X, FinalScale.Y, FinalScale.Z,
 				FinalScale.Equals(NewScale, 0.01f) ? TEXT("SUCCESS") : TEXT("FAILED"));
-			
+
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] successfully"), i + 1, Row, Col);
 		}
 	}

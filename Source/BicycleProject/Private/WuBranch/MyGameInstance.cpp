@@ -479,35 +479,16 @@ void UMyGameInstance::LoadSwitchTable()
 
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 {
+	// 現在のデータをそのまま保存
 	Data.AnimalPhotos = AnimalPhotoNums;
 	Data.AnimalPhotoPoints = AnimalPhotoPoints;
 }
 
 void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
 {
-	// 保存されたデータを累積加算する
-	for (const auto& Pair : Data.AnimalPhotos)
-	{
-		int32 AnimalID = Pair.Key;
-		int32 SavedCount = Pair.Value;
-
-		if (AnimalPhotoNums.Contains(AnimalID))
-			AnimalPhotoNums[AnimalID] += SavedCount; // 既存の値に加算
-		else
-			AnimalPhotoNums.Add(AnimalID, SavedCount);
-	}
-
-	// ポイントも累積加算する
-	for (const auto& Pair : Data.AnimalPhotoPoints)
-	{
-		int32 AnimalID = Pair.Key;
-		int32 SavedPoints = Pair.Value;
-
-		if (AnimalPhotoPoints.Contains(AnimalID))
-			AnimalPhotoPoints[AnimalID] += SavedPoints; // 既存の値に加算
-		else
-			AnimalPhotoPoints.Add(AnimalID, SavedPoints);
-	}
+	// 保存されたデータをそのまま読み込む
+	AnimalPhotoNums = Data.AnimalPhotos;
+	AnimalPhotoPoints = Data.AnimalPhotoPoints;
 }
 #pragma endregion
 
@@ -709,6 +690,7 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 	int32 Columns = 3;
 	int32 Rows = 2;
 
+	// 古い順に表示する
 	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
 	{
 		int32 Row = i / Columns;
@@ -719,9 +701,8 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 		Location.Y += Col * GridSpacing.Y;
 		Location.Z += Row * GridSpacing.Z;
 
-		UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f), Offset=(Y=%.2f, Z=%.2f)"),
-			i + 1, Row, Col, Location.X, Location.Y, Location.Z,
-			Col * GridSpacing.Y, Row * GridSpacing.Z);
+		UE_LOG(LogTemp, Log, TEXT("Screenshot %d (Order: %d): Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f)"), 
+			i + 1, i + 1, Row, Col, Location.X, Location.Y, Location.Z);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -735,25 +716,17 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 
 		if (DisplayActor && CapturedScreenshots[i])
 		{
-			FVector InitialScale = DisplayActor->GetActorScale3D();
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Initial Scale=(%.2f, %.2f, %.2f)"),
-				i + 1, InitialScale.X, InitialScale.Y, InitialScale.Z);
-
 			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
-
+			
 			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
 			DisplayActor->SetActorScale3D(NewScale);
-
-			FVector FinalScale = DisplayActor->GetActorScale3D();
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d: Final Scale=(%.2f, %.2f, %.2f) - Scale change: %s"),
-				i + 1, FinalScale.X, FinalScale.Y, FinalScale.Z,
-				FinalScale.Equals(NewScale, 0.01f) ? TEXT("SUCCESS") : TEXT("FAILED"));
-
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] successfully"), i + 1, Row, Col);
+			
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] - Order: oldest to newest"), 
+				i + 1, Row, Col);
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in grid format!"), CapturedScreenshots.Num());
+	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in chronological order (oldest first)!"), CapturedScreenshots.Num());
 }
 
 UTexture2D* UMyGameInstance::GetLastScreenshot() const

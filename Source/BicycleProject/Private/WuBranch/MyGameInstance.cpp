@@ -479,14 +479,14 @@ void UMyGameInstance::LoadSwitchTable()
 
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 {
-	// 現在のデータをそのまま保存（累積済み）
+	// 現在のデータをそのまま保存
 	Data.AnimalPhotos = AnimalPhotoNums;
 	Data.AnimalPhotoPoints = AnimalPhotoPoints;
 }
 
 void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
 {
-	// 保存されたデータをそのまま読み込む（上書き）
+	// 保存されたデータをそのまま読み込む
 	AnimalPhotoNums = Data.AnimalPhotos;
 	AnimalPhotoPoints = Data.AnimalPhotoPoints;
 }

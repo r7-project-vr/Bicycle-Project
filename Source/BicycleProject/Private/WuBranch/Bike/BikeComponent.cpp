@@ -196,7 +196,8 @@ void UBikeComponent::OnMove(FVector2D direction)
 	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
 	// 入力した方向をキャラクターの向きに合わせる
 	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
-	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	Character->AddMovementInput(BikeDir);
+	//Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
 	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);

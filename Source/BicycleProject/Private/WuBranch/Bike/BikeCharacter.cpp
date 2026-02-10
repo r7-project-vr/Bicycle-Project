@@ -8,13 +8,8 @@
 #include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
-//#include "WuBranch/Bike/BikeMovementComponent.h"
-//#include "WuBranch/Bike/ResponderComponent.h"
-#include "Components/BoxComponent.h"
+#include "WuBranch/Actor/Component/PhotoCaptureComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "WuBranch/Actor/Animal.h"
-#include <tokuamaru/IOutlineHighlightable.h>
-
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -25,22 +20,8 @@ ABikeCharacter::ABikeCharacter()
 
 	Bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
+	PhotoCapture = CreateDefaultSubobject<UPhotoCaptureComponent>(TEXT("Photo Capture"));
 
-	// 撮影判定用コリジョンを作成
-	PhotoCaptureBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PhotoCaptureBox"));
-	PhotoCaptureBox->SetupAttachment(RootComponent);
-	
-	// コリジョン設定 - 動物のみを検出し、他のオブジェクトは無視
-	PhotoCaptureBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	PhotoCaptureBox->SetCollisionObjectType(ECC_WorldDynamic);
-	PhotoCaptureBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	PhotoCaptureBox->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Overlap);
-	PhotoCaptureBox->SetGenerateOverlapEvents(true);
-	
-	// サイズ設定
-	PhotoCaptureBox->SetBoxExtent(FVector(900.0f, 150.0f, 150.0f));
-	PhotoCaptureBox->SetRelativeLocation(FVector(1500.0f, 0.0f, 0.0f));
-	
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
@@ -60,6 +41,12 @@ void ABikeCharacter::BeginPlay()
 	IsOverSpeed = false;
 	IsPause = false;
 
+	// PhotoCaptureBoxを初期化
+	if (PhotoCapture)
+	{
+		PhotoCapture->InitializePhotoCaptureBox(RootComponent);
+	}
+
 	// ゲーム開始時にスクリーンショットをリセット
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)
@@ -67,7 +54,6 @@ void ABikeCharacter::BeginPlay()
 		GameInstance->ResetScreenshots();
 	}
 }
-
 
 // Called every frame
 void ABikeCharacter::Tick(float DeltaTime)
@@ -82,36 +68,6 @@ void ABikeCharacter::Tick(float DeltaTime)
 	if (CheckOverSpeed())
 	{
 		IsOverSpeed = true;
-	}
-
-	// カメラに追従させる
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (PC->PlayerCameraManager)
-		{
-			FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
-			FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
-			
-			// カメラの前方に判定ボックスを配置
-			FVector ForwardVector = CameraRotation.Vector();
-			FVector BoxLocation = CameraLocation + (ForwardVector * 1500.0f);
-			
-			PhotoCaptureBox->SetWorldLocation(BoxLocation);
-			PhotoCaptureBox->SetWorldRotation(CameraRotation);
-		}
-	}
-
-	TArray<AActor*> OverlappingActors;
-	FindCaptureAnimal(OverlappingActors);
-	EnableLightAnimal(OverlappingActors);
-	DisableLightAnimal(OverlappingActors);
-	CapturedAnimals.Empty();
-	for (AActor* Actor : OverlappingActors)
-	{
-		if (AAnimal* Animal = Cast<AAnimal>(Actor))
-		{
-			CapturedAnimals.Add(Animal);
-		}
 	}
 }
 
@@ -132,17 +88,12 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		DeviceManager->BindMoveEvent(Bike, "OnMove");
 		DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
 		DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
-		/*if(BikeMovement)
-			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
-		if (Responder)
-		{
-			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
-			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
-		}*/
-		
 
-		// BikeCharacterで撮影を行う
-		DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
+		// PhotoCaptureComponentで撮影を行う
+		if (PhotoCapture)
+		{
+			DeviceManager->BindScreenshotEvent(PhotoCapture, FName("OnScreenshotTaken"));
+		}
 	}
 }
 
@@ -273,12 +224,9 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		HandleBarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
-		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
-		//{
-			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-			UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-			deviceManager->EnableDefaultActions();
-		//}
+		UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+		UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+		deviceManager->EnableDefaultActions();
 		return;
 	}
 
@@ -294,152 +242,4 @@ bool ABikeCharacter::CheckOverSpeed() const
 {
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
-}
-
-void ABikeCharacter::OnScreenshotTaken()
-{
-	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
-	if (GameInstance)
-	{
-		if (GameInstance->CaptureVRScreenshot())
-		{
-			if (TakePhotoSucc)
-				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
-			DetectAndScoreAnimals();
-		}
-		else
-		{
-			if (TakePhotoFail)
-				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFail);
-		}
-	}
-}
-
-void ABikeCharacter::DetectAndScoreAnimals()
-{
-	if (!PhotoCaptureBox)
-	{
-		return;
-	}
-
-	UMyGameInstance* GameInstance = GetGameInstance<UMyGameInstance>();
-	if (!GameInstance)
-	{
-		return;
-	}
-
-	TArray<AActor*> OverlappingActors;
-	FindCaptureAnimal(OverlappingActors);
-
-	TSet<int32> DetectedAnimalIDs;
-
-	for (AActor* Actor : OverlappingActors)
-	{
-		AAnimal* Animal = Cast<AAnimal>(Actor);
-		if (Animal)
-		{
-			if (Animal->Implements<UIOutlineHighlightable>())
-			{
-				int32 AnimalID = Animal->GetMyID();
-				if (!DetectedAnimalIDs.Contains(AnimalID))
-				{
-					DetectedAnimalIDs.Add(AnimalID);
-					int32 PetID = GameInstance->SwitchWild2Pet(AnimalID);
-					GameInstance->AddAnimalPhotoPoint(PetID);
-				}
-			}
-		}
-	}
-}
-
-void ABikeCharacter::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
-{
-	PhotoCaptureBox->GetOverlappingActors(OverlappingActors, AAnimal::StaticClass());
-
-	if (OverlappingActors.Num() == 0)
-	{
-		TArray<AActor*> AllAnimals;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAnimal::StaticClass(), AllAnimals);
-
-		FVector BoxLocation = PhotoCaptureBox->GetComponentLocation();
-		FVector BoxExtent = PhotoCaptureBox->GetScaledBoxExtent();
-		FRotator BoxRotation = PhotoCaptureBox->GetComponentRotation();
-
-		for (AActor* Actor : AllAnimals)
-		{
-			AAnimal* Animal = Cast<AAnimal>(Actor);
-			if (Animal)
-			{
-				FVector AnimalLocation = Animal->GetActorLocation();
-				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
-
-				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
-					(FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
-					(FMath::Abs(LocalPos.Z) <= BoxExtent.Z);
-
-				if (bInRange)
-				{
-					OverlappingActors.Add(Animal);
-				}
-			}
-		}
-	}
-}
-
-void ABikeCharacter::EnableLightAnimal(TArray<AActor*>& Animals)
-{
-	for (AActor* Actor : Animals)
-	{
-		if (AAnimal* Animal = Cast<AAnimal>(Actor))
-		{
-			if (Animal->Implements<UIOutlineHighlightable>())
-			{
-				IIOutlineHighlightable::Execute_EnableHighlight(Animal);
-			}
-		}
-	}
-}
-
-void ABikeCharacter::DisableLightAnimal(TArray<AActor*>& Animals)
-{
-	TArray<AAnimal*> LeftAnimals;
-	for (const TWeakObjectPtr<AAnimal>& PrevAnimal : CapturedAnimals)
-	{
-		if (!PrevAnimal.IsValid())
-		{
-			continue; // Destroyされたもの
-		}
-
-		if (!Animals.Contains(PrevAnimal))
-		{
-			LeftAnimals.Add(PrevAnimal.Get());
-		}
-	}
-
-	for (AAnimal* Animal : LeftAnimals)
-	{
-		if (Animal->Implements<UIOutlineHighlightable>())
-		{
-			IIOutlineHighlightable::Execute_DisableHighlight(Animal);
-		}
-	}
-}
-
-void ABikeCharacter::DebugPhotoCaptureBox()
-{
-	if (!PhotoCaptureBox)
-	{
-		UE_LOG(LogTemp, Error, TEXT("PhotoCaptureBox is null!"));
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("=== PhotoCaptureBox Debug Info ==="));
-	UE_LOG(LogTemp, Warning, TEXT("Collision Enabled: %d"), (int32)PhotoCaptureBox->GetCollisionEnabled());
-	UE_LOG(LogTemp, Warning, TEXT("Generate Overlap Events: %s"), PhotoCaptureBox->GetGenerateOverlapEvents() ? TEXT("true") : TEXT("false"));
-	UE_LOG(LogTemp, Warning, TEXT("Box Extent: %s"), *PhotoCaptureBox->GetScaledBoxExtent().ToString());
-	
-	// 全てのコリジョンレスポンスを表示
-	UE_LOG(LogTemp, Warning, TEXT("Collision Responses:"));
-	UE_LOG(LogTemp, Warning, TEXT("  Pawn: %d"), (int32)PhotoCaptureBox->GetCollisionResponseToChannel(ECC_Pawn));
-	UE_LOG(LogTemp, Warning, TEXT("  WorldDynamic: %d"), (int32)PhotoCaptureBox->GetCollisionResponseToChannel(ECC_WorldDynamic));
 }

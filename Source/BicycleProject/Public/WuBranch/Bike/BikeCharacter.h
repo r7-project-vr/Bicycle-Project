@@ -11,8 +11,7 @@ class UBikeComponent;
 class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
-class UBoxComponent;
-class AAnimal;
+class UPhotoCaptureComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -85,18 +84,6 @@ public:
 	/// </summary>
 	void ResetOverSpeed();
 
-	/// <summary>
-	/// スクリーンショット撮影後に呼ばれる
-	/// </summary>
-	UFUNCTION()
-	void OnScreenshotTaken();
-
-	/// <summary>
-	/// デバッグ：コリジョン設定を確認
-	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void DebugPhotoCaptureBox();
-
 private:
 
 	/// <summary>
@@ -151,6 +138,12 @@ private:
 	UAnimalManagerComponent* AnimalManager;
 
 	/// <summary>
+	/// 写真撮影コンポーネント
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPhotoCaptureComponent* PhotoCapture;
+
+	/// <summary>
 	/// UI操作用のヒントライン
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -193,39 +186,4 @@ private:
 	/// 停止中ですか
 	/// </summary>
 	bool IsPause;
-
-	/// <summary>
-	/// カメラ追従撮影判定用コリジョン
-	/// </summary>
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* PhotoCaptureBox;
-
-	/// <summary>
-	/// 撮影時に範囲内の動物を検出してポイント加算
-	/// </summary>
-	void DetectAndScoreAnimals();
-
-	//
-	void FindCaptureAnimal(TArray<AActor*>& OverlappingActors);
-
-	void EnableLightAnimal(TArray<AActor*>& Animals);
-
-	void DisableLightAnimal(TArray<AActor*>& Animals);
-
-	/// <summary>
-	/// 写真撮れたSE
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
-	USoundBase* TakePhotoSucc;
-
-	/// <summary>
-	/// 写真撮れないSE
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
-	USoundBase* TakePhotoFail;
-
-	/// <summary>
-	/// 映られた動物
-	/// </summary>
-	TSet<TWeakObjectPtr<AAnimal>> CapturedAnimals;
 };

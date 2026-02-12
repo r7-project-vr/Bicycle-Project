@@ -172,11 +172,11 @@ void UBikeComponent::OnMove(FVector2D direction)
 		return;
 
 	// 加速が最大になるとペナルティ
-	if (direction.Length() == 1)
+	/*if (direction.Length() == 1)
 	{
 		ApplyPenalty();
 		return;
-	}
+	}*/
 
 	// 移動方向は自転車今向いている方向を中心に
 	FVector actorForward = GetOwner()->GetActorForwardVector();
@@ -190,20 +190,24 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("bike dir: %s"), *BikeDir.ToString()));
+	//Character->GetCharacterMovement()->MovementMode;
+
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
 	// 破棄してACharacterのCharacterMovementを利用します
 	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
 	// 入力した方向をキャラクターの向きに合わせる
 	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
-	Character->AddMovementInput(BikeDir);
-	//Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	//Character->AddMovementInput(BikeDir);
+	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	Character->LaunchCharacter(MaxSpeed * BikeDir, false, true);
 	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);
 
 	// 慣性を設定
-	_inertiaVelocity = dir.GetSafeNormal() * Speed;
+	//_inertiaVelocity = dir.GetSafeNormal() * Speed;
 	bHasMovInput = true;
 }
 

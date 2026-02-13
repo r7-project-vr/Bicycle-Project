@@ -43,11 +43,14 @@ void UResponderComponent::BeginPlay()
 
 void UResponderComponent::OnSelectLeftAnswer()
 {
-	FQuestion* question = QuestionActor->GetNowQuestion();
-	SelectLeftAnswer(question->ID, 0);
+	if (QuestionActor)
+	{
+		FQuestion* Question = QuestionActor->GetNowQuestion();
+		SelectLeftAnswer(Question->ID, 0);
+	}
 }
 
-void UResponderComponent::SelectLeftAnswer(int questionID, int answer)
+void UResponderComponent::SelectLeftAnswer(int QuestionID, int Answer)
 {
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
 	//出口まで誘導
@@ -55,28 +58,35 @@ void UResponderComponent::SelectLeftAnswer(int questionID, int answer)
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	//bool Result = GameMode->CheckAnswer(questionID, answer);
-	GameMode->AnsweredQuestion();
-	// 正解か不正解を表示
-	//QuestionActor->SetResult(0, Result);
-	// コインの処理
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	//HandleCoin(Result, !Character->HasOverSpeed());
-	BikeCom->HandleCoin(true, !Character->HasOverSpeed());
-	// 2025.10.19 ウー end
-	// 超速の記録をリセット
-	Character->ResetOverSpeed();
-	// マップの生成
-	BikeCom->SpawnNextMap(true);
+	if (GameMode)
+	{
+		//bool Result = GameMode->CheckAnswer(QuestionID, Answer);
+		GameMode->AnsweredQuestion();
+		// 正解か不正解を表示
+		//QuestionActor->SetResult(0, Result);
+		// コインの処理
+		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+		//HandleCoin(Result, !Character->HasOverSpeed());
+		BikeCom->HandleCoin(true, !Character->HasOverSpeed());
+		// 2025.10.19 ウー end
+		// 超速の記録をリセット
+		Character->ResetOverSpeed();
+		// マップの生成
+		BikeCom->SpawnNextMap(true);
+		GameMode->CheckGameOver();
+	}
 }
 
 void UResponderComponent::OnSelectRightAnswer()
 {
-	FQuestion* question = QuestionActor->GetNowQuestion();
-	SelectRightAnswer(question->ID, 1);
+	if (QuestionActor)
+	{
+		FQuestion* Question = QuestionActor->GetNowQuestion();
+		SelectRightAnswer(Question->ID, 1);
+	}
 }
 
-void UResponderComponent::SelectRightAnswer(int questionID, int answer)
+void UResponderComponent::SelectRightAnswer(int QuestionID, int Answer)
 {
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
@@ -84,25 +94,29 @@ void UResponderComponent::SelectRightAnswer(int questionID, int answer)
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	//bool Result = GameMode->CheckAnswer(questionID, answer);
-	GameMode->AnsweredQuestion();
-	// 正解か不正解を表示
-	//QuestionActor->SetResult(1, Result);
-	// コインの処理
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	//HandleCoin(Result, !Character->HasOverSpeed());
-	BikeCom->HandleCoin(true, !Character->HasOverSpeed());
-	// 超速の記録をリセット
-	Character->ResetOverSpeed();
-	// マップの生成
-	BikeCom->SpawnNextMap(false);
+	if (GameMode)
+	{
+		//bool Result = GameMode->CheckAnswer(QuestionID, Answer);
+		GameMode->AnsweredQuestion();
+		// 正解か不正解を表示
+		//QuestionActor->SetResult(1, Result);
+		// コインの処理
+		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+		//HandleCoin(Result, !Character->HasOverSpeed());
+		BikeCom->HandleCoin(true, !Character->HasOverSpeed());
+		// 超速の記録をリセット
+		Character->ResetOverSpeed();
+		// マップの生成
+		BikeCom->SpawnNextMap(false);
+		GameMode->CheckGameOver();
+	}
 }
 
-void UResponderComponent::HandleSelectAnswer(FRotator dir)
+void UResponderComponent::HandleSelectAnswer(FRotator Dir)
 {
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 	// 曲がる
-	Character->SetTurningAngle(dir);
+	Character->SetTurningAngle(Dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswerAction();
 	// UI補助線を表示しない

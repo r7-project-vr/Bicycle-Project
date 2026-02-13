@@ -8,8 +8,8 @@
 #include "WuBranch/Bike/BikeComponent.h"
 #include "WuBranch/Bike/WidgetInteractionHeadComponent.h"
 #include "WuBranch/Actor/Component/AnimalManagerComponent.h"
-//#include "WuBranch/Bike/BikeMovementComponent.h"
-//#include "WuBranch/Bike/ResponderComponent.h"
+#include "WuBranch/Bike/BikeMovementComponent.h"
+#include "WuBranch/Bike/ResponderComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Actor/Animal.h"
@@ -23,7 +23,7 @@ ABikeCharacter::ABikeCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Bike = CreateDefaultSubobject<UBikeComponent>(FName("Bike"));
+	Bike = CreateDefaultSubobject<UBikeComponent>(TEXT("Bike"));
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
 
 	// 撮影判定用コリジョンを作成
@@ -54,6 +54,8 @@ void ABikeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FindMover();
+	FindResponder();
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_targetRotator = FRotator::ZeroRotator;
@@ -129,16 +131,27 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	{
 		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
 		DeviceManager->CreateAllDevices();
-		DeviceManager->BindMoveEvent(Bike, "OnMove");
-		DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
-		DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
-		/*if(BikeMovement)
+		/*if (Bike)
+		{
+			DeviceManager->BindMoveEvent(Bike, "OnMove");
+			DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
+			DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
+		}*/
+		if (!BikeMovement)
+			FindMover();
+		if (BikeMovement)
+		{
 			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
+		}
+		if (!Responder)
+			FindResponder();
 		if (Responder)
 		{
 			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
 			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
-		}*/
+		}
 		
 
 		// BikeCharacterで撮影を行う
@@ -294,6 +307,20 @@ bool ABikeCharacter::CheckOverSpeed() const
 {
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
+}
+
+void ABikeCharacter::FindMover()
+{
+	BikeMovement = GetComponentByClass<UBikeMovementComponent>();
+	if (!BikeMovement)
+		UE_LOG(LogTemp, Error, TEXT("UBikeMovementComponent didnot attach"));
+}
+
+void ABikeCharacter::FindResponder()
+{
+	Responder = GetComponentByClass<UResponderComponent>();
+	if (!Responder)
+		UE_LOG(LogTemp, Error, TEXT("UBikeMovementComponent didnot attach"));
 }
 
 void ABikeCharacter::OnScreenshotTaken()

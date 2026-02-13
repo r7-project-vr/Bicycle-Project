@@ -120,7 +120,7 @@ private:
 	/// <summary>
 	/// 自作デバイスの入力をシミュレートする間隔
 	/// </summary>
-	const float SimulateCustomDeviceInputInterval = 0.0f;
+	const float SimulateCustomDeviceInputInterval = 0.5f;
 
 	/// <summary>
 	/// 時間カウンター

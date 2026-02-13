@@ -65,7 +65,7 @@ public:
 	/// オートプレイする時同期したい座標
 	/// </summary>
 	/// <param name="pos">座標</param>
-	void SetSynchPos(FVector pos);
+	void SetSynchPos(FVector Pos);
 
 private:
 
@@ -127,4 +127,14 @@ private:
 	/// 移動の入力あるか
 	/// </summary>
 	bool bHasMovInput;
+
+	// 現在の加速目標方向
+	FVector TargetMoveDirection;
+
+	// 自動加速があと何秒残っているか
+	float AutoAccelerationTimer = 0.0f;
+
+	// 加速を続ける時間（調整用パラメータ：例えば 2.0秒）
+	UPROPERTY(EditAnywhere, Category = "Move", meta = (AllowPrivateAccess = "true"))
+	float AccelerationDuration = 2.0f;
 };

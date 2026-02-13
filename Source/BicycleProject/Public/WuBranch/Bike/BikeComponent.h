@@ -33,6 +33,13 @@ public:
 	void ReduceVelocityTo0();
 
 	/// <summary>
+	/// 移動
+	/// </summary>
+	/// <param name="direction">移動方向</param>
+	UFUNCTION()
+	void OnMove(FVector2D direction);
+
+	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
 	UFUNCTION()
@@ -147,13 +154,6 @@ private:
 	/// 慣性の処理
 	/// </summary>
 	void HandleInertia(float DeltaTime);
-
-	/// <summary>
-	/// 移動
-	/// </summary>
-	/// <param name="direction">移動方向</param>
-	UFUNCTION()
-	void OnMove(FVector2D direction);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない

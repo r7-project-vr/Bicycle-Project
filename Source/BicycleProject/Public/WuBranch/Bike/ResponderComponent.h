@@ -35,10 +35,10 @@ public:
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
-	/// <param name="questionID">問題ID</param>
-	/// <param name="answer">答え</param>
+	/// <param name="QuestionID">問題ID</param>
+	/// <param name="Answer">答え</param>
 	UFUNCTION(BlueprintCallable)
-	void SelectLeftAnswer(int questionID, int answer);
+	void SelectLeftAnswer(int QuestionID, int Answer);
 
 	/// <summary>
 	/// 右の答えを選ぶ
@@ -49,18 +49,18 @@ public:
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
-	/// <param name="questionID">問題ID</param>
-	/// <param name="answer">答え</param>
+	/// <param name="QuestionID">問題ID</param>
+	/// <param name="Answer">答え</param>
 	UFUNCTION(BlueprintCallable)
-	void SelectRightAnswer(int questionID, int answer);
+	void SelectRightAnswer(int QuestionID, int Answer);
 
 private:
 
 	/// <summary>
 	/// 答えを選んだの処理
 	/// </summary>
-	/// <param name="dir">曲がりたい方向</param>
-	void HandleSelectAnswer(FRotator dir);
+	/// <param name="Dir">曲がりたい方向</param>
+	void HandleSelectAnswer(FRotator Dir);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない

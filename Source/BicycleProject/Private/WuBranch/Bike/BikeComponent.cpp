@@ -30,7 +30,6 @@ UBikeComponent::UBikeComponent()
 	bHasMovInput = false;
 }
 
-
 // Called when the game starts
 void UBikeComponent::BeginPlay()
 {
@@ -52,7 +51,6 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-
 	if (bIsAutoPlay)
 	{
 		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
@@ -190,9 +188,6 @@ void UBikeComponent::OnMove(FVector2D direction)
 
 	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
 
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("bike dir: %s"), *BikeDir.ToString()));
-	//Character->GetCharacterMovement()->MovementMode;
-
 	// 移動
 	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
 	// 破棄してACharacterのCharacterMovementを利用します
@@ -200,8 +195,8 @@ void UBikeComponent::OnMove(FVector2D direction)
 	// 入力した方向をキャラクターの向きに合わせる
 	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
 	//Character->AddMovementInput(BikeDir);
-	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
-	Character->LaunchCharacter(MaxSpeed * BikeDir, false, true);
+	//Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+	//Character->LaunchCharacter(MaxSpeed * BikeDir, false, true);
 	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
 	//Character->AddMovementInput(actorForward, BikeDir.X);
 	//Character->AddMovementInput(actorRight, BikeDir.Y);

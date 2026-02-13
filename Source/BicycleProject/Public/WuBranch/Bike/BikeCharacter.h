@@ -121,6 +121,16 @@ private:
 	bool CheckOverSpeed() const;
 
 	/// <summary>
+	/// 移動のコンポーネントを探す
+	/// </summary>
+	void FindMover();
+
+	/// <summary>
+	/// 回答者を探す
+	/// </summary>
+	void FindResponder();
+
+	/// <summary>
 	/// ロード先の自転車メッシュ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -136,12 +146,12 @@ private:
 	/// <summary>
 	/// 移動
 	/// </summary>
-	//UBikeMovementComponent* BikeMovement;
+	UBikeMovementComponent* BikeMovement;
 
 	/// <summary>
-	/// 解答者
+	/// 回答者
 	/// </summary>
-	//UResponderComponent* Responder;
+	UResponderComponent* Responder;
 	// 2025.12.24 ウー end
 
 	/// <summary>

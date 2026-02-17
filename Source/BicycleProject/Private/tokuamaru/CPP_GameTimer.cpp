@@ -120,7 +120,7 @@ void UCPP_GameTimer::SetText()
 void UCPP_GameTimer::SoundUpDate()
 {
 	if (!SignalSound)return;
-	int32 PlayTime = FMath::FloorToInt((TotalGameTime * 60.0f) - CurrentGameTime);
+	int32 PlayTime = FMath::FloorToInt((TotalGameTime * 60.0f * StandardStageTime) - CurrentGameTime);
 
 	if (PlayTime % (int32)SoundInterval == 0 && PlayTime != LastPlayedSecond)
 	{

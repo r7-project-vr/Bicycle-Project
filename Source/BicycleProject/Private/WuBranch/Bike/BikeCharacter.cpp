@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Actor/Animal.h"
 #include <tokuamaru/IOutlineHighlightable.h>
+#include <WuBranch/UI/QuestionUIActor.h>
 
 
 // Sets default values
@@ -162,7 +163,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ABikeCharacter::Pause_Implementation()
 {
 	IsPause = true;
-	if (!Bike->GetIsAutoPlay())
+	if (!BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -171,7 +172,7 @@ void ABikeCharacter::Pause_Implementation()
 			{
 				DeviceManager->DisableDefaultActions();
 
-				if (Bike->GetIsAutoPlay())
+				if (BikeMovement->GetIsAutoPlay())
 					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
@@ -182,7 +183,7 @@ void ABikeCharacter::Pause_Implementation()
 void ABikeCharacter::ReStart_Implementation()
 {
 	IsPause = false;
-	if (!Bike->GetIsAutoPlay())
+	if (!BikeMovement->GetIsAutoPlay())
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		if (GameInstance)
@@ -191,7 +192,7 @@ void ABikeCharacter::ReStart_Implementation()
 			{
 				DeviceManager->EnableDefaultActions();
 
-				if (Bike->GetIsAutoPlay())
+				if (BikeMovement->GetIsAutoPlay())
 					DeviceManager->DisableSelectAnswerActions();
 			}
 		}
@@ -218,14 +219,14 @@ float ABikeCharacter::GetHandlerAngle() const
 	return HandleBarsAngle;
 }
 
-void ABikeCharacter::SetTurningAngle(FRotator angle)
+void ABikeCharacter::SetTurningAngle(FRotator Angle)
 {
-	_targetRotator = GetActorRotation() + angle;
+	_targetRotator = GetActorRotation() + Angle;
 	// 右折
-	if (angle.Yaw > 0)
+	if (Angle.Yaw > 0)
 		HandleBarsAngle = -30.0f;
 	// 左折
-	else if (angle.Yaw < 0)
+	else if (Angle.Yaw < 0)
 		HandleBarsAngle = 30.0f;
 	_isRotate = true;
 }
@@ -240,7 +241,10 @@ void ABikeCharacter::DisableHintLine()
 
 void ABikeCharacter::StopMove()
 {
-	Bike->ReduceVelocityTo0();
+	// 移動の機能をBikeMovementに移動したため
+	//Bike->ReduceVelocityTo0();
+	if (BikeMovement)
+		BikeMovement->ReduceVelocityTo0();
 }
 
 bool ABikeCharacter::HasOverSpeed() const
@@ -257,18 +261,18 @@ void ABikeCharacter::LoadBikeMesh()
 {	
 	if (_bikeSkeletalNeedLoad)
 	{
-		const FSoftObjectPath& assetRef = _bikeSkeletalNeedLoad.ToSoftObjectPath();
+		const FSoftObjectPath& AssetRef = _bikeSkeletalNeedLoad.ToSoftObjectPath();
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		Streamable.RequestAsyncLoad(assetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
+		Streamable.RequestAsyncLoad(AssetRef, FStreamableDelegate::CreateUObject(this, &ABikeCharacter::LoadMeshComplete));
 	}
 }
 
 void ABikeCharacter::LoadMeshComplete()
 {
-	USkeletalMesh* skeletalMesh = _bikeSkeletalNeedLoad.Get();
-	if (skeletalMesh)
+	USkeletalMesh* SkeletalMesh = _bikeSkeletalNeedLoad.Get();
+	if (SkeletalMesh)
 	{
-		GetMesh()->SetSkeletalMesh(skeletalMesh);
+		GetMesh()->SetSkeletalMesh(SkeletalMesh);
 	}
 }
 
@@ -277,9 +281,9 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 	if (!_isRotate)
 		return;
 
-	FRotator current = GetActorRotation();
+	FRotator Current = GetActorRotation();
 	// 曲がった
-	if (current.Equals(_targetRotator, 0.5f))
+	if (Current.Equals(_targetRotator, 0.5f))
 	{
 		// 0.5度未満の時は曲がり終了と見なすため、強制的に角度を最終角度に設定
 		SetActorRelativeRotation(_targetRotator);
@@ -288,16 +292,16 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		// 強制コントロール解除、その前にゲームオーバーしたかどうかを確認する
 		//if (!Cast<AQuestionGameMode>(GetWorld()->GetAuthGameMode())->IsGameFailed())
 		//{
-			UMyGameInstance* gameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-			UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-			deviceManager->EnableDefaultActions();
+			UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+			UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
+			DeviceManager->EnableDefaultActions();
 		//}
 		return;
 	}
 
 	// 自転車自身の角度の計算
-	FRotator angle = FMath::RInterpTo(current, _targetRotator, DeltaTime, _rotateSpeed);
-	SetActorRelativeRotation(angle);
+	FRotator Angle = FMath::RInterpTo(Current, _targetRotator, DeltaTime, _rotateSpeed);
+	SetActorRelativeRotation(Angle);
 
 	// ハンドルの戻り角度の計算
 	HandleBarsAngle = FMath::FInterpTo(HandleBarsAngle, 0.0f, DeltaTime, _handlebarCenteringSpeed);
@@ -469,4 +473,20 @@ void ABikeCharacter::DebugPhotoCaptureBox()
 	UE_LOG(LogTemp, Warning, TEXT("Collision Responses:"));
 	UE_LOG(LogTemp, Warning, TEXT("  Pawn: %d"), (int32)PhotoCaptureBox->GetCollisionResponseToChannel(ECC_Pawn));
 	UE_LOG(LogTemp, Warning, TEXT("  WorldDynamic: %d"), (int32)PhotoCaptureBox->GetCollisionResponseToChannel(ECC_WorldDynamic));
+}
+
+void ABikeCharacter::EnableAutoPlay(AQuestionUIActor* Quiz)
+{
+	if (BikeMovement)
+		BikeMovement->EnableAutoPlay();
+	if (Responder)
+		Responder->SetQuiz(Quiz);
+}
+
+void ABikeCharacter::DisableAutoPlay()
+{
+	if (BikeMovement)
+		BikeMovement->DisableAutoPlay();
+	if (Responder)
+		Responder->DeleteQuiz();
 }

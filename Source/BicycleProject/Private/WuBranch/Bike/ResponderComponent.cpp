@@ -41,26 +41,38 @@ void UResponderComponent::BeginPlay()
 //	// ...
 //}
 
+void UResponderComponent::SetQuiz(AQuestionUIActor* Quiz)
+{
+	if(Quiz)
+		QuizActor = Quiz;
+}
+
+void UResponderComponent::DeleteQuiz()
+{
+	QuizActor = nullptr;
+}
+
 void UResponderComponent::OnSelectLeftAnswer()
 {
-	if (QuestionActor)
+	if (QuizActor)
 	{
-		FQuestion* Question = QuestionActor->GetNowQuestion();
+		FQuestion* Question = QuizActor->GetNowQuestion();
 		SelectLeftAnswer(Question->ID, 0);
 	}
 }
 
-void UResponderComponent::SelectLeftAnswer(int QuestionID, int Answer)
+void UResponderComponent::SelectLeftAnswer(int QuizID, int Answer)
 {
 	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
 	//出口まで誘導
-	QuestionActor->UseLeftExit();
+	if(QuizActor)
+		QuizActor->UseLeftExit();
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GameMode)
 	{
-		//bool Result = GameMode->CheckAnswer(QuestionID, Answer);
+		//bool Result = GameMode->CheckAnswer(QuizID, Answer);
 		GameMode->AnsweredQuestion();
 		// 正解か不正解を表示
 		//QuestionActor->SetResult(0, Result);
@@ -79,24 +91,25 @@ void UResponderComponent::SelectLeftAnswer(int QuestionID, int Answer)
 
 void UResponderComponent::OnSelectRightAnswer()
 {
-	if (QuestionActor)
+	if (QuizActor)
 	{
-		FQuestion* Question = QuestionActor->GetNowQuestion();
+		FQuestion* Question = QuizActor->GetNowQuestion();
 		SelectRightAnswer(Question->ID, 1);
 	}
 }
 
-void UResponderComponent::SelectRightAnswer(int QuestionID, int Answer)
+void UResponderComponent::SelectRightAnswer(int QuizID, int Answer)
 {
 	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
 	//出口まで誘導
-	QuestionActor->UseRightExit();
+	if (QuizActor)
+		QuizActor->UseRightExit();
 	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
 	//答え合わせ
 	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GameMode)
 	{
-		//bool Result = GameMode->CheckAnswer(QuestionID, Answer);
+		//bool Result = GameMode->CheckAnswer(QuizID, Answer);
 		GameMode->AnsweredQuestion();
 		// 正解か不正解を表示
 		//QuestionActor->SetResult(1, Result);

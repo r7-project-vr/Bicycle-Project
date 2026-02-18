@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "WuBranch/QuestionGameMode.h"
-#include "WuBranch/Bike/BikeComponent.h"
 #include <tokuamaru/ResultWidget.h>
 #include <Components/WidgetComponent.h>
 #include "ResultSceneComponent.generated.h"
 
+class UBikeMovementComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UResultSceneComponent : public USceneComponent
@@ -69,7 +69,7 @@ public:
 
 
 	UPROPERTY()
-	UBikeComponent* bikeComponent;
+	UBikeMovementComponent* bikeComponent;
 
 	// 2025.08.25 ウー start
 	//bool autoplay;

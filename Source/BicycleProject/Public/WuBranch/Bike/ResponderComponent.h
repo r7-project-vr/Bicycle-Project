@@ -27,6 +27,17 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
+	/// クイズのアクターを設定
+	/// </summary>
+	/// <param name="Quiz">クイズ</param>
+	void SetQuiz(AQuestionUIActor* Quiz);
+
+	/// <summary>
+	/// クイズのアクターを削除
+	/// </summary>
+	void DeleteQuiz();
+
+	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
 	UFUNCTION()
@@ -35,10 +46,10 @@ public:
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
-	/// <param name="QuestionID">問題ID</param>
+	/// <param name="QuizID">クイズID</param>
 	/// <param name="Answer">答え</param>
 	UFUNCTION(BlueprintCallable)
-	void SelectLeftAnswer(int QuestionID, int Answer);
+	void SelectLeftAnswer(int QuizID, int Answer);
 
 	/// <summary>
 	/// 右の答えを選ぶ
@@ -49,10 +60,10 @@ public:
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
-	/// <param name="QuestionID">問題ID</param>
+	/// <param name="QuizID">クイズID</param>
 	/// <param name="Answer">答え</param>
 	UFUNCTION(BlueprintCallable)
-	void SelectRightAnswer(int QuestionID, int Answer);
+	void SelectRightAnswer(int QuizID, int Answer);
 
 private:
 
@@ -73,7 +84,7 @@ private:
 	UBikeComponent* BikeCom;
 
 	/// <summary>
-	/// 問題アクター
+	/// クイズのアクター
 	/// </summary>
-	AQuestionUIActor* QuestionActor;
+	AQuestionUIActor* QuizActor;
 };

@@ -30,99 +30,99 @@ public:
 	/// <summary>
 	/// スピードを0まで下げる
 	/// </summary>
-	void ReduceVelocityTo0();
+	//void ReduceVelocityTo0();
 
 	/// <summary>
 	/// 移動
 	/// </summary>
 	/// <param name="direction">移動方向</param>
-	UFUNCTION()
-	void OnMove(FVector2D direction);
+	//UFUNCTION()
+	//void OnMove(FVector2D direction);
 
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
-	UFUNCTION()
-	void OnSelectLeftAnswer();
+	//UFUNCTION()
+	//void OnSelectLeftAnswer();
 
 	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">答え</param>
-	UFUNCTION(BlueprintCallable)
-	void SelectLeftAnswer(int questionID, int answer);
+	//UFUNCTION(BlueprintCallable)
+	//void SelectLeftAnswer(int questionID, int answer);
 
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
-	UFUNCTION()
-	void OnSelectRightAnswer();
+	//UFUNCTION()
+	//void OnSelectRightAnswer();
 
 	/// <summary>
 	/// 右の答えを選ぶ
 	/// </summary>
 	/// <param name="questionID">問題ID</param>
 	/// <param name="answer">答え</param>
-	UFUNCTION(BlueprintCallable)
-	void SelectRightAnswer(int questionID, int answer);
+	//UFUNCTION(BlueprintCallable)
+	//void SelectRightAnswer(int questionID, int answer);
 
 	/// <summary>
 	/// オートプレイを起動
 	/// </summary>
 	/// <param name="actor"></param>
-	void EnableAutoPlay(AQuestionUIActor* actor);
+	//void EnableAutoPlay(AQuestionUIActor* actor);
 
 	/// <summary>
 	/// オートプレイをキャンセル
 	/// </summary>
-	void DisableAutoPlay();
+	//void DisableAutoPlay();
 
 	/// <summary>
 	/// 今オートプレイしているですか
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
-	UFUNCTION(BlueprintCallable)
-	bool GetIsAutoPlay() const;
+	//UFUNCTION(BlueprintCallable)
+	//bool GetIsAutoPlay() const;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateAutoPlayDelegate, bool, IsAutoPlay);
+	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateAutoPlayDelegate, bool, IsAutoPlay);
 	/// <summary>
 	/// オートプレイ
 	/// </summary>
-	UPROPERTY(BlueprintAssignable)
-	FUpdateAutoPlayDelegate OnUpdateAutoPlayEvent;
+	//UPROPERTY(BlueprintAssignable)
+	//FUpdateAutoPlayDelegate OnUpdateAutoPlayEvent;
 
 	/// <summary>
 	/// オートプレイの際に指定された位置についたの通知
 	/// </summary>
 	/// <param name=""></param>
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArriveLocationDelegate, UBikeComponent*, Bike);
-	FArriveLocationDelegate OnArrivedLocationEvent;
+	//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArriveLocationDelegate, UBikeComponent*, Bike);
+	//FArriveLocationDelegate OnArrivedLocationEvent;
 
 	/// <summary>
 	/// オートプレイする時同期したい座標
 	/// </summary>
 	/// <param name="pos">座標</param>
-	void SetSynchPos(FVector pos);
+	//void SetSynchPos(FVector pos);
 
 	/// <summary>
 	/// 答えを選んだの処理
 	/// </summary>
 	/// <param name="dir">曲がりたい方向</param>
-	void HandleSelectAnswer(FRotator dir);
+	//void HandleSelectAnswer(FRotator dir);
 
 	/// <summary>
 	/// マップを生成
 	/// </summary>
-	/// <param name="IsLeft">true: 左の方, false: 右の方</param>
-	void SpawnNextMap(bool IsLeft);
+	/// <param name="bIsLeft">true: 左の方, false: 右の方</param>
+	void SpawnNextMap(bool bIsLeft);
 
 	/// <summary>
 	/// コインの処理
 	/// </summary>
-	/// <param name="Result">クイズの結果</param>
-	/// <param name="NeedBonus">ボーナスを加算するか</param>
-	void HandleCoin(bool Result, bool NeedBonus);
+	/// <param name="bResult">クイズの結果</param>
+	/// <param name="bNeedBonus">ボーナスを加算するか</param>
+	void HandleCoin(bool bResult, bool bNeedBonus);
 
 	/// <summary>
 	/// コインを手に入れた
@@ -153,12 +153,12 @@ private:
 	/// <summary>
 	/// 慣性の処理
 	/// </summary>
-	void HandleInertia(float DeltaTime);
+	//void HandleInertia(float DeltaTime);
 
 	/// <summary>
 	/// 答えを選ぶ動作を機能させない
 	/// </summary>
-	void DisableSelectAnswerAction();
+	//void DisableSelectAnswerAction();
 
 	/// <summary>
 	/// 今踏んでいるマップを探す
@@ -168,7 +168,7 @@ private:
 	/// <summary>
 	/// オートプレイの更新を通知
 	/// </summary>
-	void NotifyAutoPlay();
+	//void NotifyAutoPlay();
 
 	/// <summary>
 	/// ペナルティをキャンセル
@@ -189,13 +189,13 @@ private:
 	/// <summary>
 	/// 慣性の速度
 	/// </summary>
-	FVector _inertiaVelocity;
+	//FVector _inertiaVelocity;
 
 	/// <summary>
 	/// 慣性の減衰
 	/// </summary>
-	UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
-	float _inertiaDamping;
+	//UPROPERTY(EditAnywhere, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	//float _inertiaDamping;
 
 	/// <summary>
 	/// オートプレイ
@@ -205,12 +205,12 @@ private:
 	/// <summary>
 	/// オートプレイする時同期したい位置
 	/// </summary>
-	FVector _synchronizePos;
+	//FVector _synchronizePos;
 
 	/// <summary>
 	/// 問題アクター
 	/// </summary>
-	AQuestionUIActor* _questionActor;
+	//AQuestionUIActor* _questionActor;
 
 	/// <summary>
 	/// クイズごと手に入れたコイン

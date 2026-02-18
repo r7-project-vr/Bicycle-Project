@@ -45,26 +45,13 @@ void UBikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// タイマーが残っているなら
-	if (AutoAccelerationTimer > 0.0f)
-	{
-		// タイマーを減らす
-		AutoAccelerationTimer -= DeltaTime;
-		if (ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner()))
-		{
-			// CMCに移動入力を送り続ける（これが「ゆっくり加速」の実体）
-			// ScaleValueを 1.0 にすれば全力加速、0.5なら緩やか
-			Character->AddMovementInput(TargetMoveDirection, 1.0f);
-		}
-	}
-
 	// ...
 	if (bIsAutoPlay)
 	{
 		if ((SynchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
 		{
 			// 目標地点についたら通知
-			OnArrivedLocationEvent.Broadcast(this);
+			OnArrivedLocationEvent.Broadcast();
 		}
 		else
 		{
@@ -73,11 +60,23 @@ void UBikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			GetOwner()->SetActorLocation(DeltaPos);
 		}
 	}
-	else if (!bHasMovInput)
+	// タイマーが残っているなら
+	else if (AutoAccelerationTimer > 0.0f)
+	{
+		// タイマーを減らす
+		AutoAccelerationTimer -= DeltaTime;
+		if (ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner()))
+		{
+			// CMCに移動入力を送り続ける（これが「ゆっくり加速」の実体）
+			// ScaleValueを 1.0 にすれば全力加速、0.5なら緩やか
+			Character->AddMovementInput(TargetMoveDirection, 0.5f);
+		}
+	}
+	/*else if (!bHasMovInput)
 	{
 		HandleInertia(DeltaTime);
 	}
-	bHasMovInput = false;
+	bHasMovInput = false;*/
 }
 
 void UBikeMovementComponent::ReduceVelocityTo0()
@@ -88,6 +87,7 @@ void UBikeMovementComponent::ReduceVelocityTo0()
 	}
 	// 慣性の力も0にする
 	InertiaVelocity = FVector::ZeroVector;
+	AutoAccelerationTimer = 0.0f;
 }
 
 void UBikeMovementComponent::EnableAutoPlay()

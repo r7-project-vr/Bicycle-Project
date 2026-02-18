@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "tokuamaru/ResultActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/InputComponent.h"
 #include "tokuamaru/ResultWidget.h"
+#include <WuBranch/Bike/BikeMovementComponent.h>
 
 // Sets default values
 AResultActor::AResultActor()
@@ -44,7 +45,7 @@ void AResultActor::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("gamemode NULLPtr!  ResultActor"));
 	}
 
-	bikeComponent = FindComponentByClass<UBikeComponent>();
+	bikeComponent = FindComponentByClass<UBikeMovementComponent>();
 	if (!bikeComponent) {
 	}
 	else {

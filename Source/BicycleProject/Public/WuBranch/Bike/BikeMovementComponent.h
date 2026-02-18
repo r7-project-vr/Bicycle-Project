@@ -58,7 +58,7 @@ public:
 	/// オートプレイの際に指定された位置についたの通知
 	/// </summary>
 	/// <param name=""></param>
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FArriveLocationDelegate, UBikeMovementComponent*, Movement);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FArriveLocationDelegate);
 	FArriveLocationDelegate OnArrivedLocationEvent;
 
 	/// <summary>

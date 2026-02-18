@@ -13,6 +13,8 @@ class UResponderComponent;
 class UAnimalManagerComponent;
 class UBoxComponent;
 class AAnimal;
+class AQuestionUIActor;
+class UResultWidget;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -96,6 +98,17 @@ public:
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	void DebugPhotoCaptureBox();
+
+	/// <summary>
+	/// オートプレイを起動
+	/// </summary>
+	/// <param name="Quiz">クイズ</param>
+	void EnableAutoPlay(AQuestionUIActor* Quiz);
+
+	/// <summary>
+	/// オートプレイをキャンセル
+	/// </summary>
+	void DisableAutoPlay();
 
 private:
 

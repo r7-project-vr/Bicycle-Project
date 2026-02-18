@@ -7,7 +7,8 @@
 #include "narisawaBranch/BuildingSnapInterface.h"
 #include "QuestionUIActor.generated.h"
 
-class UBikeComponent;
+class ABikeCharacter;
+class UBikeMovementComponent;
 class USplineComponent;
 struct FQuestion;
 class UBoxComponent;
@@ -98,7 +99,7 @@ private:
 	/// プレイヤーが停車エリアに入ったら
 	/// </summary>
 	/// <param name="bike"></param>
-	void HandlePlayerEnterArea(UBikeComponent* bike);
+	void HandlePlayerEnterArea(ABikeCharacter* bike);
 
 	/// <summary>
 	/// 停車エリアに入ったら
@@ -123,13 +124,13 @@ private:
 	/// クイズの入り口についた
 	/// </summary>
 	UFUNCTION()
-	void OnArrivedEnterLocation(UBikeComponent* Bike);
+	void OnArrivedEnterLocation();
 
 	/// <summary>
 	/// オートプレイ対象を一旦記録して
 	/// </summary>
 	/// <param name="target"></param>
-	void SetTarget(UBikeComponent* target);
+	void SetTarget(ABikeCharacter* target);
 
 	/// <summary>
 	/// オートプレイ対象を出口へ誘導
@@ -156,7 +157,7 @@ private:
 	/// <summary>
 	/// オートプレイ対象
 	/// </summary>
-	UBikeComponent* _autoPlayTarget;
+	ABikeCharacter* AutoPlayTarget;
 
 	/// <summary>
 	/// オートプレイのスタート地点
@@ -190,12 +191,12 @@ private:
 	/// <summary>
 	/// オートプレイする時の既に移動した距離
 	/// </summary>
-	float _movedDistance;
+	float MovedDistance;
 
 	/// <summary>
 	/// 回答済みですか
 	/// </summary>
-	bool _isAnswered;
+	bool bIsAnswered;
 
 	/// <summary>
 	/// クイズ

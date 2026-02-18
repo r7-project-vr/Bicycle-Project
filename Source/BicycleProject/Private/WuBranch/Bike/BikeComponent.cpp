@@ -25,11 +25,10 @@ UBikeComponent::UBikeComponent()
 
 	// ...
 	Speed = 50.0f;
-	_inertiaDamping = 10.0f;
-	_inertiaVelocity = FVector::ZeroVector;
+	//_inertiaDamping = 10.0f;
+	//_inertiaVelocity = FVector::ZeroVector;
 	bHasMovInput = false;
 }
-
 
 // Called when the game starts
 void UBikeComponent::BeginPlay()
@@ -52,75 +51,74 @@ void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	//if (bIsAutoPlay)
+	//{
+	//	if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
+	//	{
+	//		// 目標地点についたら通知
+	//		OnArrivedLocationEvent.Broadcast(this);
+	//	}
+	//	else
+	//	{
+	//		// 目標地点に移動
+	//		FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
+	//		GetOwner()->SetActorLocation(DeltaPos);
+	//	}
+	//}
+	//else if(!bHasMovInput)
+	//{
+	//	HandleInertia(DeltaTime);
+	//}
 
-	if (bIsAutoPlay)
-	{
-		if ((_synchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
-		{
-			// 目標地点についたら通知
-			OnArrivedLocationEvent.Broadcast(this);
-		}
-		else
-		{
-			// 目標地点に移動
-			FVector DeltaPos = FMath::VInterpTo(GetOwner()->GetActorLocation(), _synchronizePos, DeltaTime, 2);
-			GetOwner()->SetActorLocation(DeltaPos);
-		}
-	}
-	else if(!bHasMovInput)
-	{
-		HandleInertia(DeltaTime);
-	}
-
-	bHasMovInput = false;
+	//bHasMovInput = false;
 	//double speed = GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->Velocity.Length();
 	//UKismetSystemLibrary::PrintString(this, "Speed: " + FString::SanitizeFloat(speed), true, false, FColor::Green, 10.f);
 }
 
-void UBikeComponent::ReduceVelocityTo0()
-{
-	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
-	// 慣性の力も0にする
-	_inertiaVelocity = FVector::ZeroVector;
-}
-
-void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
-{
-	bIsAutoPlay = true;
-	_questionActor = actor;
-	NotifyAutoPlay();
-}
-
-void UBikeComponent::DisableAutoPlay()
-{
-	bIsAutoPlay = false;
-	_questionActor = nullptr;
-	NotifyAutoPlay();
-}
-
-bool UBikeComponent::GetIsAutoPlay() const
-{
-	return bIsAutoPlay;
-}
-
-void UBikeComponent::SetSynchPos(FVector pos)
-{
-	_synchronizePos = pos;
-}
-
-void UBikeComponent::HandleSelectAnswer(FRotator dir)
-{
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-	// 曲がる
-	Character->SetTurningAngle(dir);
-	// 二回目以降選ばせない
-	DisableSelectAnswerAction();
-	// UI補助線を表示しない
-	if (Character)
-	{
-		Character->DisableHintLine();
-	}
-}
+//void UBikeComponent::ReduceVelocityTo0()
+//{
+//	GetOwner()->GetComponentByClass<UCharacterMovementComponent>()->StopMovementImmediately();
+//	// 慣性の力も0にする
+//	_inertiaVelocity = FVector::ZeroVector;
+//}
+//
+//void UBikeComponent::EnableAutoPlay(AQuestionUIActor* actor)
+//{
+//	bIsAutoPlay = true;
+//	_questionActor = actor;
+//	NotifyAutoPlay();
+//}
+//
+//void UBikeComponent::DisableAutoPlay()
+//{
+//	bIsAutoPlay = false;
+//	_questionActor = nullptr;
+//	NotifyAutoPlay();
+//}
+//
+//bool UBikeComponent::GetIsAutoPlay() const
+//{
+//	return bIsAutoPlay;
+//}
+//
+//void UBikeComponent::SetSynchPos(FVector pos)
+//{
+//	_synchronizePos = pos;
+//}
+//
+//void UBikeComponent::HandleSelectAnswer(FRotator dir)
+//{
+//	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+//	// 曲がる
+//	Character->SetTurningAngle(dir);
+//	// 二回目以降選ばせない
+//	DisableSelectAnswerAction();
+//	// UI補助線を表示しない
+//	if (Character)
+//	{
+//		Character->DisableHintLine();
+//	}
+//}
 
 void UBikeComponent::AddCoins(int Amount)
 {
@@ -151,147 +149,149 @@ float UBikeComponent::GetPenaltyDuration() const
 	return PenaltyDuration;
 }
 
-void UBikeComponent::HandleInertia(float DeltaTime)
-{
-	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
-	// 慣性で移動
-	GetOwner()->AddActorWorldOffset(_inertiaVelocity);
+//void UBikeComponent::HandleInertia(float DeltaTime)
+//{
+//	//UKismetSystemLibrary::PrintString(this, "inertia Velocity: " + _inertiaVelocity.ToString(), true, false, FColor::Green, 10.f);
+//	// 慣性で移動
+//	GetOwner()->AddActorWorldOffset(_inertiaVelocity);
+//
+//	// 減衰
+//	FVector damp = _inertiaVelocity.GetSafeNormal() * _inertiaDamping * DeltaTime;
+//	if (damp.SizeSquared() > _inertiaVelocity.SizeSquared())
+//		_inertiaVelocity = FVector::ZeroVector;
+//	else
+//		_inertiaVelocity -= damp;
+//}
 
-	// 減衰
-	FVector damp = _inertiaVelocity.GetSafeNormal() * _inertiaDamping * DeltaTime;
-	if (damp.SizeSquared() > _inertiaVelocity.SizeSquared())
-		_inertiaVelocity = FVector::ZeroVector;
-	else
-		_inertiaVelocity -= damp;
-}
+//void UBikeComponent::OnMove(FVector2D direction)
+//{
+//	// ペナルティ中またはオートプレイ中は移動しない
+//	if (bIsPenalty || bIsAutoPlay)
+//		return;
+//
+//	// 加速が最大になるとペナルティ
+//	/*if (direction.Length() == 1)
+//	{
+//		ApplyPenalty();
+//		return;
+//	}*/
+//
+//	// 移動方向は自転車今向いている方向を中心に
+//	FVector actorForward = GetOwner()->GetActorForwardVector();
+//	FVector actorRight = GetOwner()->GetActorRightVector();
+//	FVector dir = FVector::ZeroVector;
+//	// バックさせない
+//	FVector BikeDir = FVector(direction.X, direction.Y, 0.f);
+//	if (BikeDir.X < 0)
+//		BikeDir.X = 0;
+//	dir = actorForward * BikeDir.X + actorRight * BikeDir.Y;
+//
+//	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+//
+//	// 移動
+//	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
+//	// 破棄してACharacterのCharacterMovementを利用します
+//	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
+//	// 入力した方向をキャラクターの向きに合わせる
+//	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
+//	//Character->AddMovementInput(BikeDir);
+//	//Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
+//	//Character->LaunchCharacter(MaxSpeed * BikeDir, false, true);
+//	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
+//	//Character->AddMovementInput(actorForward, BikeDir.X);
+//	//Character->AddMovementInput(actorRight, BikeDir.Y);
+//
+//	// 慣性を設定
+//	//_inertiaVelocity = dir.GetSafeNormal() * Speed;
+//	bHasMovInput = true;
+//}
 
-void UBikeComponent::OnMove(FVector2D direction)
-{
-	// ペナルティ中またはオートプレイ中は移動しない
-	if (bIsPenalty || bIsAutoPlay)
-		return;
+//void UBikeComponent::OnSelectLeftAnswer()
+//{
+//	if (_questionActor)
+//	{
+//		FQuestion* question = _questionActor->GetNowQuestion();
+//		SelectLeftAnswer(question->ID, 0);
+//	}
+//}
+//
+//void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
+//{
+//	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
+//	//出口まで誘導
+//	_questionActor->UseLeftExit();
+//	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
+//	//答え合わせ
+//	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+//	if (GameMode)
+//	{
+//		//bool Result = GameMode->CheckAnswer(questionID, answer);
+//		GameMode->AnsweredQuestion();
+//		// 正解か不正解を表示
+//		//_questionActor->SetResult(0, Result);
+//		// コインの処理
+//		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+//		//HandleCoin(Result, !Character->HasOverSpeed());
+//		HandleCoin(true, !Character->HasOverSpeed());
+//		// 超速の記録をリセット
+//		Character->ResetOverSpeed();
+//		// マップの生成
+//		SpawnNextMap(true);
+//		GameMode->CheckGameOver();
+//	}
+//	// 2025.10.19 ウー end
+//}
+//
+//void UBikeComponent::OnSelectRightAnswer()
+//{
+//	if (_questionActor)
+//	{
+//		FQuestion* question = _questionActor->GetNowQuestion();
+//		SelectRightAnswer(question->ID, 1);
+//	}
+//}
+//
+//void UBikeComponent::SelectRightAnswer(int questionID, int answer)
+//{
+//	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
+//	//出口まで誘導
+//	_questionActor->UseRightExit();
+//	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
+//	//答え合わせ
+//	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
+//	if (GameMode)
+//	{
+//		//bool Result = GameMode->CheckAnswer(questionID, answer);
+//		GameMode->AnsweredQuestion();
+//		// 正解か不正解を表示
+//		//_questionActor->SetResult(1, Result);
+//		// コインの処理
+//		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
+//		//HandleCoin(Result, !Character->HasOverSpeed());
+//		HandleCoin(true, !Character->HasOverSpeed());
+//		// 2025.10.19 ウー end
+//		// 超速の記録をリセット
+//		Character->ResetOverSpeed();
+//		// マップの生成
+//		SpawnNextMap(false);
+//		GameMode->CheckGameOver();
+//	}
+//}
+//
+//void UBikeComponent::DisableSelectAnswerAction()
+//{
+//	UMyGameInstance* gameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+//	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
+//	deviceManager->DisableSelectAnswerActions();
+//}
 
-	// 加速が最大になるとペナルティ
-	if (direction.Length() == 1)
-	{
-		ApplyPenalty();
-		return;
-	}
-
-	// 移動方向は自転車今向いている方向を中心に
-	FVector actorForward = GetOwner()->GetActorForwardVector();
-	FVector actorRight = GetOwner()->GetActorRightVector();
-	FVector dir = FVector::ZeroVector;
-	// バックさせない
-	FVector BikeDir = FVector(direction.X, direction.Y, 0.f);
-	if (BikeDir.X < 0)
-		BikeDir.X = 0;
-	dir = actorForward * BikeDir.X + actorRight * BikeDir.Y;
-
-	ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-
-	// 移動
-	// AddForceで移動すると、VRの中で小さい揺れが発生して酔いやすくなるので
-	// 破棄してACharacterのCharacterMovementを利用します
-	float MaxSpeed = Character->GetCharacterMovement()->MaxWalkSpeed;
-	// 入力した方向をキャラクターの向きに合わせる
-	BikeDir = Character->GetActorRotation().RotateVector(BikeDir);
-	Character->GetCharacterMovement()->Velocity = MaxSpeed * BikeDir;
-	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Velocity: %lf"), Character->GetCharacterMovement()->Velocity.Length()));	
-	//Character->AddMovementInput(actorForward, BikeDir.X);
-	//Character->AddMovementInput(actorRight, BikeDir.Y);
-
-	// 慣性を設定
-	_inertiaVelocity = dir.GetSafeNormal() * Speed;
-	bHasMovInput = true;
-}
-
-void UBikeComponent::OnSelectLeftAnswer()
-{
-	if (_questionActor)
-	{
-		FQuestion* question = _questionActor->GetNowQuestion();
-		SelectLeftAnswer(question->ID, 0);
-	}
-}
-
-void UBikeComponent::SelectLeftAnswer(int questionID, int answer)
-{
-	HandleSelectAnswer(FRotator(0.0f, -90.0f, 0.0f));
-	//出口まで誘導
-	_questionActor->UseLeftExit();
-	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
-	//答え合わせ
-	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	if (GameMode)
-	{
-		//bool Result = GameMode->CheckAnswer(questionID, answer);
-		GameMode->AnsweredQuestion();
-		// 正解か不正解を表示
-		//_questionActor->SetResult(0, Result);
-		// コインの処理
-		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-		//HandleCoin(Result, !Character->HasOverSpeed());
-		HandleCoin(true, !Character->HasOverSpeed());
-		// 超速の記録をリセット
-		Character->ResetOverSpeed();
-		// マップの生成
-		SpawnNextMap(true);
-		GameMode->CheckGameOver();
-	}
-	// 2025.10.19 ウー end
-}
-
-void UBikeComponent::OnSelectRightAnswer()
-{
-	if (_questionActor)
-	{
-		FQuestion* question = _questionActor->GetNowQuestion();
-		SelectRightAnswer(question->ID, 1);
-	}
-}
-
-void UBikeComponent::SelectRightAnswer(int questionID, int answer)
-{
-	HandleSelectAnswer(FRotator(0.0f, 90.0f, 0.0f));
-	//出口まで誘導
-	_questionActor->UseRightExit();
-	// 2025.10.19 ウー start クイズをなくしたい要望に応じての修正
-	//答え合わせ
-	AQuestionGameMode* GameMode = Cast<AQuestionGameMode>(UGameplayStatics::GetGameMode(this));
-	if (GameMode)
-	{
-		//bool Result = GameMode->CheckAnswer(questionID, answer);
-		GameMode->AnsweredQuestion();
-		// 正解か不正解を表示
-		//_questionActor->SetResult(1, Result);
-		// コインの処理
-		ABikeCharacter* Character = Cast<ABikeCharacter>(GetOwner());
-		//HandleCoin(Result, !Character->HasOverSpeed());
-		HandleCoin(true, !Character->HasOverSpeed());
-		// 2025.10.19 ウー end
-		// 超速の記録をリセット
-		Character->ResetOverSpeed();
-		// マップの生成
-		SpawnNextMap(false);
-		GameMode->CheckGameOver();
-	}
-}
-
-void UBikeComponent::DisableSelectAnswerAction()
-{
-	UMyGameInstance* gameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
-	UDeviceManager* deviceManager = gameInstance->GetDeviceManager();
-	deviceManager->DisableSelectAnswerActions();
-}
-
-void UBikeComponent::SpawnNextMap(bool IsLeft)
+void UBikeComponent::SpawnNextMap(bool bIsLeft)
 {
 	ATile* CurrentTile = FindCurrentTile();
 	
 	if (CurrentTile)
 	{
-		CurrentTile->SpawnMap(IsLeft);
+		CurrentTile->SpawnMap(bIsLeft);
 	}
 }
 
@@ -303,8 +303,8 @@ ATile* UBikeComponent::FindCurrentTile()
 	Params.AddIgnoredActor(GetOwner());
 
 	FHitResult HitRes;
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitRes, Start, End, ECC_WorldDynamic, Params);
-	if (IsHit)
+	bool bIsHit = GetWorld()->LineTraceSingleByChannel(HitRes, Start, End, ECC_WorldDynamic, Params);
+	if (bIsHit)
 	{
 		if (ATile* Target = Cast<ATile>(HitRes.GetActor()))
 		{
@@ -315,13 +315,13 @@ ATile* UBikeComponent::FindCurrentTile()
 	return nullptr;
 }
 
-void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
+void UBikeComponent::HandleCoin(bool bResult, bool bNeedBonus)
 {
 	// クイズを正解した褒美
-	if (Result)
+	if (bResult)
 		AddCoins(1);
 	// ボーナス
-	if (NeedBonus)
+	if (bNeedBonus)
 		AddCoins(BonusCoin);
 	// 保存
 	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
@@ -331,10 +331,10 @@ void UBikeComponent::HandleCoin(bool Result, bool NeedBonus)
 	CoinsOfQuiz = 0;
 }
 
-void UBikeComponent::NotifyAutoPlay()
-{
-	OnUpdateAutoPlayEvent.Broadcast(bIsAutoPlay);
-}
+//void UBikeComponent::NotifyAutoPlay()
+//{
+//	OnUpdateAutoPlayEvent.Broadcast(bIsAutoPlay);
+//}
 
 void UBikeComponent::CancelPenalty()
 {

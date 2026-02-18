@@ -7,6 +7,11 @@ UDevice::UDevice()
 {
 }
 
+void UDevice::Enable()
+{
+	UE_LOG(LogTemplateDevice, Error, TEXT("The Enable function has not been implemented yet!"));
+}
+
 bool UDevice::Connect()
 {
 	UE_LOG(LogTemplateDevice, Error, TEXT("The Connect function has not been implemented yet!"));

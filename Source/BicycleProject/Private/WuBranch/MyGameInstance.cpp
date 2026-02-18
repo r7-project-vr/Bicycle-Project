@@ -42,6 +42,7 @@ void UMyGameInstance::Init()
 	if (!DeviceManager)
 	{
 		DeviceManager = NewObject<UDeviceManager>(this);
+		DeviceManager->CreateAllDevices();
 	}
 
 	GetSubsystem<USaveGameManager>()->OnLoadCompleted.AddDynamic(this, &UMyGameInstance::OnLoadComplete);

@@ -29,6 +29,7 @@
 
 class IBleManagerInterface;
 class IBleDeviceInterface;
+struct FBLEDeviceInfo;
 
 /**
  * 
@@ -44,6 +45,8 @@ public:
 	~UCustomDevice();
 
 	virtual void Init() override;
+
+	void Enable() override;
 
 	virtual bool Connect() override;
 
@@ -64,6 +67,18 @@ private:
 	/// </summary>
 	/// <returns></returns>
 	bool CheckBluetooth();
+
+	/// <summary>
+	/// デバイスリストをリセット
+	/// </summary>
+	void ResetDeviceList();
+
+	/// <summary>
+	/// デバイスリストに追加
+	/// </summary>
+	/// <param name="DeviceName">デバイス名</param>
+	/// <param name="DeviceUUID">デバイスUUID</param>
+	void AddToDeviceList(FString DeviceName, FString DeviceUUID, FColor Color1, FColor Color2);
 
 	/// <summary>
 	/// アンドロイドのbluetoothの権限を要求する
@@ -120,6 +135,16 @@ private:
 	/// <param name="ErrorMessage">エラーメッセージ</param>
 	UFUNCTION()
 	void OnDisconnectError(FString ErrorMessage);
+
+	/// <summary>
+	/// 認証コードをゲット
+	/// </summary>
+	void GetValidationCode();
+
+	/// <summary>
+	/// ペアリクエストを送る
+	/// </summary>
+	void SendPairRequest();
 
 	/// <summary>
 	/// 貰ったデータから必要な数値に変換
@@ -216,9 +241,19 @@ private:
 	TScriptInterface<IBleDeviceInterface> MyDevice;
 
 	/// <summary>
+	/// つなげるデバイスリスト
+	/// </summary>
+	TArray<FBLEDeviceInfo> DeviceList;
+
+	/// <summary>
+	/// リストを用意する段階のフラグ
+	/// </summary>
+	bool bIsMakeList;
+
+	/// <summary>
 	/// 移動機能のスイッチ
 	/// </summary>
-	bool MoveSwitch;
+	bool bMoveSwitch;
 
 	/// <summary>
 	/// 最大回転数

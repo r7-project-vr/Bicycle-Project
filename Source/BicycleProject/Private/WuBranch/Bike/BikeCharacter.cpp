@@ -130,33 +130,36 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 	else
 	{
-		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
-		DeviceManager->CreateAllDevices();
-		/*if (Bike)
+		if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 		{
-			DeviceManager->BindMoveEvent(Bike, "OnMove");
-			DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
-			DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
-		}*/
-		if (!BikeMovement)
-			FindMover();
-		if (BikeMovement)
-		{
-			DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
-		}
-		if (!Responder)
-			FindResponder();
-		if (Responder)
-		{
-			DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
-			DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
-		}
-		
+			//DeviceManager->CreateAllDevices();
+			DeviceManager->EnableAllDevices();
+			/*if (Bike)
+			{
+				DeviceManager->BindMoveEvent(Bike, "OnMove");
+				DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
+				DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
+			}*/
+			if (!BikeMovement)
+				FindMover();
+			if (BikeMovement)
+			{
+				DeviceManager->BindMoveEvent(BikeMovement, "OnMove");
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
+			}
+			if (!Responder)
+				FindResponder();
+			if (Responder)
+			{
+				DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
+				DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
+			}
 
-		// BikeCharacterで撮影を行う
-		DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
+			// BikeCharacterで撮影を行う
+			DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
+			DeviceManager->EnableDefaultActions();
+		}
 	}
 }
 

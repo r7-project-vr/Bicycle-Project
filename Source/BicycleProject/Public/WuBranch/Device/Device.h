@@ -37,6 +37,11 @@ public:
 	virtual void Init(int ID, int Ver) {};
 
 	/// <summary>
+	/// 機能する
+	/// </summary>
+	virtual void Enable();
+
+	/// <summary>
 	/// デバイスとリンクする
 	/// </summary>
 	/// <returns>true: 成功 / false: 失敗</returns>

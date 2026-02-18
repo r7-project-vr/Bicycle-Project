@@ -17,8 +17,7 @@ void UDeviceManager::CreateAllDevices()
 {
 	// 手の部位
 	// 今は自作デバイスが対応してないため、キーボードデバイスを使う
-	UDevice* HandDevice = NewObject<UKeyboardDevice>(this);
-	HandDevice->Init();
+	UDevice* HandDevice = CreateKeyBoardDevice();
 	AddDevice(EDevicePart::Hand, HandDevice);
 
 	// 足の部位
@@ -41,7 +40,6 @@ void UDeviceManager::CreateAllDevices()
 		AddDevice(EDevicePart::Foot, BleDevice);
 	}
 #endif
-	EnableDefaultActions();
 }
 
 void UDeviceManager::DisConnectAllDevices()
@@ -59,6 +57,17 @@ void UDeviceManager::DisConnectAllDevices()
 		{
 			UE_LOG(LogTemp, Error, TEXT("Remove %s device fail"), *UEnum::GetValueAsString(Part));
 		}
+	}
+}
+
+void UDeviceManager::EnableAllDevices()
+{
+	TArray<EDevicePart> AllDeviceParts;
+	Devices.GenerateKeyArray(AllDeviceParts);
+	for (EDevicePart Part : AllDeviceParts)
+	{
+		UDevice* Device = GetDevice(Part);
+		Device->Enable();
 	}
 }
 
@@ -101,9 +110,9 @@ UDevice* UDeviceManager::GetDevice(EDevicePart Part)
 	}
 }
 
-void UDeviceManager::ChangeDevice(EDeviceType type)
+void UDeviceManager::ChangeDevice(EDeviceType Type)
 {
-	switch (type)
+	switch (Type)
 	{
 	case EDeviceType::UESupportDevice:
 		SingleDevice = CreateKeyBoardDevice();
@@ -116,8 +125,8 @@ void UDeviceManager::ChangeDevice(EDeviceType type)
 #endif
 		break;
 	default:
-		FString typeName = UEnum::GetDisplayValueAsText(type).ToString();
-		UE_LOG(LogTemplateDevice, Error, TEXT("The constructor method for this device type (%s) has not been implemented yet."), *typeName);
+		FString TypeName = UEnum::GetDisplayValueAsText(Type).ToString();
+		UE_LOG(LogTemplateDevice, Error, TEXT("The constructor method for this device type (%s) has not been implemented yet."), *TypeName);
 		break;
 	}
 }
@@ -184,12 +193,12 @@ void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
 	}
 }
 
-void UDeviceManager::BindMoveNumEvent(UObject* object, FName functionName)
+void UDeviceManager::BindMoveNumEvent(UObject* Object, FName FunctionName)
 {
 	UDevice* Device = GetDevice(EDevicePart::Foot);
 	if (Device)
 	{
-		IMoveProvider::Execute_BindMoveNumEvent(Device, object, functionName);
+		IMoveProvider::Execute_BindMoveNumEvent(Device, Object, FunctionName);
 	}
 }
 
@@ -219,9 +228,9 @@ void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 	}
 }
 
-void UDeviceManager::BindScreenshotEvent(UObject* obj, FName funcName)
+void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
 {
-	if (!obj)
+	if (!Object)
 	{
 		UE_LOG(LogTemp, Error, TEXT("BindScreenshotEvent: Object is null!"));
 		return;
@@ -234,10 +243,10 @@ void UDeviceManager::BindScreenshotEvent(UObject* obj, FName funcName)
 		if (UKeyboardDevice* KeyboardDevice = Cast<UKeyboardDevice>(Device))
 		{
 			FScriptDelegate Delegate;
-			Delegate.BindUFunction(obj, funcName);
+			Delegate.BindUFunction(Object, FuncName);
 			KeyboardDevice->OnScreenshotEvent.Add(Delegate);
 			
-			UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *obj->GetName(), *funcName.ToString());
+			UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FuncName.ToString());
 		}
 	}
 }

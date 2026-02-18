@@ -39,6 +39,29 @@ UKeyboardDevice::UKeyboardDevice()
 	ScreenshotAction = LoadObject<UInputAction>(nullptr, *Path);
 }
 
+void UKeyboardDevice::Tick(float DeltaTime)
+{
+	if (!bCanSendMoveInput)
+	{
+		TimeCnt += DeltaTime;
+		if (TimeCnt >= SimulateCustomDeviceInputInterval)
+		{
+			bCanSendMoveInput = true;
+			TimeCnt = 0.f;
+		}
+	}
+}
+
+TStatId UKeyboardDevice::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UKeyboardDevice, STATGROUP_Tickables);
+}
+
+bool UKeyboardDevice::IsTickableInEditor() const
+{
+	return false;
+}
+
 void UKeyboardDevice::Init()
 {
 	Controller = GetWorld()->GetFirstPlayerController();
@@ -50,6 +73,8 @@ bool UKeyboardDevice::Connect()
 {
 	// デフォルトとして使う、つまりunrealのEnhancedInputを使う
 	State = EDeviceConnectType::Connected;
+	TimeCnt = 0.f;
+	bCanSendMoveInput = true;
 	return true;
 }
 
@@ -200,11 +225,18 @@ void UKeyboardDevice::SetupAction()
 
 void UKeyboardDevice::OnMove(const FInputActionValue& Value)
 {
+	// 自作デバイスの入力をシミュレートするため,
+	// 一定時間内に複数回移動入力を送らないようにする
+	if (!bCanSendMoveInput)
+		return;
+
 	FVector2D InputVector = Value.Get<FVector2D>();
 
 	// 左右の入力を一旦無視
 	//FVector2D moveVector(inputVector.Y, inputVector.X);
 	FVector2D MoveVector(InputVector.Y, 0);
+
+	bCanSendMoveInput = false;
 
 	// notify
 	if(OnMoveEvent.IsBound())

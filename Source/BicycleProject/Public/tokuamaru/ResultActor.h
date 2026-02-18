@@ -1,14 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WuBranch/QuestionGameMode.h"
-#include "WuBranch/Bike/BikeComponent.h"
 #include <tokuamaru/ResultWidget.h>
 #include <Components/WidgetComponent.h>
 #include "ResultActor.generated.h"
+
+class UBikeMovementComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API AResultActor : public AActor
@@ -38,7 +39,7 @@ public:
 
 	AQuestionGameMode* gamemode;
 
-	UBikeComponent* bikeComponent;
+	UBikeMovementComponent* bikeComponent;
 	bool autoplay;
 
 

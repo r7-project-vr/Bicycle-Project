@@ -12,10 +12,7 @@ class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
 class UPhotoCaptureComponent;
-class UBoxComponent;
-class AAnimal;
 class AQuestionUIActor;
-class UResultWidget;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -89,18 +86,6 @@ public:
 	void ResetOverSpeed();
 
 	/// <summary>
-	/// スクリーンショット撮影後に呼ばれる
-	/// </summary>
-	UFUNCTION()
-	void OnScreenshotTaken();
-
-	/// <summary>
-	/// デバッグ：コリジョン設定を確認
-	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void DebugPhotoCaptureBox();
-
-	/// <summary>
 	/// オートプレイを起動
 	/// </summary>
 	/// <param name="Quiz">クイズ</param>
@@ -156,7 +141,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UBikeComponent* Bike;
 
-	// 2025.12.24 ウー start 時間がない、今は使わない
 	/// <summary>
 	/// 移動
 	/// </summary>
@@ -166,7 +150,6 @@ private:
 	/// 回答者
 	/// </summary>
 	UResponderComponent* Responder;
-	// 2025.12.24 ウー end
 
 	/// <summary>
 	/// 動物管理者

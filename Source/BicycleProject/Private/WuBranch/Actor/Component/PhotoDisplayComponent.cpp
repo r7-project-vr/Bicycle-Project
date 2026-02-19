@@ -45,23 +45,28 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 		return;
 	}
 
-	int32 Columns = 3;
-	int32 Rows = 2;
+	int32 Columns = 3;  //横3列
+	int32 Rows = 2;     //縦2行
 
-	// 古い順に表示する
+	//新しい順（最新が右下）に表示
+	//配列のインデックスが大きいほど新しい写真なので、逆順に取得
 	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
 	{
+		//最新の写真を左上から配置するため、配列の後ろから取得
+		int32 ScreenshotIndex = CapturedScreenshots.Num() - 1 - i;
+
 		int32 Row = i / Columns;
 		int32 Col = i % Columns;
 
+		// 配置位置の計算
 		FVector Location = StartLocation;
-		Location.X += 0.0f;
-		Location.Y += Col * GridSpacing.Y;
-		Location.Z += Row * GridSpacing.Z;
+		Location.Y -= Col * GridSpacing.Y;
+		Location.Z -= Row * GridSpacing.Z;
 
-		UE_LOG(LogTemp, Log, TEXT("Screenshot %d (Order: %d): Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f)"), 
-			i + 1, i + 1, Row, Col, Location.X, Location.Y, Location.Z);
+		UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d: Grid[Row=%d, Col=%d] at (Y=%.2f, Z=%.2f)"), 
+			i + 1, CapturedScreenshots.Num(), Row, Col, Location.Y, Location.Z);
 
+		// スクリーンショット表示アクターの生成
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -72,17 +77,15 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 			SpawnParams
 		);
 
-		if (DisplayActor && CapturedScreenshots[i])
+		if (DisplayActor && CapturedScreenshots[ScreenshotIndex])
 		{
-			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
+			DisplayActor->SetScreenshot(CapturedScreenshots[ScreenshotIndex]);
 			
 			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
 			DisplayActor->SetActorScale3D(NewScale);
-			
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] - Order: oldest to newest"), 
-				i + 1, Row, Col);
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in chronological order (oldest first)!"), CapturedScreenshots.Num());
+	UE_LOG(LogTemp, Log, TEXT("Total %d screenshots displayed in grid (newest: top-left, oldest: bottom-right)"), 
+		CapturedScreenshots.Num());
 }

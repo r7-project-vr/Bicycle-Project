@@ -8,10 +8,8 @@
 
 AAnimalAIController::AAnimalAIController()
 {
-	// Tickを有効化
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 初期状態
 	bHasTarget = false;
 	StuckCheckTimer = 0.0f;
 	bIsWaiting = false;
@@ -26,10 +24,9 @@ void AAnimalAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	// Character前提の設定
 	if (ACharacter* PossessedCharacter = Cast<ACharacter>(InPawn))
 	{
-		// コントローラーYawは使わず、独自に回転させる
+		// コントローラーYawは使わず、独自で回転させる
 		PossessedCharacter->bUseControllerRotationYaw = false;
 
 		// 移動方向に自動で向かないようにする
@@ -44,7 +41,6 @@ void AAnimalAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Pawnがいるときだけ行動処理
 	if (GetPawn())
 	{
 		Action(DeltaTime);
@@ -53,16 +49,15 @@ void AAnimalAIController::Tick(float DeltaTime)
 
 void AAnimalAIController::DecideBehavior_Implementation()
 {
-	// Character前提のキャスト
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
 	if (!ControlledCharacter) return;
 
-	// 矩形範囲でランダム地点を決定
+	// マップ矩形内でランダム地点を決定
 	const float RandomX = UKismetMathLibrary::RandomFloatInRange(-14900.0f, 1500.0f);
 	const float RandomY = UKismetMathLibrary::RandomFloatInRange(-14900.0f, 14900.0f);
 	FVector GoalLocation(RandomX, RandomY, ControlledCharacter->GetActorLocation().Z);
 
-	// 上空から下向きにレイを飛ばして地面を探す
+	// 下向きにレイを飛ばして地面を探す
 	FVector TraceStart = GoalLocation;
 	TraceStart.Z += 5000.0f;
 	FVector TraceEnd = GoalLocation;
@@ -73,12 +68,12 @@ void AAnimalAIController::DecideBehavior_Implementation()
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(ControlledCharacter);
 
-	// 地形(WorldStatic)に当たる位置を目標とする
+	// 地形に当たる位置を目標とする
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 
 	if (bHit)
 	{
-		// ヒット地点を目標に採用
+		// ヒット地点を目標にする
 		CurrentTargetLocation = HitResult.Location;
 		bHasTarget = true;
 
@@ -95,17 +90,15 @@ void AAnimalAIController::DecideBehavior_Implementation()
 
 void AAnimalAIController::Action_Implementation(float DeltaTime)
 {
-	// Character前提のキャスト
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
 	if (!ControlledCharacter) return;
 
 	// 待機中の処理
 	if (bIsWaiting)
 	{
-		// 待機時間を進める
 		WaitTimer += DeltaTime;
 
-		// 規定時間を超えたら次の行動
+		// 待機時間を超えたら次の行動
 		if (WaitTimer >= WaitAfterArriveSeconds)
 		{
 			bIsWaiting = false;
@@ -113,7 +106,7 @@ void AAnimalAIController::Action_Implementation(float DeltaTime)
 			DecideBehavior();
 		}
 
-		// 姿勢補正は続ける
+		// 姿勢補正
 		UpdateSlopeAlignment(DeltaTime, ControlledCharacter->GetActorForwardVector());
 		return;
 	}
@@ -135,7 +128,7 @@ void AAnimalAIController::Action_Implementation(float DeltaTime)
 		// 目標に到着
 		bHasTarget = false;
 
-		// 余計な入力を消す
+		// 移動入力の残りを消す
 		ControlledCharacter->ConsumeMovementInputVector();
 
 		// 待機に入る
@@ -149,13 +142,12 @@ void AAnimalAIController::Action_Implementation(float DeltaTime)
 	// 目標方向ベクトル
 	const FVector Direction = (CurrentTargetLocation - ControlledCharacter->GetActorLocation()).GetSafeNormal();
 
-	// 勾配による速度補正を計算
+	// 勾配による速度補正
 	const float SlopeSpeedScale = ComputeSlopeSpeedScale(Direction);
 
-	// 移動入力を与える（NavMesh不要）
+	// 移動入力を与える
 	ControlledCharacter->AddMovementInput(Direction, MoveSpeedScale * SlopeSpeedScale);
 
-	// スタック検出タイマーを進める
 	StuckCheckTimer += DeltaTime;
 	if (StuckCheckTimer >= StuckCheckInterval)
 	{
@@ -181,7 +173,6 @@ void AAnimalAIController::Action_Implementation(float DeltaTime)
 
 void AAnimalAIController::UpdateSlopeAlignment(float DeltaTime, const FVector& MoveDirection)
 {
-	// Character前提のキャスト
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
 	if (!ControlledCharacter) return;
 
@@ -198,18 +189,18 @@ void AAnimalAIController::UpdateSlopeAlignment(float DeltaTime, const FVector& M
 	// 地面が取れたら姿勢補正を行う
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams))
 	{
-		// 地面法線を保存（速度計算用）
+		// 地面法線を保存
 		CurrentGroundNormal = HitResult.Normal;
 		bHasGroundNormal = true;
 
-		// 勾配角度を算出
+		// 勾配角度を産出
 		const float SlopeAngleDeg = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(CurrentGroundNormal, FVector::UpVector)));
 
 		// 移動方向は水平に投影してYaw取得
 		const FVector FlatMoveDir = FVector(MoveDirection.X, MoveDirection.Y, 0.0f).GetSafeNormal();
 		const bool bHasMoveDir = !FlatMoveDir.IsNearlyZero();
 
-		// 平地判定ならYawのみ更新
+		// 平地ならYawのみ更新
 		if (SlopeAngleDeg < SlopeAlignMinAngleDeg)
 		{
 			const FRotator CurrentRotation = ControlledCharacter->GetActorRotation();
@@ -222,7 +213,7 @@ void AAnimalAIController::UpdateSlopeAlignment(float DeltaTime, const FVector& M
 			return;
 		}
 
-		// 勾配時は地面平面に投影した前方向を使う
+		// 勾配時は地面平面に投影したForwardを使う
 		FVector ProjectedForward = FVector::VectorPlaneProject(MoveDirection, CurrentGroundNormal).GetSafeNormal();
 		if (ProjectedForward.IsNearlyZero())
 		{

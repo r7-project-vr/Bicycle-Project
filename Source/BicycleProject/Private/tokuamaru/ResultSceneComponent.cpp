@@ -4,6 +4,7 @@
 #include "tokuamaru/ResultSceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/QuestionGameMode.h"
+#include <WuBranch/Bike/BikeMovementComponent.h>
 //アクターに直接ウィジェットを追加してもらってそれを見つける感じ
 
 // Sets default values for this component's properties
@@ -88,9 +89,9 @@ void UResultSceneComponent::BeginPlay()
 		}
 	}
 
-	bikeComponent = GetOwner()->FindComponentByClass<UBikeComponent>();
+	bikeComponent = GetOwner()->FindComponentByClass<UBikeMovementComponent>();
 	if (bikeComponent == NULL) {
-		UE_LOG(LogTemp, Error, TEXT("bikeComponent NULLPtr!  BikeComponent"));
+		UE_LOG(LogTemp, Error, TEXT("bikeComponent NULLPtr!  BikeMovementComponent"));
 	}
 	else {
 		// 2025.08.25 ウー start

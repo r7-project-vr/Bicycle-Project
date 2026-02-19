@@ -246,6 +246,7 @@ UDevice* UDeviceManager::CreateKeyBoardDevice()
 {
 	UDevice* Device = NewObject<UKeyboardDevice>(this);
 	Device->Init();
+	Device->Connect();
 	return Device;
 }
 

@@ -15,13 +15,21 @@ struct FInputActionValue;
  * 他のプラットフォームだったら、有線か無線で繋がっているかどうかの判断が必要です
  */
 UCLASS()
-class BICYCLEPROJECT_API UKeyboardDevice : public UDevice
+class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject
 {
 	GENERATED_BODY()
 	
 public: 
 
 	UKeyboardDevice();
+
+#pragma region TickableGameObject
+	virtual void Tick(float DeltaTime) override;
+
+	virtual TStatId GetStatId() const override;
+
+	virtual bool IsTickableInEditor() const override;
+#pragma endregion
 
 	virtual void Init() override;
 
@@ -108,4 +116,19 @@ private:
 	/// </summary>
 	UPROPERTY()
 	UInputAction* ScreenshotAction;
+
+	/// <summary>
+	/// 自作デバイスの入力をシミュレートする間隔
+	/// </summary>
+	const float SimulateCustomDeviceInputInterval = 0.5f;
+
+	/// <summary>
+	/// 時間カウンター
+	/// </summary>
+	float TimeCnt;
+
+	/// <summary>
+	/// 自作デバイスの入力をシミュレートするためのフラグ
+	/// </summary>
+	bool bCanSendMoveInput;
 };

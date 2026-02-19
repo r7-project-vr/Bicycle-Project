@@ -4,6 +4,8 @@
 #include "WuBranch/UI/QuestionUIActor.h"
 #include "Components/BoxComponent.h"
 #include <WuBranch/Bike/BikeComponent.h>
+#include <WuBranch/Bike/BikeCharacter.h>
+#include <WuBranch/Bike/BikeMovementComponent.h>
 #include <WuBranch/MyGameInstance.h>
 #include "WuBranch/Device/DeviceManager.h"
 #include <Kismet/KismetSystemLibrary.h>
@@ -70,8 +72,8 @@ void AQuestionUIActor::BeginPlay()
 
 	SetTarget(nullptr);
 	_exitTarget = nullptr;
-	_movedDistance = 0.0f;
-	_isAnswered = false;
+	MovedDistance = 0.0f;
+	bIsAnswered = false;
 	if (_temporaryParkingArea)
 	{
 		_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
@@ -90,7 +92,7 @@ void AQuestionUIActor::Tick(float DeltaTime)
 
 void AQuestionUIActor::UseLeftExit()
 {
-	_isAnswered = true;
+	bIsAnswered = true;
 	_exitTarget = _exitLeft;
 
 	// レベル内に配置された AProceduralRoadGenerator を探す
@@ -104,7 +106,7 @@ void AQuestionUIActor::UseLeftExit()
 
 void AQuestionUIActor::UseRightExit()
 {
-	_isAnswered = true;
+	bIsAnswered = true;
 	_exitTarget = _exitRight;
 
 	// レベル内に配置された AProceduralRoadGenerator を探す
@@ -118,7 +120,7 @@ void AQuestionUIActor::UseRightExit()
 
 bool AQuestionUIActor::GetAnsweredStatus() const
 {
-	return _isAnswered;
+	return bIsAnswered;
 }
 
 void AQuestionUIActor::DisableFeature()
@@ -134,11 +136,11 @@ bool AQuestionUIActor::GetExitLocationAndForward(FVector& oLocation, FVector& oF
 	//出口がある
 	if (!_exitTarget)
 		return false;
-	int exitNum = _exitTarget->GetNumberOfSplinePoints();
-	if (exitNum > 1)
+	int ExitNum = _exitTarget->GetNumberOfSplinePoints();
+	if (ExitNum > 1)
 	{
-		oLocation = _exitTarget->GetLocationAtSplinePoint(exitNum - 1, ESplineCoordinateSpace::World);
-		oForward = _exitTarget->GetDirectionAtSplinePoint(exitNum - 1, ESplineCoordinateSpace::World);
+		oLocation = _exitTarget->GetLocationAtSplinePoint(ExitNum - 1, ESplineCoordinateSpace::World);
+		oForward = _exitTarget->GetDirectionAtSplinePoint(ExitNum - 1, ESplineCoordinateSpace::World);
 		return true;
 	}
 	return false;
@@ -155,7 +157,7 @@ FQuestion* AQuestionUIActor::GetNowQuestion()
 	return Question;
 }
 
-void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
+void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 {
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// デフォルトアクションを機能させない
@@ -164,33 +166,45 @@ void AQuestionUIActor::HandlePlayerEnterArea(UBikeComponent* Bike)
 	GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
 
 	// 自転車のスピードを強制的に0まで下げる
-	Bike->ReduceVelocityTo0();
+	Bike->StopMove();
 
 	// オートプレイのスタート地点へ誘導
 	Bike->EnableAutoPlay(this);
-	Bike->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+	if (UBikeMovementComponent* Movement = Bike->GetComponentByClass<UBikeMovementComponent>())
+	{
+		Movement->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+		FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
+		Movement->SetSynchPos(Pos);
+	}
+	/*Bike->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
 	FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
-	Bike->SetSynchPos(Pos);
+	Bike->SetSynchPos(Pos);*/
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!_isAnswered && OtherActor->ActorHasTag("Player"))
+	if (!bIsAnswered && OtherActor->ActorHasTag("Player"))
 	{
 		//UKismetSystemLibrary::PrintString(this, "Start enter parking area", true, false, FColor::Green, 10.f);
 		
 		SetQuiz();
 
 		// オートプレイ対象の設置
-		UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
+		// 自転車の移動機能をBikeMovementComponentに移動した
+		if (ABikeCharacter* Bike = Cast<ABikeCharacter>(OtherActor))
+		{
+			SetTarget(Bike);
+			HandlePlayerEnterArea(Bike);
+		}
+		/*UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(Bike);
-		HandlePlayerEnterArea(Bike);
+		HandlePlayerEnterArea(Bike);*/
 	}
 }
 
 void AQuestionUIActor::OnOverlapEndParkingArea(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (_isAnswered && OtherActor->ActorHasTag("Player"))
+	if (bIsAnswered && OtherActor->ActorHasTag("Player"))
 	{
 		DisableFeature();
 	}
@@ -204,15 +218,17 @@ void AQuestionUIActor::SetQuiz()
 	}
 }
 
-void AQuestionUIActor::OnArrivedEnterLocation(UBikeComponent* Bike)
+void AQuestionUIActor::OnArrivedEnterLocation()
 {
 	DisplayUI();
-	Bike->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+	if (UBikeMovementComponent* Movement = AutoPlayTarget->GetComponentByClass<UBikeMovementComponent>())
+		Movement->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+	//Bike->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
 }
 
-void AQuestionUIActor::SetTarget(UBikeComponent* Target)
+void AQuestionUIActor::SetTarget(ABikeCharacter* Target)
 {
-	_autoPlayTarget = Target;
+	AutoPlayTarget = Target;
 }
 
 void AQuestionUIActor::LeadToExit(float DeltaTime)
@@ -223,20 +239,22 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 		if (_exitTarget->GetNumberOfSplinePoints() <= 1)
 			return;
 
-		float deltaDis = DeltaTime * _autoPlayMoveSpeed;
-		_movedDistance += deltaDis;
+		float DeltaDis = DeltaTime * _autoPlayMoveSpeed;
+		MovedDistance += DeltaDis;
 		//FTransform pos = _exitTarget->GetTransformAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);
-		FVector pos = _exitTarget->GetLocationAtDistanceAlongSpline(_movedDistance, ESplineCoordinateSpace::Type::World);
-		if (_autoPlayTarget)
+		FVector Pos = _exitTarget->GetLocationAtDistanceAlongSpline(MovedDistance, ESplineCoordinateSpace::Type::World);
+		if (AutoPlayTarget)
 		{
-			_autoPlayTarget->SetSynchPos(pos);
+			if(UBikeMovementComponent* Movement = AutoPlayTarget->GetComponentByClass<UBikeMovementComponent>())
+				Movement->SetSynchPos(Pos);
 		}
 		// 出口に着いた
-		if (_movedDistance > _exitTarget->GetSplineLength())
+		if (MovedDistance > _exitTarget->GetSplineLength())
 		{
 			_exitTarget = nullptr;
 			// オートプレイ解除
-			_autoPlayTarget->DisableAutoPlay();
+			if (AutoPlayTarget)
+				AutoPlayTarget->DisableAutoPlay();
 		}
 	}
 }

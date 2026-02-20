@@ -79,3 +79,8 @@ bool UWidgetInteractionHeadComponent::IsVRConnect() const
 {
 	return GEngine->XRSystem.IsValid() && GEngine->XRSystem->GetHMDDevice() && GEngine->XRSystem->GetHMDDevice()->IsHMDConnected();
 }
+
+void UWidgetInteractionHeadComponent::Point()
+{
+	
+}

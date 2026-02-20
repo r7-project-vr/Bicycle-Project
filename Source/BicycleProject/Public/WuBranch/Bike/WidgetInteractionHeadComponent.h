@@ -51,6 +51,11 @@ private:
 	/// </summary>
 	/// <returns>true: はい / false: いいえ</returns>
 	bool IsVRConnect() const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	void Point();
 	
 	/// <summary>
 	/// 射線

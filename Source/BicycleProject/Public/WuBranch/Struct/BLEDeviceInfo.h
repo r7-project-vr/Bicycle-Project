@@ -42,5 +42,14 @@ struct BICYCLEPROJECT_API FBLEDeviceInfo
 	/// <summary>
 	/// LEDの色
 	/// </summary>
-	FColor LEDColor[2];
+	UPROPERTY(BlueprintReadOnly)
+	FColor LEDColor1;
+
+	UPROPERTY(BlueprintReadOnly)
+	FColor LEDColor2;
+
+	bool operator == (const FBLEDeviceInfo& Other)
+	{
+		return this->UUID.Equals(Other.UUID);
+	}
 };

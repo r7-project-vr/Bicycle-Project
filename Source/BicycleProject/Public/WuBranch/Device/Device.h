@@ -15,7 +15,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevice, Log, All);
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class BICYCLEPROJECT_API UDevice : public UObject, public IMoveProvider, public IChoiceProvider
 {
 	GENERATED_BODY()

@@ -631,6 +631,7 @@ private:
 	FString FileName;
 #pragma endregion
 
+#pragma region スクリーンショット
 public:
 	/// <summary>
 	/// スクリーンショットをキャプチャ
@@ -653,7 +654,7 @@ public:
 	/// <summary>
 	/// 1ゲームで撮影可能な最大枚数をゲット
 	/// </summary>
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	int GetMaxPhotosPerGame() const;
 
 	/// <summary>
@@ -669,8 +670,9 @@ public:
 
 	/// <summary>
 	/// リザルトマップでスクリーンショットをグリッド表示
+	/// この関数はPhotoDisplayComponentに移動されました。互換性のために残されています。
 	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	UFUNCTION(BlueprintCallable, Category = "Screenshot", meta = (DeprecatedFunction, DeprecationMessage = "Use PhotoDisplayComponent->DisplayScreenshotsInGrid instead"))
 	void DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing);
 
 	/// <summary>
@@ -717,4 +719,5 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AScreenshotDisplayActor> ScreenshotDisplayActorClass;
+#pragma endregion
 };

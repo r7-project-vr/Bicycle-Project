@@ -6,6 +6,8 @@
 #include <WuBranch/Device/DeviceType.h>
 #include "BLEDeviceInfo.generated.h"
 
+class IBleDeviceInterface;
+
 /**
  * 
  */
@@ -13,6 +15,11 @@ USTRUCT(BlueprintType)
 struct BICYCLEPROJECT_API FBLEDeviceInfo
 {
 	GENERATED_BODY()
+
+	/// <summary>
+	/// デバイス
+	/// </summary>
+	TScriptInterface<IBleDeviceInterface> Device;
 
 	/// <summary>
 	/// デバイスの名前

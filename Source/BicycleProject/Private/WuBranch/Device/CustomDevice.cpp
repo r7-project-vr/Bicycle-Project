@@ -220,6 +220,9 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
 			MyDevice = Device;
 			
+			FString DeviceName = Device.GetInterface()->GetDeviceName();
+			FString DeviceUUID = Device.GetInterface()->GetDeviceId();
+
 			// 接続する
 			Connect();
 			//　スキャンを止める

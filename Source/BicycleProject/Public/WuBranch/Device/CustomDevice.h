@@ -241,6 +241,11 @@ private:
 	TScriptInterface<IBleDeviceInterface> MyDevice;
 
 	/// <summary>
+	/// LEDデータがまだもらってないデバイス
+	/// </summary>
+	TArray<IBleDeviceInterface> DevicesWaiting;
+
+	/// <summary>
 	/// つなげるデバイスリスト
 	/// </summary>
 	TArray<FBLEDeviceInfo> DeviceList;

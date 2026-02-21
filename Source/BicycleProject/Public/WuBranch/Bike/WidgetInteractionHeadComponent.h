@@ -53,13 +53,36 @@ private:
 	bool IsVRConnect() const;
 
 	/// <summary>
-	/// 
+	/// カーソルの位置を更新
 	/// </summary>
-	void Point();
+	void UpdateCursorTransform();
 	
 	/// <summary>
 	/// 射線
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* Line;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//UStaticMeshComponent* Line;
+
+	/// <summary>
+	/// カーソル
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction", meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* CursorWidget;
+
+	/// <summary>
+	/// カーソルを表示するか
+	/// </summary>
+	bool bHintEnabled;
+
+	/// <summary>
+	/// カーソルがUIに触れたときのオフセット
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float CursorOffsetFromUI = 2.0f;
+
+	/// <summary>
+	/// カーソルのサイズ
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float CursorSize = 10.0f;
 };

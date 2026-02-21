@@ -46,6 +46,7 @@ void UBikeMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	// オートプレイ中なら
 	if (bIsAutoPlay)
 	{
 		if ((SynchronizePos - GetOwner()->GetActorLocation()).SizeSquared2D() <= FMath::Square(10.f))
@@ -148,6 +149,7 @@ void UBikeMovementComponent::OnMove(FVector2D Direction)
 	FVector Dir = FVector::ZeroVector;
 	// バックさせない
 	FVector BikeDir = FVector(Direction.X, Direction.Y, 0.f);
+	// 後退できない
 	if (BikeDir.X < 0)
 		BikeDir.X = 0;
 	Dir = ActorForward * BikeDir.X + ActorRight * BikeDir.Y;

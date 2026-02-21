@@ -18,6 +18,7 @@
 #include "Engine/SceneCapture2D.h"
 #include "WuBranch/Struct/ShopItem.h"
 #include <WuBranch/Struct/WildPetSwitchTable.h>
+#include "WuBranch/Actor/Component/PhotoDisplayComponent.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -670,6 +671,24 @@ TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
 
 void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing)
 {
+	//互換性のために、PhotoDisplayComponentを検索して転送
+	if (UWorld* World = GetWorld())
+	{
+		//レベル内の全てのPhotoDisplayComponentを検索
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
+		
+		for (AActor* Actor : AllActors)
+		{
+			if (UPhotoDisplayComponent* PhotoDisplay = Actor->FindComponentByClass<UPhotoDisplayComponent>())
+			{
+				PhotoDisplay->DisplayScreenshotsInGrid(StartLocation, GridSpacing);
+				return;
+			}
+		}
+	}
+
+	//PhotoDisplayComponentが見つからない場合は、元の実装を実行
 	if (!GetWorld())
 	{
 		UE_LOG(LogTemp, Error, TEXT("World is null!"));
@@ -691,7 +710,6 @@ void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector Gr
 	int32 Columns = 3;
 	int32 Rows = 2;
 
-	// 古い順に表示する
 	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
 	{
 		int32 Row = i / Columns;

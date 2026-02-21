@@ -64,6 +64,11 @@ bool UKeyboardDevice::IsTickableInEditor() const
 
 void UKeyboardDevice::Init()
 {
+	
+}
+
+void UKeyboardDevice::Enable()
+{
 	Controller = GetWorld()->GetFirstPlayerController();
 	EnableMoveAction_Implementation();
 	SetupAction();

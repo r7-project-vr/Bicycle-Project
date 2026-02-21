@@ -3,6 +3,7 @@
 
 #include "WuBranch/Device/CustomDevice.h"
 #include <WuBranch/Device/DeviceType.h>
+#include <WuBranch/Struct/BLEDeviceInfo.h>
 #if PLATFORM_ANDROID
 #include "BleUtils.h"
 #include "Interface/BleManagerInterface.h"
@@ -14,15 +15,17 @@
 
 UCustomDevice::UCustomDevice()
 	: BleManager(nullptr)
-	, MyDevice(nullptr)
-	, MoveSwitch(false)
+	, CurrentDevice(nullptr)
+	, LEDCheckTimer(0.0f)
+	, bIsMakeList(true)
+	, bMoveSwitch(false)
 {
 }
 
 UCustomDevice::~UCustomDevice()
 {
 #if PLATFORM_ANDROID
-	if (MyDevice)
+	if (CurrentDevice)
 	{
 		if (State == EDeviceConnectType::Connected)
 		{
@@ -47,18 +50,25 @@ void UCustomDevice::Init()
 		return;
 
 	// この以降はデバイスのbluetoothがオンの状態かつBluetooth Low Energy(BLE)がサポートしている状態
-	
+	// 初期化
+	bIsMakeList = true;
+	LEDCheckTimer = 0.0f;
+	DevicesWaiting.Empty();
+	ResetDeviceList();
 	// サービスからデバイスを見つける
 	DecideTargetServices();
 	// 権限を要求する
 	RequestAndroidPermission();
 	FindDeviceByServices();
 
-	EnableMoveAction_Implementation();
 	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
 	GameInstance->OnUpdateRPM.AddDynamic(this, &UCustomDevice::UpdateMaxRPM);
 	MaxRPM = GameInstance->GetDangerRPM();
 #endif
+}
+
+void UCustomDevice::Enable()
+{
 }
 
 bool UCustomDevice::Connect()
@@ -68,7 +78,7 @@ bool UCustomDevice::Connect()
 	SuccFunction.BindUFunction(this, FName("OnConnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnConnectError"));
-	MyDevice.GetInterface()->Connect(SuccFunction, ErrFunction);
+	CurrentDevice.GetInterface()->Connect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Connecting;
 #endif
 	return true;
@@ -81,7 +91,7 @@ bool UCustomDevice::Disconnect()
 	SuccFunction.BindUFunction(this, FName("OnDisconnectSucc"));
 	FBleErrorDelegate ErrFunction;
 	ErrFunction.BindUFunction(this, FName("OnDisconnectError"));
-	MyDevice.GetInterface()->Disconnect(SuccFunction, ErrFunction);
+	CurrentDevice.GetInterface()->Disconnect(SuccFunction, ErrFunction);
 	State = EDeviceConnectType::Disconnecting;
 #endif
 	return true;
@@ -89,12 +99,12 @@ bool UCustomDevice::Disconnect()
 
 void UCustomDevice::EnableMoveAction_Implementation()
 {
-	MoveSwitch = true;
+	bMoveSwitch = true;
 }
 
 void UCustomDevice::DisableMoveAction_Implementation()
 {
-	MoveSwitch = false;
+	bMoveSwitch = false;
 }
 
 void UCustomDevice::EnableSelectAnswerAction_Implementation()
@@ -103,6 +113,35 @@ void UCustomDevice::EnableSelectAnswerAction_Implementation()
 
 void UCustomDevice::DisableSelectAnswerAction_Implementation()
 {
+}
+
+void UCustomDevice::Tick(float DeltaTime)
+{
+#if PLATFORM_ANDROID
+	// 0.5秒ごとにDevicesWaitingをみて、LEDを確認する必要があるデバイスがあると確認する
+	if (DevicesWaiting.Num() > 0)
+	{
+		if (LEDCheckTimer <= 0.0f)
+		{
+			if(!CurrentDevice)
+				CheckDeviceLED();
+		}
+		else
+		{
+			LEDCheckTimer -= DeltaTime;
+		}
+	}
+#endif
+}
+
+TStatId UCustomDevice::GetStatId() const
+{
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UCustomDevice, STATGROUP_Tickables);
+}
+
+bool UCustomDevice::IsTickableInEditor() const
+{
+	return false;
 }
 
 bool UCustomDevice::CheckBluetooth()
@@ -127,6 +166,34 @@ bool UCustomDevice::CheckBluetooth()
 #endif
 
 	return false;
+}
+
+void UCustomDevice::CheckDeviceLED()
+{
+	FBLEDeviceInfo Target = DevicesWaiting[0];
+	CurrentDevice = Target.Device;
+	Connect();
+}
+
+void UCustomDevice::ResetDeviceList()
+{
+	DeviceList.Empty();
+}
+
+FBLEDeviceInfo UCustomDevice::MakeDeviceBaseInfo(TScriptInterface<IBleDeviceInterface> Device, FString DeviceName, FString DeviceUUID)
+{
+	FBLEDeviceInfo Info;
+	Info.Name = DeviceName;
+	Info.UUID = DeviceUUID;
+	Info.State = EDeviceConnectType::UnConnected;
+	Info.LEDColor1 = FColor::Black;
+	Info.LEDColor2 = FColor::Black;
+	return Info;
+}
+
+void UCustomDevice::AddToDeviceList(FBLEDeviceInfo Device)
+{
+	DeviceList.Add(Device);
 }
 
 void UCustomDevice::RequestAndroidPermission()
@@ -185,25 +252,28 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 
 		// 新しく見つけたデバイスを使用する
 		// 既に接続した場合は切断する
-		if (MyDevice && State == EDeviceConnectType::Connected)
-		{
-			Disconnect();
-		}
-		else if ((!MyDevice && State == EDeviceConnectType::Connecting) || (MyDevice && State == EDeviceConnectType::Disconnecting))
-		{
-			// 接続しているか切断しているか
-			// 何もしない、やっていることが終了するまで待つ
-		}
-		else
-		{
-			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
-			MyDevice = Device;
-			
-			// 接続する
-			Connect();
+		//if (CurrentDevice && State == EDeviceConnectType::Connected)
+		//{
+		//	Disconnect();
+		//}
+		//else if ((!CurrentDevice && State == EDeviceConnectType::Connecting) || (CurrentDevice && State == EDeviceConnectType::Disconnecting))
+		//{
+		//	// 接続しているか切断しているか
+		//	// 何もしない、やっていることが終了するまで待つ
+		//}
+		//else
+		//{
+			//UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
+
+			// つなげそうなデバイス見つけたら、DevicesWaitingに入れてLEDの色を確認する
+			FString DeviceName = Device.GetInterface()->GetDeviceName();
+			FString DeviceUUID = Device.GetInterface()->GetDeviceId();
+			FBLEDeviceInfo PendingDevice = MakeDeviceBaseInfo(Device, DeviceName, DeviceUUID);
+			DevicesWaiting.Add(PendingDevice);
+
 			//　スキャンを止める
-			BleManager.GetInterface()->StopScan();
-		}
+			//BleManager.GetInterface()->StopScan();
+		//}
 	}
 #endif
 }
@@ -212,16 +282,17 @@ void UCustomDevice::OnConnectSucc()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
-	Name = MyDevice.GetInterface()->GetDeviceName();
-	UUID = MyDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
-	UE_LOG(LogTemplateDevice, Display, TEXT("Do Write pair"));
-	FBleCharacteristicDelegate WriteFunction;
-	WriteFunction.BindUFunction(this, FName("OnWriteData"));
-	MyDevice.GetInterface()->BindToCharacteristicWriteEvent(WriteFunction);
-	TArray<uint8> Datas;
-	Datas.Add(1);
-	MyDevice.GetInterface()->WriteCharacteristic(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas);
+	// まずどの段階にいるかを確認
+	if (bIsMakeList)
+	{
+		GetValidationCode();
+	}
+	else
+	{
+		// つなぐデバイスが決めた
+		SendPairRequest();
+	}
 #endif
 }
 
@@ -238,7 +309,8 @@ void UCustomDevice::OnDisconnectSucc()
 	Name.Empty();
 	UUID.Empty();
 	State = EDeviceConnectType::UnConnected;
-	MyDevice = nullptr;
+	CurrentDevice = nullptr;
+	LEDCheckTimer = LEDCheckTimeDuration;
 }
 
 void UCustomDevice::OnDisconnectError(FString ErrorMessage)
@@ -247,14 +319,40 @@ void UCustomDevice::OnDisconnectError(FString ErrorMessage)
 	State = EDeviceConnectType::Connected;
 }
 
+void UCustomDevice::GetValidationCode()
+{
+#if PLATFORM_ANDROID
+	UE_LOG(LogTemplateDevice, Display, TEXT("Do Get Validation Code"));
+	FBleCharacteristicDelegate ReceiveFunction;
+	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
+	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(ReceiveFunction);
+	CurrentDevice.GetInterface()->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
+	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), *ServiceUUID, *CharacteristicUUID);
+#endif
+}
+
+void UCustomDevice::SendPairRequest()
+{
+#if PLATFORM_ANDROID
+	UE_LOG(LogTemplateDevice, Display, TEXT("Do Write pair"));
+	FBleCharacteristicDelegate WriteFunction;
+	WriteFunction.BindUFunction(this, FName("OnWriteData"));
+	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(WriteFunction);
+	TArray<uint8> Datas;
+	Datas.Add(1);
+	CurrentDevice.GetInterface()->WriteCharacteristic(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas);
+#endif
+}
+
 template<typename T>
 T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 {
+	// 単位：Byte
 	//RPMのデータは2バイト, Data[0]が上位バイト, Data[1]が下位バイト
 	T Result = 0;
-	for (int i = 0; i < Size; ++i)
+	for (int Index = 0; Index < Size; ++Index)
 	{
-		Result |= (Data[i] << (8 * (Size - 1 - i)));
+		Result |= (Data[Index] << (8 * (Size - 1 - Index)));
 	}
 	return Result;
 }
@@ -264,12 +362,9 @@ void UCustomDevice::OnWriteData(FString ServiceUUID, FString CharacteristicUUID)
 #if PLATFORM_ANDROID
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
-	MyDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
-	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
-	MyDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
-
-	MyDevice.GetInterface()->BindToCharacteristicReadEvent(ReceiveFunction);
-	MyDevice.GetInterface()->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
+	CurrentDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
+	CurrentDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
+	CurrentDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
 	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), *ServiceUUID, *CharacteristicUUID);
 #endif
 }
@@ -314,10 +409,16 @@ void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
 void UCustomDevice::HandleLEDData(const TArray<uint8>& Data)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("Get Data Length: %d"), Data.Num()));
+	FBLEDeviceInfo Target = DevicesWaiting[0];
 	uint32 LED[2];
 	LED[0] = TransformDataToInt<uint32>(Data.GetData(), 4);
 	LED[1] = TransformDataToInt<uint32>(&Data[4], 4);
+	Target.LEDColor1 = FColor(LED[0]);
+	Target.LEDColor2 = FColor(LED[1]);
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("LED 1: %u, LED 2 : %u"), LED[0], LED[1]));
+	DeviceList.Add(Target);
+	DevicesWaiting.Remove(Target);
+	Disconnect();
 }
 
 void UCustomDevice::DebugReceiveData(const TArray<uint8>& Data)
@@ -328,9 +429,15 @@ void UCustomDevice::DebugReceiveData(const TArray<uint8>& Data)
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, FString::Printf(TEXT("Content: %s, Num* %d"), *Content, Data.Num()));
 }
 
+void UCustomDevice::NotifyDeviceListChangedEvent()
+{
+	if (OnDeviceListChanged.IsBound())
+		OnDeviceListChanged.Broadcast(DeviceList);
+}
+
 void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
 {
-	if(!MoveSwitch)
+	if(!bMoveSwitch)
 		return;
 
 	// 通知する

@@ -30,9 +30,14 @@ public:
 	void CreateAllDevices();
 
 	/// <summary>
-	/// すべでのデバイスとのリンクを断つ
+	/// すべてのデバイスとのリンクを断つ
 	/// </summary>
 	void DisConnectAllDevices();
+
+	/// <summary>
+	/// すべてのデバイスを機能させる
+	/// </summary>
+	void EnableAllDevices();
 
 	/// <summary>
 	/// リストにデバイスを追加

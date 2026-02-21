@@ -27,6 +27,8 @@ public:
 
 	void Init(int DeviceID, int DeviceVer) override;
 
+	void Enable() override;
+
 #pragma region TickableGameObject
 	virtual void Tick(float DeltaTime) override;
 

@@ -15,7 +15,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevice, Log, All);
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class BICYCLEPROJECT_API UDevice : public UObject, public IMoveProvider, public IChoiceProvider
 {
 	GENERATED_BODY()
@@ -35,6 +35,11 @@ public:
 	/// <param name="ID">デバイスID</param>
 	/// <param name="Ver">デバイスヴァージョン</param>
 	virtual void Init(int ID, int Ver) {};
+
+	/// <summary>
+	/// 機能する
+	/// </summary>
+	virtual void Enable();
 
 	/// <summary>
 	/// デバイスとリンクする

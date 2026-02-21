@@ -42,6 +42,10 @@ void UWiredDevice::Init(int DeviceID, int DeviceVer)
 	MaxRPM = GameInstance->GetDangerRPM();
 }
 
+void UWiredDevice::Enable()
+{
+}
+
 void UWiredDevice::Tick(float DeltaTime)
 {
 	if (!DataQueue.IsEmpty())
@@ -87,6 +91,7 @@ bool UWiredDevice::Connect()
 		State = EDeviceConnectType::Connected;
 
 		CmdSender = new DeviceCmdSender(Device, &CommandQueue, &DataQueue);
+		CmdSender->Pause();
 
 		return true;
 	}
@@ -232,6 +237,10 @@ UWiredDevice::~UWiredDevice()
 }
 
 void UWiredDevice::Init(int DeviceID, int DeviceVer)
+{
+}
+
+void UWiredDevice::Enable()
 {
 }
 

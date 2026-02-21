@@ -33,6 +33,8 @@ public:
 
 	virtual void Init() override;
 
+	void Enable() override;
+
 	virtual bool Connect() override;
 
 	virtual bool Disconnect() override;

@@ -29,12 +29,13 @@
 
 class IBleManagerInterface;
 class IBleDeviceInterface;
+struct FBLEDeviceInfo;
 
 /**
  * 
  */
 UCLASS()
-class BICYCLEPROJECT_API UCustomDevice : public UDevice
+class BICYCLEPROJECT_API UCustomDevice : public UDevice, public FTickableGameObject
 {
 	GENERATED_BODY()
 
@@ -44,6 +45,8 @@ public:
 	~UCustomDevice();
 
 	virtual void Init() override;
+
+	void Enable() override;
 
 	virtual bool Connect() override;
 
@@ -57,6 +60,22 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
+#pragma region TickableGameObject
+	virtual void Tick(float DeltaTime) override;
+
+	virtual TStatId GetStatId() const override;
+
+	virtual bool IsTickableInEditor() const override;
+#pragma endregion
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeviceListChangedDelegate, const TArray<FBLEDeviceInfo>&, Devices);
+
+	/// <summary>
+	/// デバイスリストが変更された通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FDeviceListChangedDelegate OnDeviceListChanged;
+
 private:
 
 	/// <summary>
@@ -64,6 +83,30 @@ private:
 	/// </summary>
 	/// <returns></returns>
 	bool CheckBluetooth();
+
+	/// <summary>
+	/// デバイスのLEDの色を確認
+	/// </summary>
+	void CheckDeviceLED();
+
+	/// <summary>
+	/// デバイスリストをリセット
+	/// </summary>
+	void ResetDeviceList();
+
+	/// <summary>
+	/// デバイスの基本情報を作る
+	/// </summary>
+	/// <param name="Device">インターフェイス</param>
+	/// <param name="DeviceName">名前</param>
+	/// <param name="DeviceUUID">UUID</param>
+	FBLEDeviceInfo MakeDeviceBaseInfo(TScriptInterface<IBleDeviceInterface> Device, FString DeviceName, FString DeviceUUID);
+
+	/// <summary>
+	/// デバイスリストに追加
+	/// </summary>
+	/// <param name="Device">デバイス</param>
+	void AddToDeviceList(FBLEDeviceInfo Device);
 
 	/// <summary>
 	/// アンドロイドのbluetoothの権限を要求する
@@ -122,6 +165,16 @@ private:
 	void OnDisconnectError(FString ErrorMessage);
 
 	/// <summary>
+	/// 認証コードをゲット
+	/// </summary>
+	void GetValidationCode();
+
+	/// <summary>
+	/// ペアリクエストを送る
+	/// </summary>
+	void SendPairRequest();
+
+	/// <summary>
 	/// 貰ったデータから必要な数値に変換
 	/// </summary>
 	/// <param name="Data">データ</param>
@@ -178,6 +231,11 @@ private:
 	void DebugReceiveData(const TArray<uint8>& Data);
 
 	/// <summary>
+	/// 
+	/// </summary>
+	void NotifyDeviceListChangedEvent();
+
+	/// <summary>
 	/// 移動イベントを通知
 	/// </summary>
 	/// <param name="MoveData">移動量</param>
@@ -213,12 +271,37 @@ private:
 	/// 目標のデバイス(今のところ一つしかない)
 	/// </summary>
 	UPROPERTY()
-	TScriptInterface<IBleDeviceInterface> MyDevice;
+	TScriptInterface<IBleDeviceInterface> CurrentDevice;
+
+	/// <summary>
+	/// LEDデータがまだもらってないデバイス
+	/// </summary>
+	TArray<FBLEDeviceInfo> DevicesWaiting;
+
+	/// <summary>
+	/// n秒ごとデバイスのLEDを確認
+	/// </summary>
+	float LEDCheckTimeDuration = 0.5f;
+
+	/// <summary>
+	/// デバイスのLEDを確認するタイマー
+	/// </summary>
+	float LEDCheckTimer = 0.0f;
+
+	/// <summary>
+	/// つなげるデバイスリスト
+	/// </summary>
+	TArray<FBLEDeviceInfo> DeviceList;
+
+	/// <summary>
+	/// リストを用意する段階のフラグ
+	/// </summary>
+	bool bIsMakeList;
 
 	/// <summary>
 	/// 移動機能のスイッチ
 	/// </summary>
-	bool MoveSwitch;
+	bool bMoveSwitch;
 
 	/// <summary>
 	/// 最大回転数

@@ -47,7 +47,7 @@ void AAnimalAIController::Tick(float DeltaTime)
 	}
 }
 
-void AAnimalAIController::DecideBehavior_Implementation()
+void AAnimalAIController::DecideBehavior()
 {
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
 	if (!ControlledCharacter) return;
@@ -88,7 +88,7 @@ void AAnimalAIController::DecideBehavior_Implementation()
 	}
 }
 
-void AAnimalAIController::Action_Implementation(float DeltaTime)
+void AAnimalAIController::Action(float DeltaTime)
 {
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
 	if (!ControlledCharacter) return;
@@ -156,7 +156,7 @@ void AAnimalAIController::Action_Implementation(float DeltaTime)
 		// 一定時間の移動量を計測
 		const float MovedDist = FVector::Dist(ControlledCharacter->GetActorLocation(), LastCheckLocation);
 
-		// 移動距離が少なければスタック判定
+		// 移動距離が閾値より小さければスタック判定
 		if (MovedDist < StuckThresholdDistance)
 		{
 			bHasTarget = false;

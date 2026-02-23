@@ -20,9 +20,6 @@ public:
 	/// </summary>
 	AAnimalAIController();
 
-	/// <summary>
-	/// 毎フレーム処理
-	/// </summary>
 	virtual void Tick(float DeltaTime) override;
 
 protected:
@@ -35,24 +32,12 @@ public:
 	/// <summary>
 	/// 行動を決定
 	/// </summary>
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AI")
 	void DecideBehavior();
-
-	/// <summary>
-	/// 行動を決定（BPで上書き可能）
-	/// </summary>
-	virtual void DecideBehavior_Implementation();
 
 	/// <summary>
 	/// 行動する
 	/// </summary>
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "AI")
 	void Action(float DeltaTime);
-
-	/// <summary>
-	/// Action（BPで上書き可）
-	/// </summary>
-	virtual void Action_Implementation(float DeltaTime);
 
 protected:
 	/// <summary>

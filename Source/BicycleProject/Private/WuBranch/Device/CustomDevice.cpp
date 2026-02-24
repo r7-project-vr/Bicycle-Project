@@ -17,7 +17,7 @@ UCustomDevice::UCustomDevice()
 	: BleManager(nullptr)
 	, CurrentDevice(nullptr)
 	, LEDCheckTimer(0.0f)
-	, bIsMakeList(true)
+	, bIsMakeList(false)
 	, bMoveSwitch(false)
 {
 }
@@ -51,7 +51,7 @@ void UCustomDevice::Init()
 
 	// この以降はデバイスのbluetoothがオンの状態かつBluetooth Low Energy(BLE)がサポートしている状態
 	// 初期化
-	bIsMakeList = true;
+	bIsMakeList = false;
 	LEDCheckTimer = 0.0f;
 	DevicesWaiting.Empty();
 	ResetDeviceList();
@@ -117,9 +117,10 @@ void UCustomDevice::DisableSelectAnswerAction_Implementation()
 
 void UCustomDevice::Tick(float DeltaTime)
 {
+	return;
 #if PLATFORM_ANDROID
 	// 0.5秒ごとにDevicesWaitingをみて、LEDを確認する必要があるデバイスがあると確認する
-	if (DevicesWaiting.Num() > 0)
+	/*if (DevicesWaiting.Num() > 0)
 	{
 		if (LEDCheckTimer <= 0.0f)
 		{
@@ -130,7 +131,7 @@ void UCustomDevice::Tick(float DeltaTime)
 		{
 			LEDCheckTimer -= DeltaTime;
 		}
-	}
+	}*/
 #endif
 }
 
@@ -252,28 +253,32 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 
 		// 新しく見つけたデバイスを使用する
 		// 既に接続した場合は切断する
-		//if (CurrentDevice && State == EDeviceConnectType::Connected)
-		//{
-		//	Disconnect();
-		//}
-		//else if ((!CurrentDevice && State == EDeviceConnectType::Connecting) || (CurrentDevice && State == EDeviceConnectType::Disconnecting))
-		//{
-		//	// 接続しているか切断しているか
-		//	// 何もしない、やっていることが終了するまで待つ
-		//}
-		//else
-		//{
-			//UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
+		if (CurrentDevice && State == EDeviceConnectType::Connected)
+		{
+			Disconnect();
+		}
+		else if ((!CurrentDevice && State == EDeviceConnectType::Connecting) || (CurrentDevice && State == EDeviceConnectType::Disconnecting))
+		{
+			// 接続しているか切断しているか
+			// 何もしない、やっていることが終了するまで待つ
+		}
+		else
+		{
+			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
+
+			CurrentDevice = Device;
+
+			Connect();
 
 			// つなげそうなデバイス見つけたら、DevicesWaitingに入れてLEDの色を確認する
-			FString DeviceName = Device.GetInterface()->GetDeviceName();
-			FString DeviceUUID = Device.GetInterface()->GetDeviceId();
-			FBLEDeviceInfo PendingDevice = MakeDeviceBaseInfo(Device, DeviceName, DeviceUUID);
-			DevicesWaiting.Add(PendingDevice);
+			//FString DeviceName = Device.GetInterface()->GetDeviceName();
+			//FString DeviceUUID = Device.GetInterface()->GetDeviceId();
+			//FBLEDeviceInfo PendingDevice = MakeDeviceBaseInfo(Device, DeviceName, DeviceUUID);
+			//DevicesWaiting.Add(PendingDevice);
 
 			//　スキャンを止める
-			//BleManager.GetInterface()->StopScan();
-		//}
+			BleManager.GetInterface()->StopScan();
+		}
 	}
 #endif
 }
@@ -282,6 +287,8 @@ void UCustomDevice::OnConnectSucc()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
+	Name = CurrentDevice.GetInterface()->GetDeviceName();
+	UUID = CurrentDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
 	// まずどの段階にいるかを確認
 	if (bIsMakeList)
@@ -327,7 +334,7 @@ void UCustomDevice::GetValidationCode()
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(ReceiveFunction);
 	CurrentDevice.GetInterface()->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
-	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), *ServiceUUID, *CharacteristicUUID);
+	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
 #endif
 }
 

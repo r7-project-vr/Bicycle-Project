@@ -116,7 +116,8 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			// BikeCharacterで撮影を行う
             if (PhotoCapture)
 		    {
-			    DeviceManager->BindScreenshotEvent(this, FName("OnScreenshotTaken"));
+				GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Bind Screen shot"));
+			    DeviceManager->BindScreenshotEvent(PhotoCapture, FName("OnScreenshotTaken"));
             }
 			DeviceManager->EnableDefaultActions();
         }

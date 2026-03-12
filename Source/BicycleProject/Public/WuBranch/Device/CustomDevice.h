@@ -31,6 +31,61 @@ class IBleManagerInterface;
 class IBleDeviceInterface;
 struct FBLEDeviceInfo;
 
+/// <summary>
+/// BLE操作の種類
+/// </summary>
+UENUM()
+enum class EBleOperationType : uint8
+{
+	WriteCharacteristic,       // データ書き込み（WriteCharacteristic）
+	SubscribeCharacteristic,   // 通知購読（SubscribeToCharacteristic）
+	ReadCharacteristic,        // データ読み取り（ReadCharacteristic）
+};
+
+/// <summary>
+/// Queueに積む一つのBLE操作を表す構造体
+/// </summary>
+struct FBleOperation
+{
+	EBleOperationType Type;
+	FString ServiceUUID;
+	FString CharacteristicUUID;
+	TArray<uint8> Data;         // WriteCharacteristic のみ使用
+	bool bWithResponse = false; // SubscribeCharacteristic のみ使用
+
+	// WriteCharacteristic 用
+	static FBleOperation MakeWrite(const FString& Service, const FString& Characteristic, const TArray<uint8>& WriteData)
+	{
+		FBleOperation Op;
+		Op.Type = EBleOperationType::WriteCharacteristic;
+		Op.ServiceUUID = Service;
+		Op.CharacteristicUUID = Characteristic;
+		Op.Data = WriteData;
+		return Op;
+	}
+
+	// SubscribeCharacteristic 用
+	static FBleOperation MakeSubscribe(const FString& Service, const FString& Characteristic, bool bResponse = false)
+	{
+		FBleOperation Op;
+		Op.Type = EBleOperationType::SubscribeCharacteristic;
+		Op.ServiceUUID = Service;
+		Op.CharacteristicUUID = Characteristic;
+		Op.bWithResponse = bResponse;
+		return Op;
+	}
+
+	// ReadCharacteristic 用
+	static FBleOperation MakeRead(const FString& Service, const FString& Characteristic)
+	{
+		FBleOperation Op;
+		Op.Type = EBleOperationType::ReadCharacteristic;
+		Op.ServiceUUID = Service;
+		Op.CharacteristicUUID = Characteristic;
+		return Op;
+	}
+};
+
 /**
  * 
  */
@@ -59,6 +114,8 @@ public:
 	void EnableSelectAnswerAction_Implementation() override;
 
 	void DisableSelectAnswerAction_Implementation() override;
+
+	void ResetRevolution();
 
 #pragma region TickableGameObject
 	virtual void Tick(float DeltaTime) override;
@@ -256,6 +313,33 @@ private:
 	UFUNCTION()
 	void UpdateMaxRPM(int Standard, int Danger, int Safe);
 
+	//===================================================
+	// BLE Operation Queue 関連
+	//===================================================
+
+	/// <summary>
+	/// 操作をQueueに追加する
+	/// </summary>
+	/// <param name="Operation">追加する操作</param>
+	void EnqueueOperation(const FBleOperation& Operation);
+
+	/// <summary>
+	/// Queueの次の操作を実行する
+	/// 実行中の操作がある場合は何もしない
+	/// </summary>
+	void ProcessNextOperation();
+
+	/// <summary>
+	/// 現在実行中の操作を完了として、次の操作を処理する
+	/// Write/Subscribe/Readの各コールバックから呼ぶ
+	/// </summary>
+	void OnOperationCompleted();
+
+	/// <summary>
+	/// Queueをクリアして実行中フラグをリセットする（切断時などに使用）
+	/// </summary>
+	void ClearOperationQueue();
+
 	/// <summary>
 	/// BLEマネジャー
 	/// </summary>
@@ -307,4 +391,14 @@ private:
 	/// 最大回転数
 	/// </summary>
 	float MaxRPM;
+
+	/// <summary>
+	/// BLE操作のQueue本体
+	/// </summary>
+	TQueue<FBleOperation> OperationQueue;
+
+	/// <summary>
+	/// 現在操作を実行中かどうか（trueの間は次の操作を開始しない）
+	/// </summary>
+	bool bIsOperationInProgress;
 };

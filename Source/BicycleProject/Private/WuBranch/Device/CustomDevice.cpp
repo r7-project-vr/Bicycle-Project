@@ -19,6 +19,7 @@ UCustomDevice::UCustomDevice()
 	, LEDCheckTimer(0.0f)
 	, bIsMakeList(false)
 	, bMoveSwitch(false)
+	, bIsOperationInProgress(false)
 {
 }
 
@@ -55,6 +56,7 @@ void UCustomDevice::Init()
 	LEDCheckTimer = 0.0f;
 	DevicesWaiting.Empty();
 	ResetDeviceList();
+	ClearOperationQueue();
 	// サービスからデバイスを見つける
 	DecideTargetServices();
 	// 権限を要求する
@@ -87,6 +89,9 @@ bool UCustomDevice::Connect()
 bool UCustomDevice::Disconnect()
 {
 #if PLATFORM_ANDROID
+	// 切断時はQueueをクリアして中途半端な操作が残らないようにする
+	ClearOperationQueue();
+
 	FBleDelegate SuccFunction;
 	SuccFunction.BindUFunction(this, FName("OnDisconnectSucc"));
 	FBleErrorDelegate ErrFunction;
@@ -113,6 +118,13 @@ void UCustomDevice::EnableSelectAnswerAction_Implementation()
 
 void UCustomDevice::DisableSelectAnswerAction_Implementation()
 {
+}
+
+void UCustomDevice::ResetRevolution()
+{
+#if PLATFORM_ANDROID
+	EnqueueOperation(FBleOperation::MakeWrite(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_RESET_CHARACTERISTIC_UUID, Datas));
+#endif
 }
 
 void UCustomDevice::Tick(float DeltaTime)
@@ -290,6 +302,16 @@ void UCustomDevice::OnConnectSucc()
 	Name = CurrentDevice.GetInterface()->GetDeviceName();
 	UUID = CurrentDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
+
+	// コールバックを一度だけ登録する（接続成功時に必ず設定）
+	FBleCharacteristicDataDelegate ReceiveFunction;
+	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
+	CurrentDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
+
+	FBleCharacteristicDelegate WriteFunction;
+	WriteFunction.BindUFunction(this, FName("OnWriteData"));
+	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(WriteFunction);
+
 	// まずどの段階にいるかを確認
 	if (bIsMakeList)
 	{
@@ -330,11 +352,9 @@ void UCustomDevice::GetValidationCode()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Do Get Validation Code"));
-	FBleCharacteristicDelegate ReceiveFunction;
-	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
-	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(ReceiveFunction);
-	CurrentDevice.GetInterface()->ReadCharacteristic(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
-	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
+	// Queueに読み取り操作を積む
+	EnqueueOperation(FBleOperation::MakeRead(IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID));
+	//UE_LOG(LogTemplateDevice, Error, TEXT("Enqueue Read : %s, %s"), IO_PAIR_SERVICE_UUID, IO_LED_COLOR_CHARACTERISTIC_UUID);
 #endif
 }
 
@@ -342,12 +362,11 @@ void UCustomDevice::SendPairRequest()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Do Write pair"));
-	FBleCharacteristicDelegate WriteFunction;
-	WriteFunction.BindUFunction(this, FName("OnWriteData"));
-	CurrentDevice.GetInterface()->BindToCharacteristicWriteEvent(WriteFunction);
+	
+	// ペアリング書き込みをQueueに積む
 	TArray<uint8> Datas;
 	Datas.Add(1);
-	CurrentDevice.GetInterface()->WriteCharacteristic(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas);
+	EnqueueOperation(FBleOperation::MakeWrite(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas));
 #endif
 }
 
@@ -367,12 +386,18 @@ T UCustomDevice::TransformDataToInt(const uint8_t* Data, int Size) const
 void UCustomDevice::OnWriteData(FString ServiceUUID, FString CharacteristicUUID)
 {
 #if PLATFORM_ANDROID
-	FBleCharacteristicDataDelegate ReceiveFunction;
-	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
-	CurrentDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
-	CurrentDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false);
-	CurrentDevice.GetInterface()->SubscribeToCharacteristic(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false);
-	UE_LOG(LogTemplateDevice, Error, TEXT("Write to : %s, %s"), *ServiceUUID, *CharacteristicUUID);
+	UE_LOG(LogTemplateDevice, Log, TEXT("OnWriteData completed: %s, %s"), *ServiceUUID, *CharacteristicUUID);
+
+	// Pair書き込み完了 → Subscribe操作をQueueに追加してから次へ進む
+	if (ServiceUUID.Equals(IO_PAIR_SERVICE_UUID) && CharacteristicUUID.Equals(IO_PAIR_CHARACTERISTIC_UUID))
+	{
+		// 現在の操作完了を通知する前に、次に必要な操作を積んでおく
+		EnqueueOperation(FBleOperation::MakeSubscribe(IO_BIKE_SERVICE_UUID, IO_RPM_CHARACTERISTIC_UUID, false));
+		EnqueueOperation(FBleOperation::MakeSubscribe(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_CHARACTERISTIC_UUID, false));
+	}
+
+	// 現在の操作が終わったので次を処理する
+	OnOperationCompleted();
 #endif
 }
 
@@ -409,7 +434,9 @@ void UCustomDevice::HandleRPSData(const TArray<uint8>& Data)
 
 void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
 {
-	uint32 Revolution = TransformDataToInt<uint32>(Data.GetData(), Data.Num());
+	// 無線だと直接数字がもらえる、変換しなくていい
+	//uint32 Revolution = TransformDataToInt<uint32>(Data.GetData(), Data.Num());
+	uint16 Revolution = Data[0];
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("Revolution: %d"), Revolution));
 }
 
@@ -456,4 +483,110 @@ void UCustomDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)
 {
 	// 危険値を最大値として使う
 	MaxRPM = Danger;
+}
+
+//===================================================
+// BLE Operation Queue 実装
+//===================================================
+
+void UCustomDevice::EnqueueOperation(const FBleOperation& Operation)
+{
+	OperationQueue.Enqueue(Operation);
+	UE_LOG(LogTemplateDevice, Log, TEXT("EnqueueOperation: Type=%d, Service=%s, Characteristic=%s"),
+		(int32)Operation.Type, *Operation.ServiceUUID, *Operation.CharacteristicUUID);
+
+	// 実行中でなければすぐに処理を開始する
+	if (!bIsOperationInProgress)
+	{
+		ProcessNextOperation();
+	}
+}
+
+void UCustomDevice::ProcessNextOperation()
+{
+#if PLATFORM_ANDROID
+	// Queueが空なら何もしない
+	if (OperationQueue.IsEmpty())
+	{
+		UE_LOG(LogTemplateDevice, Log, TEXT("OperationQueue is empty, nothing to process."));
+		return;
+	}
+
+	// デバイスが接続されていないなら実行しない
+	if (!CurrentDevice || State != EDeviceConnectType::Connected)
+	{
+		UE_LOG(LogTemplateDevice, Warning, TEXT("ProcessNextOperation: Device is not connected. Skipping."));
+		return;
+	}
+
+	FBleOperation NextOp;
+	if (!OperationQueue.Dequeue(NextOp))
+		return;
+
+	bIsOperationInProgress = true;
+
+	UE_LOG(LogTemplateDevice, Log, TEXT("ProcessNextOperation: Type=%d, Service=%s, Characteristic=%s"),
+		(int32)NextOp.Type, *NextOp.ServiceUUID, *NextOp.CharacteristicUUID);
+
+	switch (NextOp.Type)
+	{
+	case EBleOperationType::WriteCharacteristic:
+	{
+		CurrentDevice.GetInterface()->WriteCharacteristic(
+			NextOp.ServiceUUID,
+			NextOp.CharacteristicUUID,
+			NextOp.Data
+		);
+		// 完了は OnWriteData コールバックで検知 → OnOperationCompleted() を呼ぶ
+		break;
+	}
+
+	case EBleOperationType::SubscribeCharacteristic:
+	{
+		CurrentDevice.GetInterface()->SubscribeToCharacteristic(
+			NextOp.ServiceUUID,
+			NextOp.CharacteristicUUID,
+			NextOp.bWithResponse
+		);
+		// SubscribeToCharacteristic は完了コールバックがないため、
+		// 発行後すぐに完了扱いにして次へ進む
+		OnOperationCompleted();
+		break;
+	}
+
+	case EBleOperationType::ReadCharacteristic:
+	{
+		CurrentDevice.GetInterface()->ReadCharacteristic(
+			NextOp.ServiceUUID,
+			NextOp.CharacteristicUUID
+		);
+		// 完了は OnReceiveData コールバックで検知 → OnOperationCompleted() を呼ぶ
+		break;
+	}
+
+	default:
+		UE_LOG(LogTemplateDevice, Error, TEXT("ProcessNextOperation: Unknown operation type."));
+		OnOperationCompleted();
+		break;
+	}
+#endif
+}
+
+void UCustomDevice::OnOperationCompleted()
+{
+	bIsOperationInProgress = false;
+	UE_LOG(LogTemplateDevice, Log, TEXT("OnOperationCompleted: Moving to next operation."));
+
+	// 次の操作があれば続けて処理する
+	ProcessNextOperation();
+}
+
+void UCustomDevice::ClearOperationQueue()
+{
+	// TQueue はクリア用メソッドがないので空になるまで Dequeue する
+	FBleOperation Dummy;
+	while (OperationQueue.Dequeue(Dummy)) {}
+
+	bIsOperationInProgress = false;
+	UE_LOG(LogTemplateDevice, Log, TEXT("ClearOperationQueue: Queue cleared."));
 }

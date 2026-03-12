@@ -53,7 +53,7 @@ void AQuestionGameMode::PassTheGoal(AActor* passedActor)
 		// 自転車への制御を強制的にオフにする
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		GameInstance->GetDeviceManager()->DisableDefaultActions();
-		GameInstance->GetDeviceManager()->DisConnectAllDevices();
+		//GameInstance->GetDeviceManager()->DisConnectAllDevices();
 
 		_player->StopMove();
 
@@ -135,7 +135,7 @@ void AQuestionGameMode::FinishGame()
 	CurrentState = QuestionGameState::Failed;
 	// 自転車への制御を強制的にオフにする
 	GameInstance->GetDeviceManager()->DisableDefaultActions();
-	GameInstance->GetDeviceManager()->DisConnectAllDevices();
+	//GameInstance->GetDeviceManager()->DisConnectAllDevices();
 	// 自転車の止める
 	_player->StopMove();
 	// 結果を記録

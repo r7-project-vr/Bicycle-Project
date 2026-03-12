@@ -123,6 +123,7 @@ void UCustomDevice::DisableSelectAnswerAction_Implementation()
 void UCustomDevice::ResetRevolution()
 {
 #if PLATFORM_ANDROID
+	TArray<uint8> Datas;
 	EnqueueOperation(FBleOperation::MakeWrite(IO_BIKE_SERVICE_UUID, IO_REVOLUTION_RESET_CHARACTERISTIC_UUID, Datas));
 #endif
 }

@@ -103,6 +103,18 @@ public:
 	void DisableSelectAnswerActions();
 
 	/// <summary>
+	/// 写真を撮れるようにする
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void EnableTakePhotoActions();
+
+	/// <summary>
+	/// 写真を撮れないようにする
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void DisableTakePhotoActions();
+
+	/// <summary>
 	/// 移動イベントをバインド
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>

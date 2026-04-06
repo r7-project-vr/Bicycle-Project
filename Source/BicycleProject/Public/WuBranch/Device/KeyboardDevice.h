@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
+#include "WuBranch/Interface/PhotoProvider.h"
 #include "KeyboardDevice.generated.h"
 
 class UInputMappingContext;
@@ -15,7 +16,7 @@ struct FInputActionValue;
  * 他のプラットフォームだったら、有線か無線で繋がっているかどうかの判断が必要です
  */
 UCLASS()
-class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject
+class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject, public IPhotoProvider
 {
 	GENERATED_BODY()
 	
@@ -47,16 +48,16 @@ public:
 
 	void DisableSelectAnswerAction_Implementation() override;
 
-	// Screenshot Event
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenshotEvent);
+	void BindTakePhotoEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void EnableTakePhotoAction_Implementation() override;
+
+	void DisableTakePhotoAction_Implementation() override;
+
+protected:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input Events")
 	FOnScreenshotEvent OnScreenshotEvent;
-
-public:
-
-	UFUNCTION()
-	void OnScreenshot();
 
 private:
 
@@ -69,19 +70,28 @@ private:
 	/// MappingContextでmoveアクションに設定されたキーを押したら最初に値がもらうところ
 	/// </summary>
 	/// <param name="Value"></param>
+	UFUNCTION()
 	void OnMove(const FInputActionValue& Value);
 
 	/// <summary>
 	/// MappingContextで左の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
 	/// </summary>
 	/// <param name="Value"></param>
+	UFUNCTION()
 	void OnSelectLeftAnswer();
 
 	/// <summary>
 	/// MappingContextで右の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
 	/// </summary>
 	/// <param name="Value"></param>
+	UFUNCTION()
 	void OnSelectRightAnswer();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	UFUNCTION()
+	void OnScreenshot();
 
 	/// <summary>
 	/// プレイヤーコントローラー
@@ -97,6 +107,11 @@ private:
 	/// 答えを選択するアクションマップ
 	/// </summary>
 	UInputMappingContext* AnswerSelectMap;
+
+	/// <summary>
+	/// 写真を撮るアクションマップ
+	/// </summary>
+	UInputMappingContext* PhotoMap;
 
 	/// <summary>
 	/// 移動アクション

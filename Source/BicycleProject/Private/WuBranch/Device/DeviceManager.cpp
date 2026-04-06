@@ -143,7 +143,7 @@ void UDeviceManager::EnableDefaultActions()
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Foot);
-	if(Device)
+	if(Device && Device->Implements<UMoveProvider>())
 		IMoveProvider::Execute_EnableMoveAction(Device);
 }
 
@@ -154,7 +154,7 @@ void UDeviceManager::DisableDefaultActions()
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Foot);
-	if (Device)
+	if (Device && Device->Implements<UMoveProvider>())
 		IMoveProvider::Execute_DisableMoveAction(Device);
 }
 
@@ -165,7 +165,7 @@ void UDeviceManager::EnableSelectAnswerActions()
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
-	if (Device)
+	if (Device && Device->Implements<UChoiceProvider>())
 		IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
 }
 
@@ -176,8 +176,30 @@ void UDeviceManager::DisableSelectAnswerActions()
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
-	if (Device)
+	if (Device && Device->Implements<UChoiceProvider>())
 		IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
+}
+
+void UDeviceManager::EnableTakePhotoActions()
+{
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UPhotoProvider>())
+		IPhotoProvider::Execute_EnableTakePhotoAction(Device);
+}
+
+void UDeviceManager::DisableTakePhotoActions()
+{
+	// 一つの装置のみの場合
+	//IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UPhotoProvider>())
+		IPhotoProvider::Execute_DisableTakePhotoAction(Device);
 }
 
 void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
@@ -187,7 +209,7 @@ void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Foot);
-	if (Device)
+	if (Device && Device->Implements<UMoveProvider>())
 	{
 		IMoveProvider::Execute_BindMoveEvent(Device, Object, FunctionName);
 	}
@@ -196,7 +218,7 @@ void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
 void UDeviceManager::BindMoveNumEvent(UObject* Object, FName FunctionName)
 {
 	UDevice* Device = GetDevice(EDevicePart::Foot);
-	if (Device)
+	if (Device && Device->Implements<UMoveProvider>())
 	{
 		IMoveProvider::Execute_BindMoveNumEvent(Device, Object, FunctionName);
 	}
@@ -209,7 +231,7 @@ void UDeviceManager::BindSelectLeftEvent(UObject* Object, FName FunctionName)
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
-	if (Device)
+	if (Device && Device->Implements<UChoiceProvider>())
 	{
 		IChoiceProvider::Execute_BindSelectLeftEvent(Device, Object, FunctionName);
 	}
@@ -222,7 +244,7 @@ void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
-	if (Device)
+	if (Device && Device->Implements<UChoiceProvider>())
 	{
 		IChoiceProvider::Execute_BindSelectRightEvent(Device, Object, FunctionName);
 	}
@@ -238,7 +260,13 @@ void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
 
 	// Handデバイスのみにバインド
 	UDevice* Device = GetDevice(EDevicePart::Hand);
-	if (Device)
+	if (Device && Device->Implements<UPhotoProvider>())
+	{
+		IPhotoProvider::Execute_BindTakePhotoEvent(Device, Object, FuncName);
+		UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FuncName.ToString());
+	}
+
+	/*if (Device)
 	{
 		if (UKeyboardDevice* KeyboardDevice = Cast<UKeyboardDevice>(Device))
 		{
@@ -248,7 +276,7 @@ void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
 			
 			UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FuncName.ToString());
 		}
-	}
+	}*/
 }
 
 UDevice* UDeviceManager::CreateKeyBoardDevice()

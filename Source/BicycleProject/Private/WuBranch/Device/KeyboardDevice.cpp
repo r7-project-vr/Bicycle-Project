@@ -34,6 +34,10 @@ UKeyboardDevice::UKeyboardDevice()
 	Path = "/Game/WuBranch/Input/Action/SelectRightAction";
 	SelectRightAction = LoadObject<UInputAction>(nullptr, *Path);
 
+	PhotoMap = nullptr;
+	Path = "/Game/WuBranch/Input/PhotoMap";
+	PhotoMap = LoadObject<UInputMappingContext>(nullptr, *Path);
+
 	ScreenshotAction = nullptr;
 	Path = "/Game/WuBranch/Input/Action/ScreenshotAction";
 	ScreenshotAction = LoadObject<UInputAction>(nullptr, *Path);
@@ -186,6 +190,12 @@ void UKeyboardDevice::DisableSelectAnswerAction_Implementation()
 		return;
 	}
 
+	if (!AnswerSelectMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("answer select mapping Context is null!"));
+		return;
+	}
+
 	// Remove Input Mapping Context
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
 	{
@@ -196,31 +206,100 @@ void UKeyboardDevice::DisableSelectAnswerAction_Implementation()
 	}
 }
 
-void UKeyboardDevice::SetupAction()
+void UKeyboardDevice::BindTakePhotoEvent_Implementation(UObject* Object, FName FunctionName)
 {
-	if (!MoveAction)
+	if (Object)
 	{
-		UE_LOG(LogTemplateDevice, Error, TEXT("move Action is null!"));
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnScreenshotEvent.Add(Delegate);
+	}
+}
+
+void UKeyboardDevice::EnableTakePhotoAction_Implementation()
+{
+	if (!Controller)
+	{
+		UKismetSystemLibrary::PrintString(this, "player controller is null when enable the action of selecting answer", true, false, FColor::Red, 10.f);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null when enable the action of selecting answer!"));
 		return;
 	}
+
+	if (!PhotoMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Photo mapping Context is null!"));
+		return;
+	}
+
+	// Add Input Mapping Context
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
+	{
+		if (!Subsystem->HasMappingContext(PhotoMap))
+		{
+			Subsystem->AddMappingContext(PhotoMap, 0);
+		}
+	}
+}
+
+void UKeyboardDevice::DisableTakePhotoAction_Implementation()
+{
+	if (!Controller)
+	{
+		UKismetSystemLibrary::PrintString(this, "player controller is null when diable the action of selecting answer", true, false, FColor::Red, 10.f);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null!"));
+		return;
+	}
+
+	if (!PhotoMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Photo mapping Context is null!"));
+		return;
+	}
+
+	// Remove Input Mapping Context
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
+	{
+		if (Subsystem->HasMappingContext(PhotoMap))
+		{
+			Subsystem->RemoveMappingContext(PhotoMap);
+		}
+	}
+}
+
+void UKeyboardDevice::SetupAction()
+{
+	//if (!MoveAction)
+	//{
+	//	UE_LOG(LogTemplateDevice, Error, TEXT("move Action is null!"));
+	//	return;
+	//}
 
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(Controller->GetPawn()->InputComponent))
 	{
 		// 移動
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);
+		if(!MoveAction)
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("Move Action is null!"));
 
 		// 左の答えを選択するアクション
-		EnhancedInputComponent->BindAction(SelectLeftAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectLeftAnswer);
+		if (!SelectLeftAction)
+			EnhancedInputComponent->BindAction(SelectLeftAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectLeftAnswer);
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("Select Left Action is null!"));
 
 		// 右の答えを選択するアクション
-		EnhancedInputComponent->BindAction(SelectRightAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectRightAnswer);
+		if (!SelectRightAction)
+			EnhancedInputComponent->BindAction(SelectRightAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectRightAnswer);
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("Select Right Action is null!"));
 
 		// スクリーンショットアクション
 		if (ScreenshotAction)
-		{
 			EnhancedInputComponent->BindAction(ScreenshotAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnScreenshot);
-		}
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("Screenshot Action is null!"));
 	}
 	else
 	{

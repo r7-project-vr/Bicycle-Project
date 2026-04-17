@@ -125,6 +125,13 @@ public:
 	virtual bool IsTickableInEditor() const override;
 #pragma endregion
 
+	/// <summary>
+	/// デバイスリストを取得
+	/// </summary>
+	/// <returns>デバイスリスト</returns>
+	UFUNCTION(BlueprintCallable)
+	TArray<FBLEDeviceInfo> GetDeviceList() const;
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeviceListChangedDelegate, const TArray<FBLEDeviceInfo>&, Devices);
 
 	/// <summary>
@@ -132,6 +139,40 @@ public:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FDeviceListChangedDelegate OnDeviceListChanged;
+
+	/// <summary>
+	/// IDで接続
+	/// </summary>
+	/// <param name="ID"></param>
+	UFUNCTION(BlueprintCallable, Category = "BLE Device")
+	void ConnectByUUID(const FString& ID);
+
+	/// <summary>
+	/// IDで切断
+	/// </summary>
+	/// <param name="ID"></param>
+	UFUNCTION(BlueprintCallable, Category = "BLE Device")
+	void DisconnectByUUID(const FString& ID);
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeviceInfoChangedDelegate,const FBLEDeviceInfo&, Info);
+
+	/// <summary>
+	/// デバイスの情報が変更された通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FDeviceInfoChangedDelegate OnDeviceInfoChanged;
+
+	/// <summary>
+	/// スキャンをやめる
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "BLE Device")
+	void StopScanDevices();
+
+	/// <summary>
+	/// もう一回スキャンする
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "BLE Device")
+	void ReScanDevices();
 
 private:
 
@@ -163,7 +204,7 @@ private:
 	/// デバイスリストに追加
 	/// </summary>
 	/// <param name="Device">デバイス</param>
-	void AddToDeviceList(FBLEDeviceInfo Device);
+	void AddToDeviceList(const FBLEDeviceInfo& Device);
 
 	/// <summary>
 	/// アンドロイドのbluetoothの権限を要求する
@@ -229,7 +270,8 @@ private:
 	/// <summary>
 	/// ペアリクエストを送る
 	/// </summary>
-	void SendPairRequest();
+	/// <param name="Enable">ペアするか</param>
+	void SendPairRequest(uint8 Enable);
 
 	/// <summary>
 	/// 貰ったデータから必要な数値に変換
@@ -288,9 +330,14 @@ private:
 	void DebugReceiveData(const TArray<uint8>& Data);
 
 	/// <summary>
-	/// 
+	/// デバイスリストが変更された通知を出す
 	/// </summary>
 	void NotifyDeviceListChangedEvent();
+
+	/// <summary>
+	/// デバイスの情報が変更された通知を出す
+	/// </summary>
+	void NotifyDeviceInfoChangedEvent();
 
 	/// <summary>
 	/// 移動イベントを通知
@@ -357,6 +404,8 @@ private:
 	UPROPERTY()
 	TScriptInterface<IBleDeviceInterface> CurrentDevice;
 
+	FBLEDeviceInfo* CurrentDeviceInfo;
+
 	/// <summary>
 	/// LEDデータがまだもらってないデバイス
 	/// </summary>
@@ -401,4 +450,9 @@ private:
 	/// 現在操作を実行中かどうか（trueの間は次の操作を開始しない）
 	/// </summary>
 	bool bIsOperationInProgress;
+
+	/// <summary>
+	/// もう一回スキャンするか
+	/// </summary>
+	bool bNeedReScan;
 };

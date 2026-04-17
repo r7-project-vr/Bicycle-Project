@@ -48,8 +48,22 @@ struct BICYCLEPROJECT_API FBLEDeviceInfo
 	UPROPERTY(BlueprintReadOnly)
 	FColor LEDColor2;
 
-	bool operator == (const FBLEDeviceInfo& Other)
+	bool operator == (const FBLEDeviceInfo& Other) const
 	{
 		return this->UUID.Equals(Other.UUID);
+	}
+
+	bool operator == (const FString& ID) const
+	{
+		return this->UUID.Equals(ID);
+	}
+
+	/// <summary>
+	/// デバイスの状態を変更して、変更通知を送る
+	/// </summary>
+	/// <param name="NewState"></param>
+	void ChangeState(EDeviceConnectType NewState)
+	{
+		State = NewState;
 	}
 };

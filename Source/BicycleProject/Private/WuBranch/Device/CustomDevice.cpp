@@ -16,10 +16,12 @@
 UCustomDevice::UCustomDevice()
 	: BleManager(nullptr)
 	, CurrentDevice(nullptr)
+	, CurrentDeviceInfo(nullptr)
 	, LEDCheckTimer(0.0f)
 	, bIsMakeList(false)
 	, bMoveSwitch(false)
 	, bIsOperationInProgress(false)
+	, bNeedReScan(false)
 {
 }
 
@@ -53,6 +55,7 @@ void UCustomDevice::Init()
 	// この以降はデバイスのbluetoothがオンの状態かつBluetooth Low Energy(BLE)がサポートしている状態
 	// 初期化
 	bIsMakeList = false;
+	bNeedReScan = false;
 	LEDCheckTimer = 0.0f;
 	DevicesWaiting.Empty();
 	ResetDeviceList();
@@ -75,7 +78,11 @@ void UCustomDevice::Enable()
 
 bool UCustomDevice::Connect()
 {
+	if (!CurrentDevice)
+		return false;
+
 #if PLATFORM_ANDROID
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Start Connect")));
 	FBleDelegate SuccFunction;
 	SuccFunction.BindUFunction(this, FName("OnConnectSucc"));
 	FBleErrorDelegate ErrFunction;
@@ -88,6 +95,9 @@ bool UCustomDevice::Connect()
 
 bool UCustomDevice::Disconnect()
 {
+	if (!CurrentDevice)
+		return false;
+
 #if PLATFORM_ANDROID
 	// 切断時はQueueをクリアして中途半端な操作が残らないようにする
 	ClearOperationQueue();
@@ -133,7 +143,7 @@ void UCustomDevice::Tick(float DeltaTime)
 	return;
 #if PLATFORM_ANDROID
 	// 0.5秒ごとにDevicesWaitingをみて、LEDを確認する必要があるデバイスがあると確認する
-	/*if (DevicesWaiting.Num() > 0)
+	if (DevicesWaiting.Num() > 0)
 	{
 		if (LEDCheckTimer <= 0.0f)
 		{
@@ -144,7 +154,7 @@ void UCustomDevice::Tick(float DeltaTime)
 		{
 			LEDCheckTimer -= DeltaTime;
 		}
-	}*/
+	}
 #endif
 }
 
@@ -156,6 +166,79 @@ TStatId UCustomDevice::GetStatId() const
 bool UCustomDevice::IsTickableInEditor() const
 {
 	return false;
+}
+
+TArray<FBLEDeviceInfo> UCustomDevice::GetDeviceList() const
+{
+	return DeviceList;
+}
+
+void UCustomDevice::ConnectByUUID(const FString& ID)
+{
+	CurrentDeviceInfo = DeviceList.FindByPredicate([&](const FBLEDeviceInfo& Info) { return Info == ID; });
+
+	if(!CurrentDeviceInfo)
+	{
+		UE_LOG(LogTemplateDevice, Warning, TEXT("Didnot find target device in the list. UUID: %s"), *ID);
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, FString::Printf(TEXT("Didnot find target device in the list. UUID: %s"), *ID));
+		return;
+	}
+	
+	// 既に接続している場合は切断する(複数デバイスがある状況)
+	/*if (CurrentDevice && State == EDeviceConnectType::Connected)
+	{
+		Disconnect();
+	}*/
+
+#if PLATFORM_ANDROID
+	//　スキャンを止める(複数デバイスがある状況)
+	//BleManager.GetInterface()->StopScan();
+	//bIsMakeList = false;
+	//CurrentDevice = CurrentDeviceInfo->Device;
+	
+	// つなぐデバイスが決めた
+	SendPairRequest(1);
+	CurrentDeviceInfo->ChangeState(EDeviceConnectType::Connected);
+	NotifyDeviceInfoChangedEvent();
+#endif
+}
+
+void UCustomDevice::DisconnectByUUID(const FString& ID)
+{
+	if (CurrentDeviceInfo->UUID != ID)
+	{
+		UE_LOG(LogTemplateDevice, Warning, TEXT("The target device is not the current connected device. UUID: %s"), *ID);
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, FString::Printf(TEXT("The target device is not the current connected device. UUID: %s"), *ID));
+		return;
+	}
+
+#if PLATFORM_ANDROID
+	// つなぐデバイスが決めた
+	SendPairRequest(0);
+	CurrentDeviceInfo->ChangeState(EDeviceConnectType::UnConnected);
+	NotifyDeviceInfoChangedEvent();
+#endif
+}
+
+void UCustomDevice::StopScanDevices()
+{
+#if PLATFORM_ANDROID
+	if (BleManager)
+	{
+		BleManager.GetInterface()->StopScan();
+	}
+#endif
+}
+
+void UCustomDevice::ReScanDevices()
+{
+#if PLATFORM_ANDROID
+	bNeedReScan = true;
+	if (!Disconnect())
+	{
+		OnDisconnectSucc();
+	}
+#endif
 }
 
 bool UCustomDevice::CheckBluetooth()
@@ -184,8 +267,13 @@ bool UCustomDevice::CheckBluetooth()
 
 void UCustomDevice::CheckDeviceLED()
 {
-	FBLEDeviceInfo Target = DevicesWaiting[0];
-	CurrentDevice = Target.Device;
+	// (デバイスが１つのみの場合)
+	CurrentDeviceInfo = &DevicesWaiting[0];
+	if(CurrentDeviceInfo)
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Orange, FString::Printf(TEXT("Has Device Info")));
+	CurrentDevice = CurrentDeviceInfo->Device;
+	if(CurrentDevice)
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Orange, FString::Printf(TEXT("Has Device")));
 	Connect();
 }
 
@@ -197,6 +285,7 @@ void UCustomDevice::ResetDeviceList()
 FBLEDeviceInfo UCustomDevice::MakeDeviceBaseInfo(TScriptInterface<IBleDeviceInterface> Device, FString DeviceName, FString DeviceUUID)
 {
 	FBLEDeviceInfo Info;
+	Info.Device = Device;
 	Info.Name = DeviceName;
 	Info.UUID = DeviceUUID;
 	Info.State = EDeviceConnectType::UnConnected;
@@ -205,9 +294,10 @@ FBLEDeviceInfo UCustomDevice::MakeDeviceBaseInfo(TScriptInterface<IBleDeviceInte
 	return Info;
 }
 
-void UCustomDevice::AddToDeviceList(FBLEDeviceInfo Device)
+void UCustomDevice::AddToDeviceList(const FBLEDeviceInfo& Device)
 {
 	DeviceList.Add(Device);
+	NotifyDeviceListChangedEvent();
 }
 
 void UCustomDevice::RequestAndroidPermission()
@@ -227,9 +317,22 @@ void UCustomDevice::RequestAndroidPermission()
 
 void UCustomDevice::OnPermissionResult(const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
 {
-//#if PLATFORM_ANDROID
-	
-//#endif
+#if PLATFORM_ANDROID
+	bool bAllGranted = true;
+	for (bool Result : GrantResults)
+	{
+		if (!Result)
+		{
+			bAllGranted = false;
+			break;
+		}
+	}
+
+	if (bAllGranted)
+	{
+		FindDeviceByServices();
+	}
+#endif
 }
 
 void UCustomDevice::DecideTargetServices()
@@ -248,6 +351,7 @@ void UCustomDevice::FindDeviceByServices()
 #if PLATFORM_ANDROID
 	if (BleManager)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Start Find Device"));
 		FBleOnDeviceFoundDelegate Function;
 		Function.BindUFunction(this, FName("OnDeviceFound"));
 		BleManager.GetInterface()->ScanForDevices(Services, Function);
@@ -262,7 +366,10 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 	{
 		// デバイスの名前で接続したいデバイスかどうかを判別する
 		if (!Device.GetInterface()->GetDeviceName().Equals(IO_DEVICE_NAME))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Not Target Device"));
 			return;
+		}
 
 		// 新しく見つけたデバイスを使用する
 		// 既に接続した場合は切断する
@@ -278,19 +385,21 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 		else
 		{
 			UE_LOG(LogTemplateDevice, Display, TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName());
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Connect to Device: %s"), *Device.GetInterface()->GetDeviceName()));
 
+			// つなげそうなデバイス見つけたら、DevicesWaitingに入れてLEDの色を確認する
+			FString DeviceName = Device.GetInterface()->GetDeviceName();
+			FString DeviceUUID = Device.GetInterface()->GetDeviceId();
+			FBLEDeviceInfo PendingDevice = MakeDeviceBaseInfo(Device, DeviceName, DeviceUUID);
+			DevicesWaiting.Add(PendingDevice);
+			
 			CurrentDevice = Device;
+			CurrentDeviceInfo = &DevicesWaiting.Last();
 
 			Connect();
 
-			// つなげそうなデバイス見つけたら、DevicesWaitingに入れてLEDの色を確認する
-			//FString DeviceName = Device.GetInterface()->GetDeviceName();
-			//FString DeviceUUID = Device.GetInterface()->GetDeviceId();
-			//FBLEDeviceInfo PendingDevice = MakeDeviceBaseInfo(Device, DeviceName, DeviceUUID);
-			//DevicesWaiting.Add(PendingDevice);
-
-			//　スキャンを止める
-			BleManager.GetInterface()->StopScan();
+			//　デバイスが１つのみの場合
+			StopScanDevices();
 		}
 	}
 #endif
@@ -300,14 +409,21 @@ void UCustomDevice::OnConnectSucc()
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Connect to device successfully"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Connect to device successfully"));
+
 	Name = CurrentDevice.GetInterface()->GetDeviceName();
 	UUID = CurrentDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Connect Success to Device: %s"), *Name));
 
 	// コールバックを一度だけ登録する（接続成功時に必ず設定）
 	FBleCharacteristicDataDelegate ReceiveFunction;
 	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
 	CurrentDevice.GetInterface()->BindToCharacteristicNotificationEvent(ReceiveFunction);
+
+	FBleCharacteristicDataDelegate ReadFunction;
+	ReceiveFunction.BindUFunction(this, FName("OnReceiveData"));
+	CurrentDevice.GetInterface()->BindToCharacteristicReadEvent(ReceiveFunction);
 
 	FBleCharacteristicDelegate WriteFunction;
 	WriteFunction.BindUFunction(this, FName("OnWriteData"));
@@ -320,10 +436,13 @@ void UCustomDevice::OnConnectSucc()
 	}
 	else
 	{
+		// デバイスの色を確認
+		GetValidationCode();
 		// つなぐデバイスが決めた
-		SendPairRequest();
+		//SendPairRequest(1);
 	}
 #endif
+	
 }
 
 void UCustomDevice::OnConnectError(FString ErrorMessage)
@@ -336,11 +455,24 @@ void UCustomDevice::OnConnectError(FString ErrorMessage)
 void UCustomDevice::OnDisconnectSucc()
 {
 	UE_LOG(LogTemplateDevice, Display, TEXT("Disconnect to device successfully"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Disconnect to device successfully"));
 	Name.Empty();
 	UUID.Empty();
 	State = EDeviceConnectType::UnConnected;
+	CurrentDeviceInfo = nullptr;
 	CurrentDevice = nullptr;
+	BleManager = nullptr;
 	LEDCheckTimer = LEDCheckTimeDuration;
+	if (bNeedReScan)
+	{
+		ResetDeviceList();
+		// 3秒後にスキャンを開始する、デバイスが切断されてすぐスキャンを開始すると、デバイスがまだ切断されていない状態でスキャンしてしまうため、見つけられない可能性がある
+		FTimerHandle RescanTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(RescanTimerHandle, [this]() {
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Rescan devices"));
+			Init();
+		}, 5.0f, false);
+	}
 }
 
 void UCustomDevice::OnDisconnectError(FString ErrorMessage)
@@ -359,14 +491,15 @@ void UCustomDevice::GetValidationCode()
 #endif
 }
 
-void UCustomDevice::SendPairRequest()
+void UCustomDevice::SendPairRequest(uint8 Enable)
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Display, TEXT("Do Write pair"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Do Write pair"));
 	
 	// ペアリング書き込みをQueueに積む
 	TArray<uint8> Datas;
-	Datas.Add(1);
+	Datas.Add(Enable);
 	EnqueueOperation(FBleOperation::MakeWrite(IO_PAIR_SERVICE_UUID, IO_PAIR_CHARACTERISTIC_UUID, Datas));
 #endif
 }
@@ -388,6 +521,7 @@ void UCustomDevice::OnWriteData(FString ServiceUUID, FString CharacteristicUUID)
 {
 #if PLATFORM_ANDROID
 	UE_LOG(LogTemplateDevice, Log, TEXT("OnWriteData completed: %s, %s"), *ServiceUUID, *CharacteristicUUID);
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("OnWrite Data completed: %s, %s"), *ServiceUUID, *CharacteristicUUID));
 
 	// Pair書き込み完了 → Subscribe操作をQueueに追加してから次へ進む
 	if (ServiceUUID.Equals(IO_PAIR_SERVICE_UUID) && CharacteristicUUID.Equals(IO_PAIR_CHARACTERISTIC_UUID))
@@ -412,7 +546,11 @@ void UCustomDevice::OnReceiveData(FString ServiceUUID, FString CharacteristicUUI
 	else if (ServiceUUID.Equals(IO_BIKE_SERVICE_UUID) && CharacteristicUUID.Equals(IO_REVOLUTION_CHARACTERISTIC_UUID))
 		HandleRevolutionData(Data);
 	else if (ServiceUUID.Equals(IO_PAIR_SERVICE_UUID) && CharacteristicUUID.Equals(IO_LED_COLOR_CHARACTERISTIC_UUID))
+	{
 		HandleLEDData(Data);
+		//Disconnect();
+		OnOperationCompleted();
+	}
 }
 
 void UCustomDevice::HandleRPMData(const TArray<uint8>& Data)
@@ -443,17 +581,29 @@ void UCustomDevice::HandleRevolutionData(const TArray<uint8>& Data)
 
 void UCustomDevice::HandleLEDData(const TArray<uint8>& Data)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("Get Data Length: %d"), Data.Num()));
-	FBLEDeviceInfo Target = DevicesWaiting[0];
-	uint32 LED[2];
-	LED[0] = TransformDataToInt<uint32>(Data.GetData(), 4);
-	LED[1] = TransformDataToInt<uint32>(&Data[4], 4);
-	Target.LEDColor1 = FColor(LED[0]);
-	Target.LEDColor2 = FColor(LED[1]);
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("LED 1: %u, LED 2 : %u"), LED[0], LED[1]));
-	DeviceList.Add(Target);
-	DevicesWaiting.Remove(Target);
-	Disconnect();
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Orange, FString::Printf(TEXT("Get Data Length: %d"), Data.Num()));
+	//for(int index = 0; index < Data.Num(); index++)
+	//	GEngine->AddOnScreenDebugMessage(-1, 150.f, FColor::Orange, FString::Printf(TEXT("Data: %d, %d"), (int)Data[index], index));
+	// デバイスからの色の順番はARGBの順番で、Data[3]がA、Data[2]がR、Data[1]がG、Data[0]がB
+	// 赤色 0x00FF0000
+	// 緑色 0x0000FF00
+	// 青色 0x000000FF
+	// 黄色 0x00FFFF00
+	// シアン色 0x0000FFFF
+	// マゼンタ色 0x00FF00FF
+	// 白色 0x00FFFFFF
+	FBLEDeviceInfo Target = DevicesWaiting.HeapTop();
+	FColor LED[2];
+	for (int i = 0; i < 2; i++)
+	{
+		int BaseIndex = i * 4;
+		// αをそのまま使うと透明で見えないため、255に固定する
+		LED[i] = FColor(Data[BaseIndex + 2], Data[BaseIndex + 1], Data[BaseIndex + 0], 255);
+	}
+	Target.LEDColor1 = LED[0];
+	Target.LEDColor2 = LED[1];
+	GEngine->AddOnScreenDebugMessage(-1, 150.f, FColor::Orange, FString::Printf(TEXT("LED 1: %s, LED 2: %s"), *Target.LEDColor1.ToString(), *Target.LEDColor2.ToString()));
+	AddToDeviceList(Target);
 }
 
 void UCustomDevice::DebugReceiveData(const TArray<uint8>& Data)
@@ -468,6 +618,12 @@ void UCustomDevice::NotifyDeviceListChangedEvent()
 {
 	if (OnDeviceListChanged.IsBound())
 		OnDeviceListChanged.Broadcast(DeviceList);
+}
+
+void UCustomDevice::NotifyDeviceInfoChangedEvent()
+{
+	if (OnDeviceInfoChanged.IsBound())
+		OnDeviceInfoChanged.Broadcast(*CurrentDeviceInfo);
 }
 
 void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
@@ -495,6 +651,7 @@ void UCustomDevice::EnqueueOperation(const FBleOperation& Operation)
 	OperationQueue.Enqueue(Operation);
 	UE_LOG(LogTemplateDevice, Log, TEXT("EnqueueOperation: Type=%d, Service=%s, Characteristic=%s"),
 		(int32)Operation.Type, *Operation.ServiceUUID, *Operation.CharacteristicUUID);
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("EnqueueOperation: Type = %d, Service = %s, Characteristic = %s"), (int32)Operation.Type, *Operation.ServiceUUID, *Operation.CharacteristicUUID));
 
 	// 実行中でなければすぐに処理を開始する
 	if (!bIsOperationInProgress)
@@ -528,6 +685,7 @@ void UCustomDevice::ProcessNextOperation()
 
 	UE_LOG(LogTemplateDevice, Log, TEXT("ProcessNextOperation: Type=%d, Service=%s, Characteristic=%s"),
 		(int32)NextOp.Type, *NextOp.ServiceUUID, *NextOp.CharacteristicUUID);
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("ProcessNextOperation: Type = %d, Service = %s, Characteristic = %s"), (int32)NextOp.Type, *NextOp.ServiceUUID, *NextOp.CharacteristicUUID));
 
 	switch (NextOp.Type)
 	{
@@ -567,6 +725,7 @@ void UCustomDevice::ProcessNextOperation()
 
 	default:
 		UE_LOG(LogTemplateDevice, Error, TEXT("ProcessNextOperation: Unknown operation type."));
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Red, FString::Printf(TEXT("ProcessNextOperation: Unknown operation type. %d"), (int32)NextOp.Type));
 		OnOperationCompleted();
 		break;
 	}

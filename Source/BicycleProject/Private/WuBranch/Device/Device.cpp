@@ -5,6 +5,9 @@
 
 UDevice::UDevice()
 {
+	State = EDeviceConnectType::UnConnected;
+	Name = "";
+	UUID = "";
 }
 
 void UDevice::Enable()

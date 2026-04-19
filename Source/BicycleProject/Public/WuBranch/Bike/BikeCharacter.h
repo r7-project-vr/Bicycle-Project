@@ -130,6 +130,11 @@ private:
 	void FindResponder();
 
 	/// <summary>
+	/// 撮影者を探す
+	/// </summary>
+	void FindPhotoCapture();
+
+	/// <summary>
 	/// ロード先の自転車メッシュ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

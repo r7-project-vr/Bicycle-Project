@@ -23,8 +23,6 @@ ABikeCharacter::ABikeCharacter()
 
 	Bike = CreateDefaultSubobject<UBikeComponent>(TEXT("Bike"));
 	AnimalManager = CreateDefaultSubobject<UAnimalManagerComponent>(TEXT("Animal Manager"));
-	PhotoCapture = CreateDefaultSubobject<UPhotoCaptureComponent>(TEXT("Photo Capture"));
-
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
@@ -40,6 +38,7 @@ void ABikeCharacter::BeginPlay()
 
 	FindMover();
 	FindResponder();
+	FindPhotoCapture();
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_targetRotator = FRotator::ZeroRotator;
@@ -114,10 +113,12 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			}
 
 			// BikeCharacterで撮影を行う
+			if (!PhotoCapture)
+				FindPhotoCapture();
             if (PhotoCapture)
 		    {
-				GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Bind Screen shot"));
 			    DeviceManager->BindScreenshotEvent(PhotoCapture, FName("OnScreenshotTaken"));
+				//DeviceManager->BindPhotoReadyEvent(PhotoCapture, "");
             }
 			DeviceManager->EnableDefaultActions();
         }
@@ -284,6 +285,13 @@ void ABikeCharacter::FindResponder()
 	Responder = GetComponentByClass<UResponderComponent>();
 	if (!Responder)
 		UE_LOG(LogTemp, Error, TEXT("UResponderComponent didnot attach"));
+}
+
+void ABikeCharacter::FindPhotoCapture()
+{
+	PhotoCapture = GetComponentByClass<UPhotoCaptureComponent>();
+	if (!PhotoCapture)
+		UE_LOG(LogTemp, Error, TEXT("UPhotoCaptureComponent didnot attach"));
 }
 
 void ABikeCharacter::EnableAutoPlay(AQuestionUIActor* Quiz)

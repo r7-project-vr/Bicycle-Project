@@ -8,6 +8,7 @@
 
 // Screenshot Event
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenshotEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPhotoReadyEvent);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -45,4 +46,13 @@ public:
 	/// </summary>
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Photo Provider")
 	void DisableTakePhotoAction();
+
+	/// <summary>
+	/// 写真を撮る準備イベントを登録
+	/// </summary>
+	/// <param name="object"></param>
+	/// <param name="functionName"></param>
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Photo Provider")
+	void BindPhotoReadyEvent(UObject* object, FName functionName);
+
 };

@@ -250,7 +250,7 @@ void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 	}
 }
 
-void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
+void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FunctionName)
 {
 	if (!Object)
 	{
@@ -262,8 +262,8 @@ void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device && Device->Implements<UPhotoProvider>())
 	{
-		IPhotoProvider::Execute_BindTakePhotoEvent(Device, Object, FuncName);
-		UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FuncName.ToString());
+		IPhotoProvider::Execute_BindTakePhotoEvent(Device, Object, FunctionName);
+		UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FunctionName.ToString());
 	}
 
 	/*if (Device)
@@ -277,6 +277,23 @@ void UDeviceManager::BindScreenshotEvent(UObject* Object, FName FuncName)
 			UE_LOG(LogTemp, Log, TEXT("Screenshot event bound to %s::%s"), *Object->GetName(), *FuncName.ToString());
 		}
 	}*/
+}
+
+void UDeviceManager::BindPhotoReadyEvent(UObject* Object, FName FunctionName)
+{
+	if (!Object)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BindPhotoReadyEvent: Object is null!"));
+		return;
+	}
+
+	// Handデバイスのみにバインド
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UPhotoProvider>())
+	{
+		IPhotoProvider::Execute_BindPhotoReadyEvent(Device, Object, FunctionName);
+		UE_LOG(LogTemp, Log, TEXT("PhotoReady event bound to %s::%s"), *Object->GetName(), *FunctionName.ToString());
+	}
 }
 
 UDevice* UDeviceManager::CreateKeyBoardDevice()

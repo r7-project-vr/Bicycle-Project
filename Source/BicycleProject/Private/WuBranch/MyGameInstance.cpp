@@ -547,7 +547,8 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 #pragma region スクリーンショット
 bool UMyGameInstance::CaptureVRScreenshot()
 {
-	if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
+	return CapturedScreenshots.Num() < MaxScreenshotsPerGame;
+	/*if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Maximum screenshots reached (%d/%d). Cannot take more screenshots this game."),
 			CapturedScreenshots.Num(), MaxScreenshotsPerGame);
@@ -644,7 +645,13 @@ bool UMyGameInstance::CaptureVRScreenshot()
 	}
 
 	SceneCapture->Destroy();
-	return false;
+	return false;*/
+}
+
+void UMyGameInstance::AddScreenshot(UTexture2D* Screenshot)
+{
+	CapturedScreenshots.Add(Screenshot);
+	NotifyUpdateScreenShotTime();
 }
 
 int32 UMyGameInstance::GetRemainingScreenshots() const

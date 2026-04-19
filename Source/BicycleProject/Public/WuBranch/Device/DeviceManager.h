@@ -151,7 +151,14 @@ public:
 	/// </summary>
 	/// <param name="obj">対象オブジェクト</param>
 	/// <param name="funcName">関数名</param>
-	void BindScreenshotEvent(UObject* obj, FName funcName);
+	void BindScreenshotEvent(UObject* Object, FName FunctionName);
+
+	/// <summary>
+	/// 写真を撮る準備イベントをバインド
+	/// </summary>
+	/// <param name="obj">対象オブジェクト</param>
+	/// <param name="funcName">関数名</param>
+	void BindPhotoReadyEvent(UObject* Object, FName FunctionName);
 
 private:
 

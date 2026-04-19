@@ -54,10 +54,15 @@ public:
 
 	void DisableTakePhotoAction_Implementation() override;
 
+	void BindPhotoReadyEvent_Implementation(UObject* Object, FName FunctionName) override;
+
 protected:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input Events")
 	FOnScreenshotEvent OnScreenshotEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input Events")
+	FOnPhotoReadyEvent OnPhotoReadyEvent;
 
 private:
 
@@ -88,10 +93,16 @@ private:
 	void OnSelectRightAnswer();
 
 	/// <summary>
-	/// 
+	/// 写真を撮る
 	/// </summary>
 	UFUNCTION()
 	void OnScreenshot();
+
+	/// <summary>
+	/// 写真を撮る準備
+	/// </summary>
+	UFUNCTION()
+	void OnPhotoReady();
 
 	/// <summary>
 	/// プレイヤーコントローラー
@@ -133,6 +144,11 @@ private:
 	/// </summary>
 	UPROPERTY()
 	UInputAction* ScreenshotAction;
+
+	/// <summary>
+	/// 写真を撮る準備アクション
+	/// </summary>
+	UInputAction* PhotoReadyAction;
 
 	/// <summary>
 	/// 自作デバイスの入力をシミュレートする間隔

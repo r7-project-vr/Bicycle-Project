@@ -9,6 +9,8 @@
 class UBoxComponent;
 class AAnimal;
 class USoundBase;
+class UWidgetComponent;
+class UMyGameInstance;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BICYCLEPROJECT_API UPhotoCaptureComponent : public UActorComponent
@@ -47,6 +49,23 @@ public:
 	UBoxComponent* GetPhotoCaptureBox() const { return PhotoCaptureBox; }
 
 private:
+
+	/// <summary>
+	/// 写真を撮る際に見えないようにするUIを探す
+	/// </summary>
+	void FindAllNeedCloseUIs();
+
+	/// <summary>
+	/// UIの表示/非表示を切り替える
+	/// </summary>
+	/// <param name="bVisible"></param>
+	void SetUIVisibility(bool bVisible);
+
+	/// <summary>
+	/// 写真を撮る
+	/// </summary>
+	void TakePhoto(UMyGameInstance* GameInstance);
+
 	/// <summary>
 	/// 撮影時に範囲内の動物を検出してポイント加算
 	/// </summary>
@@ -89,4 +108,9 @@ private:
 	/// 映られた動物
 	/// </summary>
 	TSet<TWeakObjectPtr<AAnimal>> CapturedAnimals;
+
+	/// <summary>
+	/// 写真を撮る際に見えないようにするUI
+	/// </summary>
+	TArray<UWidgetComponent*> NeedCloseUIs;
 };

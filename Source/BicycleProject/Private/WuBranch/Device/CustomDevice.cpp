@@ -236,6 +236,7 @@ void UCustomDevice::ReScanDevices()
 	bNeedReScan = true;
 	if (!Disconnect())
 	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Bluetooth disconnect failed! CurrentDevice is null"));
 		OnDisconnectSucc();
 	}
 #endif
@@ -414,7 +415,6 @@ void UCustomDevice::OnConnectSucc()
 	Name = CurrentDevice.GetInterface()->GetDeviceName();
 	UUID = CurrentDevice.GetInterface()->GetDeviceId();
 	State = EDeviceConnectType::Connected;
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, FString::Printf(TEXT("Connect Success to Device: %s"), *Name));
 
 	// コールバックを一度だけ登録する（接続成功時に必ず設定）
 	FBleCharacteristicDataDelegate ReceiveFunction;
@@ -439,10 +439,11 @@ void UCustomDevice::OnConnectSucc()
 		// デバイスの色を確認
 		GetValidationCode();
 		// つなぐデバイスが決めた
-		//SendPairRequest(1);
+		SendPairRequest(1);
+		CurrentDeviceInfo->ChangeState(EDeviceConnectType::Connected);
+		NotifyDeviceInfoChangedEvent();
 	}
 #endif
-	
 }
 
 void UCustomDevice::OnConnectError(FString ErrorMessage)
@@ -463,6 +464,7 @@ void UCustomDevice::OnDisconnectSucc()
 	CurrentDevice = nullptr;
 	BleManager = nullptr;
 	LEDCheckTimer = LEDCheckTimeDuration;
+
 	if (bNeedReScan)
 	{
 		ResetDeviceList();

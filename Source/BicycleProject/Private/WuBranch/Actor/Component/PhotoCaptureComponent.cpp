@@ -3,9 +3,13 @@
 #include "WuBranch/Actor/Component/PhotoCaptureComponent.h"
 #include "Components/BoxComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Engine/SceneCapture2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Actor/Animal.h"
+#include "Components/WidgetComponent.h"
 #include <tokuamaru/IOutlineHighlightable.h>
 
 UPhotoCaptureComponent::UPhotoCaptureComponent()
@@ -16,6 +20,8 @@ UPhotoCaptureComponent::UPhotoCaptureComponent()
 void UPhotoCaptureComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Find All ui"));
+	FindAllNeedCloseUIs();
 }
 
 void UPhotoCaptureComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -87,9 +93,12 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 	{
 		if (GameInstance->CaptureVRScreenshot())
 		{
+			SetUIVisibility(false);
+			TakePhoto(GameInstance);
 			if (TakePhotoSucc)
 				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
 			DetectAndScoreAnimals();
+			SetUIVisibility(true);
 		}
 		else
 		{
@@ -97,6 +106,120 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFail);
 		}
 	}
+}
+
+void UPhotoCaptureComponent::FindAllNeedCloseUIs()
+{
+	TArray<UActorComponent*> UIs = GetOwner()->GetComponentsByTag(USceneComponent::StaticClass(), "UIs");
+	for (UActorComponent* UI : UIs)
+	{
+		if(UI->IsA<UWidgetComponent>())
+		{
+			UWidgetComponent* WidgetComp = Cast<UWidgetComponent>(UI);
+			NeedCloseUIs.Add(WidgetComp);
+		}
+	}
+}
+
+void UPhotoCaptureComponent::SetUIVisibility(bool bVisible)
+{
+	for (UWidgetComponent* Widget : NeedCloseUIs)
+	{
+		Widget->SetVisibility(bVisible);
+	}
+}
+
+void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance)
+{
+	if (!GetWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("World is null!"));
+		return;
+	}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC || !PC->PlayerCameraManager)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerController or CameraManager is null!"));
+		return;
+	}
+
+	// エフェクト
+	PC->PlayerCameraManager->StartCameraFade(0.f, 0.8f, 0.1f, FLinearColor::Black);
+
+	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
+	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	ASceneCapture2D* SceneCapture = GetWorld()->SpawnActor<ASceneCapture2D>(ASceneCapture2D::StaticClass(), CameraLocation, CameraRotation, SpawnParams);
+
+	if (!SceneCapture || !SceneCapture->GetCaptureComponent2D())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create SceneCapture2D!"));
+		return;
+	}
+
+	int32 Width = 1920;
+	int32 Height = 1080;
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+	RenderTarget->InitAutoFormat(Width, Height);
+	RenderTarget->UpdateResourceImmediate(true);
+
+	USceneCaptureComponent2D* CaptureComponent = SceneCapture->GetCaptureComponent2D();
+	CaptureComponent->TextureTarget = RenderTarget;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	CaptureComponent->bCaptureEveryFrame = false;
+	CaptureComponent->bCaptureOnMovement = false;
+
+	CaptureComponent->CaptureScene();
+
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
+
+	if (!RenderTargetResource)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RenderTargetResource is null!"));
+		SceneCapture->Destroy();
+		return;
+	}
+
+	TArray<FColor> OutBitmap;
+	if (RenderTargetResource->ReadPixels(OutBitmap))
+	{
+		UTexture2D* NewTexture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+		if (NewTexture)
+		{
+#if WITH_EDITORONLY_DATA
+			NewTexture->MipGenSettings = TMGS_NoMipmaps;
+#endif
+			NewTexture->NeverStream = true;
+			NewTexture->SRGB = true;
+
+			void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+			FMemory::Memcpy(TextureData, OutBitmap.GetData(), OutBitmap.Num() * sizeof(FColor));
+			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+			NewTexture->UpdateResource();
+
+			GameInstance->AddScreenshot(NewTexture);
+
+			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"),
+				GameInstance->GetScreenshotCount(), GameInstance->GetMaxPhotosPerGame(), Width, Height);
+
+			SceneCapture->Destroy();
+			return;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to create texture!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to read pixels from RenderTarget!"));
+	}
+
+	SceneCapture->Destroy();
 }
 
 void UPhotoCaptureComponent::DetectAndScoreAnimals()

@@ -640,6 +640,12 @@ public:
 	bool CaptureVRScreenshot();
 
 	/// <summary>
+	/// スクリーンショットを追加
+	/// </summary>
+	/// <param name="Screenshot"></param>
+	void AddScreenshot(UTexture2D* Screenshot);
+
+	/// <summary>
 	/// 現在のゲームで撮影可能な残り枚数を取得
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")

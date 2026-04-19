@@ -41,6 +41,10 @@ UKeyboardDevice::UKeyboardDevice()
 	ScreenshotAction = nullptr;
 	Path = "/Game/WuBranch/Input/Action/ScreenshotAction";
 	ScreenshotAction = LoadObject<UInputAction>(nullptr, *Path);
+
+	PhotoReadyAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/PhotoReadyAction";
+	PhotoReadyAction = LoadObject<UInputAction>(nullptr, *Path);
 }
 
 void UKeyboardDevice::Tick(float DeltaTime)
@@ -68,7 +72,6 @@ bool UKeyboardDevice::IsTickableInEditor() const
 
 void UKeyboardDevice::Init()
 {
-	
 }
 
 void UKeyboardDevice::Enable()
@@ -266,6 +269,16 @@ void UKeyboardDevice::DisableTakePhotoAction_Implementation()
 	}
 }
 
+void UKeyboardDevice::BindPhotoReadyEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnPhotoReadyEvent.Add(Delegate);
+	}
+}
+
 void UKeyboardDevice::SetupAction()
 {
 	//if (!MoveAction)
@@ -273,24 +286,24 @@ void UKeyboardDevice::SetupAction()
 	//	UE_LOG(LogTemplateDevice, Error, TEXT("move Action is null!"));
 	//	return;
 	//}
-
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(Controller->GetPawn()->InputComponent))
 	{
 		// 移動
-		if(!MoveAction)
+		if(MoveAction)
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Move Action is null!"));
+			
 
 		// 左の答えを選択するアクション
-		if (!SelectLeftAction)
+		if (SelectLeftAction)
 			EnhancedInputComponent->BindAction(SelectLeftAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectLeftAnswer);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Select Left Action is null!"));
 
 		// 右の答えを選択するアクション
-		if (!SelectRightAction)
+		if (SelectRightAction)
 			EnhancedInputComponent->BindAction(SelectRightAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectRightAnswer);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Select Right Action is null!"));
@@ -300,6 +313,11 @@ void UKeyboardDevice::SetupAction()
 			EnhancedInputComponent->BindAction(ScreenshotAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnScreenshot);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Screenshot Action is null!"));
+
+		if (PhotoReadyAction)
+			EnhancedInputComponent->BindAction(PhotoReadyAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnPhotoReady);
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("PhotoReady Action is null!"));
 	}
 	else
 	{
@@ -346,4 +364,11 @@ void UKeyboardDevice::OnScreenshot()
 	// notify
 	if (OnScreenshotEvent.IsBound())
 		OnScreenshotEvent.Broadcast();
+}
+
+void UKeyboardDevice::OnPhotoReady()
+{
+	// notify
+	if (OnPhotoReadyEvent.IsBound())
+		OnPhotoReadyEvent.Broadcast();
 }

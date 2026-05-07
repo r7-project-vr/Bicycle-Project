@@ -174,6 +174,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BLE Device")
 	void ReScanDevices();
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeviceFoundResultDelegate, bool, bResult);
+
+	/// <summary>
+	/// デバイスをサーチする結果、true: 成功、false: 失敗
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FDeviceFoundResultDelegate OnDeviceFoundResult;
+
 private:
 
 	/// <summary>
@@ -350,6 +358,12 @@ private:
 	/// </summary>
 	/// <param name="MoveNum"></param>
 	void NotifyMoveNumEvent(int MoveNum);
+
+	/// <summary>
+	/// デバイスを見つかったかを通知
+	/// </summary>
+	/// <param name="bResult">探す結果</param>
+	void NotifyDeviceFoundResult(bool bResult);
 
 	/// <summary>
 	/// 最大回転数を更新

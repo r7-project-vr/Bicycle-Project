@@ -361,6 +361,7 @@ void UCustomDevice::FindDeviceByServices()
 		GetWorld()->GetTimerManager().SetTimer(SearchTimerHandle, [this]() {
 			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Stop scan Device"));
 			StopScanDevices();
+			NotifyDeviceFoundResult(false);
 			}, 5.0f, false);
 	}
 #endif
@@ -407,6 +408,7 @@ void UCustomDevice::OnDeviceFound(TScriptInterface<IBleDeviceInterface> Device)
 
 			//　デバイスが１つのみの場合
 			StopScanDevices();
+			NotifyDeviceFoundResult(true);
 		}
 	}
 #endif
@@ -642,6 +644,12 @@ void UCustomDevice::NotifyMoveEvent(FVector2D MoveData)
 	// 通知する
 	if (OnMoveEvent.IsBound())
 		OnMoveEvent.Broadcast(MoveData);
+}
+
+void UCustomDevice::NotifyDeviceFoundResult(bool bResult)
+{
+	if (OnDeviceFoundResult.IsBound())
+		OnDeviceFoundResult.Broadcast(bResult);
 }
 
 void UCustomDevice::UpdateMaxRPM(int Standard, int Danger, int Safe)

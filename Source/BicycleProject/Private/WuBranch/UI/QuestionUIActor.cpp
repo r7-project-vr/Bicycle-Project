@@ -17,7 +17,6 @@
 #include "Kismet/GameplayStatics.h" 
 #include "narisawaBranch/ProceduralRoadGenerator.h" 
 
-
 AQuestionUIActor::AQuestionUIActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -251,9 +250,12 @@ void AQuestionUIActor::LeadToExit(float DeltaTime)
 		if (MovedDistance > _exitTarget->GetSplineLength())
 		{
 			_exitTarget = nullptr;
-			// オートプレイ解除
+			
 			if (AutoPlayTarget)
+			{
+				// オートプレイ解除
 				AutoPlayTarget->DisableAutoPlay();
+			}
 		}
 	}
 }

@@ -20,7 +20,6 @@ UPhotoCaptureComponent::UPhotoCaptureComponent()
 void UPhotoCaptureComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Find All ui"));
 	FindAllNeedCloseUIs();
 }
 
@@ -91,14 +90,20 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)
 	{
+		// 
 		if (GameInstance->CaptureVRScreenshot())
 		{
 			SetUIVisibility(false);
-			TakePhoto(GameInstance);
-			if (TakePhotoSucc)
-				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
-			DetectAndScoreAnimals();
-			SetUIVisibility(true);
+			// 写真を撮る前に先にUIを非表示にする、なので同じフレームで動作しない
+			FTimerHandle PhotoDelayTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(PhotoDelayTimerHandle, [this, GameInstance]() {
+				TakePhoto(GameInstance);
+				if (TakePhotoSucc)
+					UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
+				DetectAndScoreAnimals();
+				// 写真を撮り終わったらUIを再び表示する
+				SetUIVisibility(true);
+			}, 0.1f, false);
 		}
 		else
 		{
@@ -119,6 +124,7 @@ void UPhotoCaptureComponent::FindAllNeedCloseUIs()
 			NeedCloseUIs.Add(WidgetComp);
 		}
 	}
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Found UI Num: %d"), NeedCloseUIs.Num()));
 }
 
 void UPhotoCaptureComponent::SetUIVisibility(bool bVisible)

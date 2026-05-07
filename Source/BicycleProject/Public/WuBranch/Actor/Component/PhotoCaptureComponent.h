@@ -96,13 +96,13 @@ private:
 	/// 写真撮れたSE
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
-	USoundBase* TakePhotoSucc;
+	USoundBase* TakePhotoSuccSE;
 
 	/// <summary>
 	/// 写真撮れないSE
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
-	USoundBase* TakePhotoFail;
+	USoundBase* TakePhotoFailSE;
 
 	/// <summary>
 	/// 映られた動物

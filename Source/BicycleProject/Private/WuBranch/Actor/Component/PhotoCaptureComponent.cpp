@@ -90,25 +90,26 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)
 	{
-		// 
+		// 2026.05.07 ウー start 写真を撮る前に一旦UIを非表示にする
 		if (GameInstance->CaptureVRScreenshot())
 		{
 			SetUIVisibility(false);
-			// 写真を撮る前に先にUIを非表示にする、なので同じフレームで動作しない
+			// UIを非表示にしてから写真を撮る、なので同じフレームで動作しない
 			FTimerHandle PhotoDelayTimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(PhotoDelayTimerHandle, [this, GameInstance]() {
 				TakePhoto(GameInstance);
-				if (TakePhotoSucc)
-					UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSucc);
+				if (TakePhotoSuccSE)
+					UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSuccSE);
 				DetectAndScoreAnimals();
 				// 写真を撮り終わったらUIを再び表示する
 				SetUIVisibility(true);
 			}, 0.1f, false);
 		}
+		// 2026.05.07 ウー end
 		else
 		{
-			if (TakePhotoFail)
-				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFail);
+			if (TakePhotoFailSE)
+				UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoFailSE);
 		}
 	}
 }
@@ -175,7 +176,11 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance)
 
 	USceneCaptureComponent2D* CaptureComponent = SceneCapture->GetCaptureComponent2D();
 	CaptureComponent->TextureTarget = RenderTarget;
-	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	// 2026.05.07 ウー start
+	// SCS_FinalColorLDRだと暗い部分はあまり見えないので、SCS_SceneColorHDRに変更
+	//CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
+	// 2026.05.07 ウー end
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
 

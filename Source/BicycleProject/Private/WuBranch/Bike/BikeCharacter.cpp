@@ -121,6 +121,7 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				//DeviceManager->BindPhotoReadyEvent(PhotoCapture, "");
             }
 			DeviceManager->EnableDefaultActions();
+			DeviceManager->EnableTakePhotoActions();
         }
 	}
 }
@@ -136,6 +137,7 @@ void ABikeCharacter::Pause_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->DisableDefaultActions();
+				DeviceManager->DisableTakePhotoActions();
 
 				if (BikeMovement->GetIsAutoPlay())
 					DeviceManager->DisableSelectAnswerActions();
@@ -156,6 +158,7 @@ void ABikeCharacter::ReStart_Implementation()
 			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
 			{
 				DeviceManager->EnableDefaultActions();
+				DeviceManager->EnableTakePhotoActions();
 
 				if (BikeMovement->GetIsAutoPlay())
 					DeviceManager->DisableSelectAnswerActions();

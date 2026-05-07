@@ -356,6 +356,12 @@ void UCustomDevice::FindDeviceByServices()
 		FBleOnDeviceFoundDelegate Function;
 		Function.BindUFunction(this, FName("OnDeviceFound"));
 		BleManager.GetInterface()->ScanForDevices(Services, Function);
+		// もし5秒立っても何も見つかなかったなら、サーチを終了する
+		FTimerHandle SearchTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(SearchTimerHandle, [this]() {
+			GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Stop scan Device"));
+			StopScanDevices();
+			}, 5.0f, false);
 	}
 #endif
 }

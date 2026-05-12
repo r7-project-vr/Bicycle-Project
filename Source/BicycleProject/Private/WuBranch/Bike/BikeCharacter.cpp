@@ -13,6 +13,7 @@
 #include "WuBranch/Actor/Component/PhotoCaptureComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include <WuBranch/UI/QuestionUIActor.h>
+#include <WuBranch/Actor/Component/PositionResetComponent.h>
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -259,6 +260,12 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
 		DeviceManager->EnableDefaultActions();
+		// リセットポイントを変更
+		if (UPositionResetComponent* ResetComp = GetComponentByClass<UPositionResetComponent>())
+		{
+			ResetComp->RecordResetPosition(GetActorLocation());
+			ResetComp->RecordResetAngle(GetActorQuat());
+		}
 		return;
 	}
 

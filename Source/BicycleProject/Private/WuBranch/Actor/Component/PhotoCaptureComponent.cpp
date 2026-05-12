@@ -103,7 +103,7 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 				DetectAndScoreAnimals();
 				// 写真を撮り終わったらUIを再び表示する
 				SetUIVisibility(true);
-			}, 0.1f, false);
+			}, 0.01f, false);
 		}
 		// 2026.05.07 ウー end
 		else

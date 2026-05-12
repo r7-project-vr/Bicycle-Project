@@ -45,9 +45,6 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 		return;
 	}
 
-	int32 Columns = 3;  //横3列
-	int32 Rows = 2;     //縦2行
-
 	//新しい順（最新が右下）に表示
 	//配列のインデックスが大きいほど新しい写真なので、逆順に取得
 	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
@@ -55,8 +52,8 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 		//最新の写真を左上から配置するため、配列の後ろから取得
 		int32 ScreenshotIndex = CapturedScreenshots.Num() - 1 - i;
 
-		int32 Row = i / Columns;
-		int32 Col = i % Columns;
+		int32 Row = i / PhotoColumns;
+		int32 Col = i % PhotoColumns;
 
 		// 配置位置の計算
 		FVector Location = StartLocation;

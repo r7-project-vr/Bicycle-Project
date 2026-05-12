@@ -32,4 +32,13 @@ private:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AScreenshotDisplayActor> ScreenshotDisplayActorClass;
+
+	// 2026.05.07 ウー start
+	/// <summary>
+	/// 横３列
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	int PhotoColumns = 3;
+
+	// 2026.05.07 ウー end
 };

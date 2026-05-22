@@ -18,21 +18,21 @@ UKeyboardDevice::UKeyboardDevice()
 	FString Path = "/Game/WuBranch/Input/KeyboardInputMap";
 	DefualtMap = LoadObject<UInputMappingContext>(nullptr, *Path);
 
-	MoveAction = nullptr;
-	Path = "/Game/WuBranch/Input/Action/MoveAction";
-	MoveAction = LoadObject<UInputAction>(nullptr, *Path);
+	MovingAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/MovingAction";
+	MovingAction = LoadObject<UInputAction>(nullptr, *Path);
 
 	AnswerSelectMap = nullptr;
 	Path = "/Game/WuBranch/Input/AnswerSelectMap";
 	AnswerSelectMap = LoadObject<UInputMappingContext>(nullptr, *Path);
 
-	SelectLeftAction = nullptr;
-	Path = "/Game/WuBranch/Input/Action/SelectLeftAction";
-	SelectLeftAction = LoadObject<UInputAction>(nullptr, *Path);
+	AnswerSelectionAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/AnswerSelectionAction";
+	AnswerSelectionAction = LoadObject<UInputAction>(nullptr, *Path);
 
-	SelectRightAction = nullptr;
-	Path = "/Game/WuBranch/Input/Action/SelectRightAction";
-	SelectRightAction = LoadObject<UInputAction>(nullptr, *Path);
+	AnswerDecisionAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/AnswerDecisionAction";
+	AnswerDecisionAction = LoadObject<UInputAction>(nullptr, *Path);
 
 	PhotoMap = nullptr;
 	Path = "/Game/WuBranch/Input/PhotoMap";
@@ -159,6 +159,26 @@ void UKeyboardDevice::DisableMoveAction_Implementation()
 	}
 }
 
+void UKeyboardDevice::BindDecisionEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnAnswerDecidedEvent.Add(Delegate);
+	}
+}
+
+void UKeyboardDevice::BindSelectionEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnAnswerSelectedEvent.Add(Delegate);
+	}
+}
+
 void UKeyboardDevice::EnableSelectAnswerAction_Implementation()
 {
 	if (!Controller)
@@ -179,7 +199,7 @@ void UKeyboardDevice::EnableSelectAnswerAction_Implementation()
 	{
 		if (!Subsystem->HasMappingContext(AnswerSelectMap))
 		{
-			Subsystem->AddMappingContext(AnswerSelectMap, 0);
+			Subsystem->AddMappingContext(AnswerSelectMap, 5);
 		}
 	}
 }
@@ -290,21 +310,21 @@ void UKeyboardDevice::SetupAction()
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(Controller->GetPawn()->InputComponent))
 	{
 		// 移動
-		if(MoveAction)
-			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);
+		if(MovingAction)
+			EnhancedInputComponent->BindAction(MovingAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnMove);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Move Action is null!"));
 			
 
-		// 左の答えを選択するアクション
-		if (SelectLeftAction)
-			EnhancedInputComponent->BindAction(SelectLeftAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectLeftAnswer);
+		// 選択肢を選ぶアクション
+		if (AnswerSelectionAction)
+			EnhancedInputComponent->BindAction(AnswerSelectionAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnAnswerSelected);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Select Left Action is null!"));
 
-		// 右の答えを選択するアクション
-		if (SelectRightAction)
-			EnhancedInputComponent->BindAction(SelectRightAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnSelectRightAnswer);
+		// 回答アクション
+		if (AnswerDecisionAction)
+			EnhancedInputComponent->BindAction(AnswerDecisionAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnAnswerDecided);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("Select Right Action is null!"));
 
@@ -345,18 +365,19 @@ void UKeyboardDevice::OnMove(const FInputActionValue& Value)
 		OnMoveEvent.Broadcast(MoveVector);
 }
 
-void UKeyboardDevice::OnSelectLeftAnswer()
+void UKeyboardDevice::OnAnswerSelected(const FInputActionValue& Value)
 {
+	float SelectedValue = Value.Get<float>();
 	// notify
-	if (OnSelectLeftEvent.IsBound())
-		OnSelectLeftEvent.Broadcast();
+	if (OnAnswerSelectedEvent.IsBound())
+		OnAnswerSelectedEvent.Broadcast(SelectedValue);
 }
 
-void UKeyboardDevice::OnSelectRightAnswer()
+void UKeyboardDevice::OnAnswerDecided()
 {
 	// notify
-	if (OnSelectRightEvent.IsBound())
-		OnSelectRightEvent.Broadcast();
+	if (OnAnswerDecidedEvent.IsBound())
+		OnAnswerDecidedEvent.Broadcast();
 }
 
 void UKeyboardDevice::OnScreenshot()

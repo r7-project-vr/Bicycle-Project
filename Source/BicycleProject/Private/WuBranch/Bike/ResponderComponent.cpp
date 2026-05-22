@@ -52,6 +52,23 @@ void UResponderComponent::DeleteQuiz()
 	QuizActor = nullptr;
 }
 
+void UResponderComponent::OnSelectAnswer(float Value)
+{	
+	if (QuizActor)
+	{
+		int Operation = Value > 0 ? 1 : Value < 0 ? -1 : 0;
+		QuizActor->SelectAnswer(Operation);
+	}
+}
+
+void UResponderComponent::OnDecision()
+{
+	if (QuizActor)
+	{
+		QuizActor->DecideAnswer();
+	}
+}
+
 void UResponderComponent::OnSelectLeftAnswer()
 {
 	if (QuizActor)

@@ -224,7 +224,7 @@ void UDeviceManager::BindMoveNumEvent(UObject* Object, FName FunctionName)
 	}
 }
 
-void UDeviceManager::BindSelectLeftEvent(UObject* Object, FName FunctionName)
+void UDeviceManager::BindSelectionEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合
 	//IChoiceProvider::Execute_BindSelectLeftEvent(Device, Object, FunctionName);
@@ -233,11 +233,11 @@ void UDeviceManager::BindSelectLeftEvent(UObject* Object, FName FunctionName)
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device && Device->Implements<UChoiceProvider>())
 	{
-		IChoiceProvider::Execute_BindSelectLeftEvent(Device, Object, FunctionName);
+		IChoiceProvider::Execute_BindSelectionEvent(Device, Object, FunctionName);
 	}
 }
 
-void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
+void UDeviceManager::BindDecisionEvent(UObject* Object, FName FunctionName)
 {
 	// 一つの装置のみの場合
 	//IChoiceProvider::Execute_BindSelectRightEvent(Device, Object, FunctionName);
@@ -246,7 +246,7 @@ void UDeviceManager::BindSelectRightEvent(UObject* Object, FName FunctionName)
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device && Device->Implements<UChoiceProvider>())
 	{
-		IChoiceProvider::Execute_BindSelectRightEvent(Device, Object, FunctionName);
+		IChoiceProvider::Execute_BindDecisionEvent(Device, Object, FunctionName);
 	}
 }
 

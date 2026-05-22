@@ -93,6 +93,17 @@ public:
 	/// <param name="Result">結果</param>
 	void SetResult(int AnswerIndex, bool Result);
 
+	/// <summary>
+	/// 答えを選ぶ
+	/// </summary>
+	/// <param name="Value"></param>
+	void SelectAnswer(int Value);
+
+	/// <summary>
+	/// 答えを決める
+	/// </summary>
+	void DecideAnswer();
+
 private:
 
 	/// <summary>

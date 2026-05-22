@@ -15,7 +15,8 @@
 #include <ShiiBranch/OptionUIWidget.h>
 #include "UntakuBranch/Question.h"
 #include "Kismet/GameplayStatics.h" 
-#include "narisawaBranch/ProceduralRoadGenerator.h" 
+#include "narisawaBranch/ProceduralRoadGenerator.h"
+#include "WuBranch/UI/QuizUserWidget.h"
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -298,5 +299,21 @@ void AQuestionUIActor::SetResult(int AnswerIndex, bool Result)
 	if (UOptionUIWidget* UI = Cast<UOptionUIWidget>(Widget->GetWidget()))
 	{
 		UI->SetResult(AnswerIndex, Result);
+	}
+}
+
+void AQuestionUIActor::SelectAnswer(int Value)
+{
+	if (UQuizUserWidget* UI = Cast<UQuizUserWidget>(Widget->GetWidget()))
+	{
+		UI->OnSelectedOption(Value);
+	}
+}
+
+void AQuestionUIActor::DecideAnswer()
+{
+	if (UQuizUserWidget* UI = Cast<UQuizUserWidget>(Widget->GetWidget()))
+	{
+		UI->DecideAnswer();
 	}
 }

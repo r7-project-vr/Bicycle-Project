@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WuBranch/Device/Device.h"
 #include "WuBranch/Interface/PhotoProvider.h"
+#include "WuBranch/Interface/ChoiceProvider.h"
 #include "KeyboardDevice.generated.h"
 
 class UInputMappingContext;
@@ -16,7 +17,7 @@ struct FInputActionValue;
  * 他のプラットフォームだったら、有線か無線で繋がっているかどうかの判断が必要です
  */
 UCLASS()
-class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject, public IPhotoProvider
+class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject, public IPhotoProvider, public IChoiceProvider
 {
 	GENERATED_BODY()
 	
@@ -43,6 +44,10 @@ public:
 	void EnableMoveAction_Implementation() override;
 
 	void DisableMoveAction_Implementation() override;
+
+	void BindDecisionEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void BindSelectionEvent_Implementation(UObject* Object, FName FunctionName) override;
 
 	void EnableSelectAnswerAction_Implementation() override;
 
@@ -79,18 +84,18 @@ private:
 	void OnMove(const FInputActionValue& Value);
 
 	/// <summary>
-	/// MappingContextで左の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
+	/// MappingContextで選択肢を選ぶアクションに設定されたキーを押したらここがトリガーされる
 	/// </summary>
 	/// <param name="Value"></param>
 	UFUNCTION()
-	void OnSelectLeftAnswer();
+	void OnAnswerSelected(const FInputActionValue& Value);
 
 	/// <summary>
-	/// MappingContextで右の答えを選ぶアクションに設定されたキーを押したら最初に値がもらうところ
+	/// MappingContextで答えを決定するアクションに設定されたキーを押したらここがトリガーされる
 	/// </summary>
 	/// <param name="Value"></param>
 	UFUNCTION()
-	void OnSelectRightAnswer();
+	void OnAnswerDecided();
 
 	/// <summary>
 	/// 写真を撮る
@@ -127,17 +132,17 @@ private:
 	/// <summary>
 	/// 移動アクション
 	/// </summary>
-	UInputAction* MoveAction;
+	UInputAction* MovingAction;
 
 	/// <summary>
-	/// 左の答えを選択するアクション
+	/// 選択肢を選ぶアクション
 	/// </summary>
-	UInputAction* SelectLeftAction;
+	UInputAction* AnswerSelectionAction;
 
 	/// <summary>
-	/// 右の答えを選択するアクション
+	/// 回答アクション
 	/// </summary>
-	UInputAction* SelectRightAction;
+	UInputAction* AnswerDecisionAction;
 
 	/// <summary>
 	/// スクリーンショットアクション
@@ -149,6 +154,18 @@ private:
 	/// 写真を撮る準備アクション
 	/// </summary>
 	UInputAction* PhotoReadyAction;
+
+	/// <summary>
+	/// 選択肢を選ぶイベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FAnswerSelectDelegate OnAnswerSelectedEvent;
+
+	/// <summary>
+	/// 答えを決定するイベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FAnswerDecideDelegate OnAnswerDecidedEvent;
 
 	/// <summary>
 	/// 自作デバイスの入力をシミュレートする間隔

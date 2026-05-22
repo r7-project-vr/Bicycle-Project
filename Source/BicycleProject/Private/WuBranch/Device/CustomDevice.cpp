@@ -122,14 +122,6 @@ void UCustomDevice::DisableMoveAction_Implementation()
 	bMoveSwitch = false;
 }
 
-void UCustomDevice::EnableSelectAnswerAction_Implementation()
-{
-}
-
-void UCustomDevice::DisableSelectAnswerAction_Implementation()
-{
-}
-
 void UCustomDevice::ResetRevolution()
 {
 #if PLATFORM_ANDROID

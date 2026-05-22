@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "DeviceInterface.h"
 #include "DeviceType.h"
 #include "UObject/ScriptDelegates.h"
 #include "DeviceManager.generated.h"
@@ -131,20 +130,20 @@ public:
 	void BindMoveNumEvent(UObject* object, FName functionName);
 
 	/// <summary>
-	/// 左の答えを選ぶイベントをバインドする
+	/// 選択肢を選ぶイベントをバインドする
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
 	UFUNCTION()
-	void BindSelectLeftEvent(UObject* Object, FName FunctionName);
+	void BindSelectionEvent(UObject* Object, FName FunctionName);
 
 	/// <summary>
-	/// 左の答えを選ぶイベントをバインドする
+	/// 回答イベントをバインドする
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
 	/// <param name="functionName">関数名</param>
 	UFUNCTION()
-	void BindSelectRightEvent(UObject* Object, FName FunctionName);
+	void BindDecisionEvent(UObject* Object, FName FunctionName);
 
 	/// <summary>
 	/// スクリーンショットイベントをバインド

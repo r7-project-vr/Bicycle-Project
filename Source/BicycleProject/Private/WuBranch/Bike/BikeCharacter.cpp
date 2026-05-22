@@ -109,8 +109,8 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				FindResponder();
 			if (Responder)
 			{
-				DeviceManager->BindSelectLeftEvent(Responder, "OnSelectLeftAnswer");
-				DeviceManager->BindSelectRightEvent(Responder, "OnSelectRightAnswer");
+				DeviceManager->BindSelectionEvent(Responder, "OnSelectAnswer");
+				DeviceManager->BindDecisionEvent(Responder, "OnDecision");
 			}
 
 			// BikeCharacterで撮影を行う

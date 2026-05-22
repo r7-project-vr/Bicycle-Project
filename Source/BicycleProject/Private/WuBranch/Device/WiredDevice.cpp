@@ -134,16 +134,6 @@ void UWiredDevice::DisableMoveAction_Implementation()
 	CmdSender->Pause();
 }
 
-void UWiredDevice::EnableSelectAnswerAction_Implementation()
-{
-	
-}
-
-void UWiredDevice::DisableSelectAnswerAction_Implementation()
-{
-	
-}
-
 bool UWiredDevice::CheckDevice()
 {
 	if (!Device)

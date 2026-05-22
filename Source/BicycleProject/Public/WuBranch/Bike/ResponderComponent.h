@@ -38,6 +38,19 @@ public:
 	void DeleteQuiz();
 
 	/// <summary>
+	/// 答えを選ぶ
+	/// </summary>
+	/// <param name="Value">+1: 一個右の方を選んだ、-1：一個左の方を選んだ</param>
+	UFUNCTION()
+	void OnSelectAnswer(float Value);
+
+	/// <summary>
+	/// 答えを決める
+	/// </summary>
+	UFUNCTION()
+	void OnDecision();
+
+	/// <summary>
 	/// 左の答えを選ぶ
 	/// </summary>
 	UFUNCTION()

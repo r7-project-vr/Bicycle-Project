@@ -16,7 +16,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateDevice, Log, All);
  * 
  */
 UCLASS(BlueprintType)
-class BICYCLEPROJECT_API UDevice : public UObject, public IMoveProvider, public IChoiceProvider
+class BICYCLEPROJECT_API UDevice : public UObject, public IMoveProvider
 {
 	GENERATED_BODY()
 
@@ -75,10 +75,6 @@ public:
 
 	void BindMoveNumEvent_Implementation(UObject* Object, FName FunctionName) override;
 
-	void BindSelectLeftEvent_Implementation(UObject* Object, FName FunctionName) override;
-
-	void BindSelectRightEvent_Implementation(UObject* Object, FName FunctionName) override;
-
 protected:
 
 	/// <summary>
@@ -92,18 +88,6 @@ protected:
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
 	FMoveNumDelegate OnMoveNumEvent;
-
-	/// <summary>
-	/// 左を選ぶイベント
-	/// </summary>
-	UPROPERTY(BlueprintAssignable)
-	FSelectV2Delegate OnSelectLeftEvent;
-
-	/// <summary>
-	/// 右を選ぶイベント
-	/// </summary>
-	UPROPERTY(BlueprintAssignable)
-	FSelectV2Delegate OnSelectRightEvent;
 
 	/// <summary>
 	/// デバイスの名前

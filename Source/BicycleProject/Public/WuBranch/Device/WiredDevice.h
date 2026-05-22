@@ -45,10 +45,6 @@ public:
 
 	void DisableMoveAction_Implementation() override;
 
-	void EnableSelectAnswerAction_Implementation() override;
-
-	void DisableSelectAnswerAction_Implementation() override;
-
 private:
 
 	/// <summary>

@@ -32,7 +32,7 @@ public:
 	/// <summary>
 	/// デバイスマネージャーを取得
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>UDeviceManager</returns>
 	UFUNCTION(BlueprintCallable, Category = "Device")
 	UDeviceManager* GetDeviceManager() const;
 

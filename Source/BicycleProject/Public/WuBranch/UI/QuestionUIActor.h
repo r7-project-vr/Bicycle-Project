@@ -12,6 +12,7 @@ class UBikeMovementComponent;
 class USplineComponent;
 struct FQuestion;
 class UBoxComponent;
+class UNiagaraComponent;
 
 /**
  * 
@@ -213,4 +214,9 @@ private:
 	/// クイズ
 	/// </summary>
 	FQuestion* Question;
+
+	/// <summary>
+	/// エリアのエフェクト
+	/// </summary>
+	UNiagaraComponent* AreaEffect;
 };

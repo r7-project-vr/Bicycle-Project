@@ -17,6 +17,7 @@
 #include "Kismet/GameplayStatics.h" 
 #include "narisawaBranch/ProceduralRoadGenerator.h"
 #include "WuBranch/UI/QuizUserWidget.h"
+#include "NiagaraComponent.h"
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -78,6 +79,7 @@ void AQuestionUIActor::BeginPlay()
 		_temporaryParkingArea->OnComponentBeginOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapBeginParkingArea);
 		_temporaryParkingArea->OnComponentEndOverlap.AddDynamic(this, &AQuestionUIActor::OnOverlapEndParkingArea);
 	}
+	AreaEffect = FindComponentByClass<UNiagaraComponent>();
 
 	NotDisplayUI();
 }
@@ -158,6 +160,14 @@ FQuestion* AQuestionUIActor::GetNowQuestion()
 
 void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 {
+	// エフェクトを非表示
+	if (AreaEffect)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green, TEXT("Have Area effect"));
+		AreaEffect->Deactivate();
+		AreaEffect->SetVisibility(false);
+	}
+
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	// デフォルトアクションを機能させない
 	GameInstance->GetDeviceManager()->DisableDefaultActions();

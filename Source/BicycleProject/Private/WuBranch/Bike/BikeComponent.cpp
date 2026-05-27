@@ -21,7 +21,7 @@ UBikeComponent::UBikeComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	//PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -35,22 +35,25 @@ void UBikeComponent::BeginPlay()
 
 	CoinsOfQuiz = 0;
 	bIsPenalty = false;
-	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
+	GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
 		GameInstance->ResetCoinsPerGame();
 }
 
 // Called every frame
-void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
+//void UBikeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//{
+//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//
+//	// ...
+//}
 
 void UBikeComponent::AddCoins(int Amount)
 {
 	CoinsOfQuiz += Amount;
+
+	if (GameInstance)
+		GameInstance->AddCoinsPerGame(Amount);
 }
 
 void UBikeComponent::ApplyPenalty()
@@ -110,16 +113,17 @@ ATile* UBikeComponent::FindCurrentTile()
 
 void UBikeComponent::HandleCoin(bool bResult, bool bNeedBonus)
 {
+	int DeltaCoin = 0;
 	// クイズを正解した褒美
 	if (bResult)
-		AddCoins(1);
+		DeltaCoin += 1;
 	// ボーナス
 	if (bNeedBonus)
-		AddCoins(BonusCoin);
+		DeltaCoin += BonusCoin;
+	
 	// 保存
-	UMyGameInstance* GameInstance = GetOwner()->GetGameInstance<UMyGameInstance>();
 	if (GameInstance)
-		GameInstance->AddCoinsPerGame(CoinsOfQuiz);
+		GameInstance->AddCoinsPerGame(DeltaCoin);
 	// リセット
 	CoinsOfQuiz = 0;
 }

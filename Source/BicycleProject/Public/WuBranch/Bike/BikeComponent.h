@@ -9,6 +9,7 @@
 
 class AQuestionUIActor;
 class ATile;
+class UMyGameInstance;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UBikeComponent : public UActorComponent
@@ -25,7 +26,7 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
 	/// マップを生成
@@ -88,6 +89,11 @@ private:
 	/// ペナルティ状態の更新を通知
 	/// </summary>
 	void NotifyPenaltyUpdate();
+
+	/// <summary>
+	/// ゲームインスタンス
+	/// </summary>
+	UMyGameInstance* GameInstance;
 
 	/// <summary>
 	/// クイズごと手に入れたコイン

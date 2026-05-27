@@ -267,16 +267,6 @@ void UWiredDevice::DisableMoveAction_Implementation()
 {
 }
 
-void UWiredDevice::EnableSelectAnswerAction_Implementation()
-{
-
-}
-
-void UWiredDevice::DisableSelectAnswerAction_Implementation()
-{
-
-}
-
 bool UWiredDevice::CheckDevice()
 {
 	return true;

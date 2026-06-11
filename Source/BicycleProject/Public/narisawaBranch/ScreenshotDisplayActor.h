@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,11 +7,12 @@
 #include "ScreenshotDisplayActor.generated.h"
 
 class UStaticMeshComponent;
+class UTextRenderComponent;
 class UTexture2D;
 class UMaterialInstanceDynamic;
 
 /**
- * ƒXƒNƒŠ[ƒ“ƒVƒ‡ƒbƒg‚ğ3D‹óŠÔ‚É•\¦‚·‚éƒAƒNƒ^[
+ * ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆã‚’3Dç©ºé–“ã«è¡¨ç¤ºã™ã‚‹ã‚¢ã‚¯ã‚¿ãƒ¼
  */
 UCLASS()
 class BICYCLEPROJECT_API AScreenshotDisplayActor : public AActor
@@ -25,50 +26,121 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	virtual void Tick(float DeltaTime) override;
+
 	/// <summary>
-	/// ƒXƒNƒŠ[ƒ“ƒVƒ‡ƒbƒgƒeƒNƒXƒ`ƒƒ‚ğİ’è‚µ‚Ä•\¦
+	/// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’è¨­å®šã—ã¦è¡¨ç¤º
 	/// </summary>
-	/// <param name="Screenshot">•\¦‚·‚éƒeƒNƒXƒ`ƒƒ</param>
+	/// <param name="Screenshot">è¡¨ç¤ºã™ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£</param>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void SetScreenshot(UTexture2D* Screenshot);
 
 	/// <summary>
-	/// ƒvƒŒƒCƒ„[‚Ì‘O•û‚É”z’u
+	/// æ–‡å­—ã‚’è¨­å®š
 	/// </summary>
-	/// <param name="PlayerLocation">ƒvƒŒƒCƒ„[‚ÌˆÊ’u</param>
-	/// <param name="PlayerForward">ƒvƒŒƒCƒ„[‚Ì‘O•ûŒü</param>
-	/// <param name="Distance">ƒvƒŒƒCƒ„[‚©‚ç‚Ì‹——£</param>
+	/// <param name="Contents">å†…å®¹</param>
+	void SetText(TArray<FName> Contents);
+
+	/// <summary>
+	/// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‰æ–¹ã«é…ç½®
+	/// </summary>
+	/// <param name="PlayerLocation">ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®</param>
+	/// <param name="PlayerForward">ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‰æ–¹å‘</param>
+	/// <param name="Distance">ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‹ã‚‰ã®è·é›¢</param>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
 	void PlaceInFrontOfPlayer(FVector PlayerLocation, FVector PlayerForward, float Distance = 300.0f);
 
 private:
+
 	/// <summary>
-	/// ‰æ‘œ‚ğ•\¦‚·‚éƒƒbƒVƒ…
+	/// ç§»å‹•(ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³)
+	/// </summary>
+	/// <param name="DeltaTime"></param>
+	void AnimMoving(float DeltaTime);
+
+	/// <summary>
+	/// æ–‡å­—ã‚’è¡¨ç¤ºã™ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
+	/// </summary>
+	void ShowText(float DeltaTime);
+
+	/// <summary>
+	/// ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹ãƒ¡ãƒƒã‚·ãƒ¥
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* DisplayMesh;
 
 	/// <summary>
-	/// ƒx[ƒXƒ}ƒeƒŠƒAƒ‹iBP‚Åİ’èj
+	/// æ–‡å­—ã‚’è¡¨ç¤ºã™ã‚‹
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
-	UMaterial* BaseMaterial;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UTextRenderComponent* DisplayText;
 
 	/// <summary>
-	/// “®“Iƒ}ƒeƒŠƒAƒ‹ƒCƒ“ƒXƒ^ƒ“ƒX
+	/// ãƒ™ãƒ¼ã‚¹ãƒãƒ†ãƒªã‚¢ãƒ«ï¼ˆBPã§è¨­å®šï¼‰
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* BaseMaterial;
+
+	/// <summary>
+	/// å‹•çš„ãƒãƒ†ãƒªã‚¢ãƒ«ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	/// </summary>
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
 
 	/// <summary>
-	/// •\¦ƒTƒCƒYi•j
+	/// è¡¨ç¤ºã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	float DisplayWidth;
 
 	/// <summary>
-	/// •\¦ƒTƒCƒYi‚‚³j
+	/// è¡¨ç¤ºã‚µã‚¤ã‚ºï¼ˆé«˜ã•ï¼‰
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	float DisplayHeight;
+
+	/// <summary>
+	/// é–‹å§‹ä½ç½®(ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨)
+	/// </summary>
+	FVector StartLocationForAnim;
+
+	/// <summary>
+	/// æœ€çµ‚ä½ç½®(ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨)
+	/// </summary>
+	FVector EndLocationForAnim;
+
+	/// <summary>
+	/// ç§»å‹•æ–¹å‘(ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨)
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	FVector DeltaLocationForAnim;
+
+	/// <summary>
+	/// ç§»å‹•æ™‚é–“
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	float MovingDuration;
+
+	/// <summary>
+	/// ç§»å‹•ã‚¿ã‚¤ãƒãƒ¼
+	/// </summary>
+	float AnimMovingTime;
+
+	/// <summary>
+	/// æ–‡å­—ã®å¤§ãã•
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	float TargetSize;
+
+	/// <summary>
+	/// æ–‡å­—ã®ã‚µã‚¤ã‚ºå¤‰æ›´æ™‚é–“
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	float SizeChangeDuration;
+
+	/// <summary>
+	/// æ–‡å­—ã®ã‚µã‚¤ã‚ºå¤‰æ›´ã‚¿ã‚¤ãƒãƒ¼
+	/// </summary>
+	float SizeChangeTime;
 };

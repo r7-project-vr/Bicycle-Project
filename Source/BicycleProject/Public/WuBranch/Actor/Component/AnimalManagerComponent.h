@@ -40,6 +40,13 @@ public:
 
 	bool IsWildAnimal(int AnimalID) const;
 
+	/// <summary>
+	/// 動物の名前をゲット
+	/// </summary>
+	/// <param name="AnimalID">動物のID</param>
+	/// <returns>動物の名前</returns>
+	FName GetAnimalName(int AnimalID) const;
+
 private:
 
 	/// <summary>

@@ -72,6 +72,14 @@ bool UAnimalManagerComponent::IsWildAnimal(int AnimalID) const
 	return (*Data)->AnimalType == EAnimalType::Wild;
 }
 
+FName UAnimalManagerComponent::GetAnimalName(int AnimalID) const
+{
+	UAnimalDataAsset* const* Data = AnimalDataMap.Find(AnimalID);
+	if (!Data)
+		return FName();
+	return (*Data)->Name;
+}
+
 void UAnimalManagerComponent::SetTarget()
 {
 	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))

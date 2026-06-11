@@ -11,6 +11,7 @@ class UDeviceManager;
 struct FQuestion;
 class AAnimal;
 struct FPlayerSaveGame;
+struct FAnimalPhoto;
 
 /**
  * 
@@ -444,12 +445,12 @@ private:
 #pragma region 写真
 private:
 	/// <summary>
-	/// 動物の写真数
+	/// 今まで撮った動物の写真数
 	/// </summary>
-	TMap<int32, int32> AnimalPhotoNums;
+	//TMap<int32, int32> AnimalPhotoNums;
 
 	/// <summary>
-	/// 動物の写真ポイント (AnimalID -> Points)
+	/// 撮った動物の写真ポイント (AnimalID -> Points)
 	/// </summary>
 	TMap<int32, int32> AnimalPhotoPoints;
 
@@ -470,19 +471,19 @@ public:
 	/// </summary>
 	/// <param name="AnimalID">動物ID</param>
 	/// <param name="Nums">枚数</param>
-	void AddAnimalPhoto(int32 AnimalID, int32 Nums);
+	//void AddAnimalPhoto(int32 AnimalID, int32 Nums);
 
 	/// <summary>
 	/// 動物の写真数を取得
 	/// </summary>
 	/// <param name="AnimalID">動物ID</param>
 	/// <returns>写真数</returns>
-	int32 GetAnimalPhotoNum(int32 AnimalID) const;
+	//int32 GetAnimalPhotoNum(int32 AnimalID) const;
 
 	/// <summary>
 	/// 動物の写真をリセット
 	/// </summary>
-	void ResetAnimalPhoto();
+	//void ResetAnimalPhoto();
 
 	/// <summary>
 	/// 動物の写真ポイントを追加
@@ -498,38 +499,6 @@ public:
 	/// <returns>ポイント</returns>
 	UFUNCTION(BlueprintCallable, Category = "Animal Photo")
 	int32 GetAnimalPhotoPoint(int32 AnimalID) const;
-
-	/// <summary>
-	/// 動物を購入できるか確認（データテーブルのUnLockLimitを使用）
-	/// </summary>
-	/// <param name="AnimalID">動物ID</param>
-	/// <returns>true: 購入可能, false: 購入不可</returns>
-	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
-	bool CanPurchaseAnimal(int32 AnimalID) const;
-
-	/// <summary>
-	/// 動物を購入（ポイント消費）
-	/// </summary>
-	/// <param name="AnimalID">動物ID</param>
-	/// <returns>true: 購入成功, false: 購入失敗</returns>
-	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
-	bool PurchaseAnimal(int32 AnimalID);
-
-	/// <summary>
-	/// データテーブルから動物の購入に必要なポイント(UnLockLimit)を取得
-	/// </summary>
-	/// <param name="AnimalID">動物ID</param>
-	/// <returns>必要ポイント</returns>
-	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
-	int32 GetRequiredPointsForAnimal(int32 AnimalID) const;
-
-	/// <summary>
-	/// 動物がすでに所有されているか確認
-	/// </summary>
-	/// <param name="AnimalID">動物ID</param>
-	/// <returns>true: 所有済み, false: 未所有</returns>
-	UFUNCTION(BlueprintCallable, Category = "Animal Shop")
-	bool IsAnimalOwned(int32 AnimalID) const;
 
 	/// <summary>
 	/// すべての動物のポイント合計を取得
@@ -643,13 +612,13 @@ public:
 	/// スクリーンショットを追加
 	/// </summary>
 	/// <param name="Screenshot"></param>
-	void AddScreenshot(UTexture2D* Screenshot);
+	void AddScreenshot(const FAnimalPhoto& Screenshot);
 
 	/// <summary>
 	/// 現在のゲームで撮影可能な残り枚数を取得
 	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	int32 GetRemainingScreenshots() const;
+	//UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	//int32 GetRemainingScreenshots() const;
 
 	/// <summary>
 	/// ゲーム開始時にスクリーンショットをリセット
@@ -671,15 +640,15 @@ public:
 	/// <summary>
 	/// 撮影した全てのスクリーンショットを取得
 	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	TArray<UTexture2D*> GetAllScreenshots() const;
+	//UFUNCTION(BlueprintCallable, Category = "Screenshot")
+	TArray<FAnimalPhoto> GetAllScreenshots() const;
 
 	/// <summary>
 	/// リザルトマップでスクリーンショットをグリッド表示
 	/// この関数はPhotoDisplayComponentに移動されました。互換性のために残されています。
 	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "Screenshot", meta = (DeprecatedFunction, DeprecationMessage = "Use PhotoDisplayComponent->DisplayScreenshotsInGrid instead"))
-	void DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing);
+	//UFUNCTION(BlueprintCallable, Category = "Screenshot", meta = (DeprecatedFunction, DeprecationMessage = "Use PhotoDisplayComponent->DisplayScreenshotsInGrid instead"))
+	//void DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing);
 
 	/// <summary>
 	/// 最後のスクリーンショットを取得
@@ -715,10 +684,10 @@ private:
 	void NotifyUpdateScreenShotTime();
 
 	/// <summary>
-	/// キャプチャしたスクリーンショットの配列
+	/// キャプチャしたスクリーンショット
 	/// </summary>
 	UPROPERTY()
-	TArray<UTexture2D*> CapturedScreenshots;
+	TArray<FAnimalPhoto> CapturedScreenshots;
 
 	/// <summary>
 	/// スクリーンショット表示用のアクタークラス

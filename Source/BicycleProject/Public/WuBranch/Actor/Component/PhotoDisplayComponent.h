@@ -27,6 +27,14 @@ public:
 	void DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing);
 
 private:
+
+	/// <summary>
+	/// スクリーンショット表示用のアクターを作る
+	/// </summary>
+	UFUNCTION()
+	void MakeDisplayActor(FVector Location,const FAnimalPhoto& PhotoData);
+
+
 	/// <summary>
 	/// スクリーンショット表示用のアクタークラス
 	/// </summary>
@@ -41,4 +49,9 @@ private:
 	int PhotoColumns = 3;
 
 	// 2026.05.07 ウー end
+
+	// 2026.06.11 ウー start
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
+	float DelayTime;
+	// 2026.06.11 ウー end
 };

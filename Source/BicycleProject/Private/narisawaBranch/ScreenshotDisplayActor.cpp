@@ -2,6 +2,7 @@
 
 #include "NarisawaBranch/ScreenshotDisplayActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/Material.h"
 #include "Engine/Texture2D.h"
@@ -12,8 +13,13 @@ AScreenshotDisplayActor::AScreenshotDisplayActor()
 	, DisplayHeight(108.0f)
 	, DynamicMaterial(nullptr)
 	, BaseMaterial(nullptr)
+	, MovingDuration(1.f)
+	, AnimMovingTime(0.f)
+	, TargetSize(48.0f)
+	, SizeChangeDuration(0.5f)
+	, SizeChangeTime(0.f)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// メッシュコンポーネントの作成
 	DisplayMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisplayMesh"));
@@ -33,6 +39,14 @@ AScreenshotDisplayActor::AScreenshotDisplayActor()
 	// デフォルトのスケール設定
 	FVector DesiredScale = FVector(DisplayWidth / 100.0f, DisplayHeight / 100.0f, 1.0f);
 	SetActorScale3D(DesiredScale);
+
+	DisplayText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("DisplayText"));
+	DisplayText->SetupAttachment(RootComponent);
+	DisplayText->SetRelativeRotation(FRotator(90, 90, 0));
+	DisplayText->SetRelativeLocation(FVector(0, 60, 0));
+	DisplayText->SetHorizontalAlignment(EHTA_Center);
+	DisplayText->SetVerticalAlignment(EVRTA_TextCenter);
+	DisplayText->SetWorldSize(0);
 	
 	// デバッグログ追加
 	UE_LOG(LogTemp, Log, TEXT("ScreenshotDisplayActor Constructor: Width=%.2f, Height=%.2f, Scale=(%.2f, %.2f, %.2f)"), 
@@ -47,6 +61,21 @@ void AScreenshotDisplayActor::BeginPlay()
 	FVector CurrentScale = GetActorScale3D();
 	UE_LOG(LogTemp, Log, TEXT("ScreenshotDisplayActor BeginPlay: Current Scale=(%.2f, %.2f, %.2f)"), 
 		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
+
+	EndLocationForAnim = GetActorLocation();
+	StartLocationForAnim = EndLocationForAnim - DeltaLocationForAnim;
+	AnimMovingTime = 0;
+	SizeChangeTime = 0;
+}
+
+void AScreenshotDisplayActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (AnimMovingTime <= MovingDuration)
+		AnimMoving(DeltaTime);
+	else if (SizeChangeTime <= SizeChangeDuration)
+		ShowText(DeltaTime);
 }
 
 void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
@@ -75,8 +104,11 @@ void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
 	}
 
 	// テクスチャパラメータを設定
-	DynamicMaterial->SetTextureParameterValue(FName("ScreenshotTexture"), Screenshot);
-
+	if (DynamicMaterial)
+	{
+		DynamicMaterial->SetTextureParameterValue(FName("ScreenshotTexture"), Screenshot);
+	}
+		
 	// メッシュにマテリアルを適用
 	DisplayMesh->SetMaterial(0, DynamicMaterial);
 
@@ -84,6 +116,19 @@ void AScreenshotDisplayActor::SetScreenshot(UTexture2D* Screenshot)
 	FVector CurrentScale = GetActorScale3D();
 	UE_LOG(LogTemp, Log, TEXT("Screenshot set successfully! Current Scale=(%.2f, %.2f, %.2f)"), 
 		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
+}
+
+void AScreenshotDisplayActor::SetText(TArray<FName> Contents)
+{
+	FString CombinedText;
+	int LastIndex = Contents.Num() - 1;
+	for (int Index = 0; Index < Contents.Num(); Index++)
+	{
+		CombinedText += Contents[Index].ToString();
+		if (Index != LastIndex)
+			CombinedText += "、";
+	}
+	DisplayText->SetText(FText::FromString(CombinedText));
 }
 
 void AScreenshotDisplayActor::PlaceInFrontOfPlayer(FVector PlayerLocation, FVector PlayerForward, float Distance)
@@ -109,4 +154,22 @@ void AScreenshotDisplayActor::PlaceInFrontOfPlayer(FVector PlayerLocation, FVect
 	UE_LOG(LogTemp, Log, TEXT("Screenshot placed - Location: %s, Rotation: (Pitch=%.6f, Yaw=%.6f, Roll=%.6f), Scale=(%.2f, %.2f, %.2f)"), 
 		*NewLocation.ToString(), NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll,
 		CurrentScale.X, CurrentScale.Y, CurrentScale.Z);
+}
+
+void AScreenshotDisplayActor::AnimMoving(float DeltaTime)
+{
+	AnimMovingTime += DeltaTime;
+	float Time = FMath::Clamp(AnimMovingTime / MovingDuration, 0.f, 1.f);
+
+	FVector NewLocation = FMath::InterpEaseOut(StartLocationForAnim, EndLocationForAnim, Time, 2.f);
+	
+	SetActorLocation(NewLocation);
+}
+
+void AScreenshotDisplayActor::ShowText(float DeltaTime)
+{
+	SizeChangeTime += DeltaTime;
+	float Time = FMath::Clamp(SizeChangeTime / SizeChangeDuration, 0.f, 1.f);
+	int Size = FMath::Lerp(0, TargetSize, Time);
+	DisplayText->SetWorldSize(Size);
 }

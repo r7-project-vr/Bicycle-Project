@@ -7,10 +7,12 @@
 #include "PhotoCaptureComponent.generated.h"
 
 class UBoxComponent;
-class AAnimal;
+class AWildAnimal;
 class USoundBase;
 class UWidgetComponent;
 class UMyGameInstance;
+class UAnimalManagerComponent;
+struct FAnimalPhoto;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BICYCLEPROJECT_API UPhotoCaptureComponent : public UActorComponent
@@ -50,6 +52,20 @@ public:
 
 private:
 
+	// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+	/// <summary>
+	/// 範囲に入ったときの処理
+	/// </summary>
+	UFUNCTION()
+	void OnPhotoCaptureBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	/// <summary>
+	/// 範囲を出た時の処理
+	/// </summary>
+	UFUNCTION()
+	void OnPhotoCaptureBoxOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	// 2026.05.27 ウー end
+
 	/// <summary>
 	/// 写真を撮る際に見えないようにするUIを探す
 	/// </summary>
@@ -62,15 +78,29 @@ private:
 	void SetUIVisibility(bool bVisible);
 
 	/// <summary>
-	/// 写真を撮る
+	/// カメラに追従させる
 	/// </summary>
-	void TakePhoto(UMyGameInstance* GameInstance);
+	void FollowCamera();
 
 	/// <summary>
-	/// 撮影時に範囲内の動物を検出してポイント加算
+	/// 写真を撮る
 	/// </summary>
-	void DetectAndScoreAnimals();
+	void TakePhoto(UMyGameInstance* GameInstance, TArray<int32> DetectedPetsID);
 
+	/// <summary>
+	/// 撮影時に範囲内の動物を検出
+	/// </summary>
+	//void DetectAndScoreAnimals();
+	TArray<int32> DetectAnimals(UMyGameInstance* GameInstance);
+
+	/// <summary>
+	/// 検出した動物の名前をゲット
+	/// </summary>
+	/// <param name="DetectedPetsID"></param>
+	/// <returns></returns>
+	FAnimalPhoto MakePhotoDatas(TArray<int32> DetectedPetsID, UTexture2D* Texture);
+
+	/* 2026.06.10 ウー start 使わない
 	/// <summary>
 	/// 撮影範囲内の動物を検出
 	/// </summary>
@@ -85,6 +115,7 @@ private:
 	/// 動物のハイライトを無効化
 	/// </summary>
 	void DisableLightAnimal(TArray<AActor*>& Animals);
+	*/
 
 	/// <summary>
 	/// カメラ追従撮影判定用コリジョン
@@ -107,10 +138,15 @@ private:
 	/// <summary>
 	/// 映られた動物
 	/// </summary>
-	TSet<TWeakObjectPtr<AAnimal>> CapturedAnimals;
+	TSet<TWeakObjectPtr<AWildAnimal>> CapturedAnimals;
 
 	/// <summary>
 	/// 写真を撮る際に見えないようにするUI
 	/// </summary>
 	TArray<UWidgetComponent*> NeedCloseUIs;
+
+	/// <summary>
+	/// 動物マネージャー
+	/// </summary>
+	UAnimalManagerComponent* AnimalManager;
 };

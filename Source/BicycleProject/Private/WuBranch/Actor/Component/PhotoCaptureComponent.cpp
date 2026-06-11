@@ -8,9 +8,10 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/MyGameInstance.h"
-#include "WuBranch/Actor/Animal.h"
+#include "WuBranch/Actor/WildAnimal.h"
 #include "Components/WidgetComponent.h"
-#include <tokuamaru/IOutlineHighlightable.h>
+#include "WuBranch/Actor/Component/AnimalManagerComponent.h"
+#include "WuBranch/Struct/AnimalPhoto.h"
 
 UPhotoCaptureComponent::UPhotoCaptureComponent()
 {
@@ -21,6 +22,8 @@ void UPhotoCaptureComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	FindAllNeedCloseUIs();
+	AnimalManager = GetOwner()->GetComponentByClass<UAnimalManagerComponent>();
+	
 }
 
 void UPhotoCaptureComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -31,6 +34,26 @@ void UPhotoCaptureComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		return;
 
 	// カメラに追従させる
+	FollowCamera();
+
+	// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+	/*TArray<AActor*> OverlappingActors;
+	FindCaptureAnimal(OverlappingActors);
+	EnableLightAnimal(OverlappingActors);
+	DisableLightAnimal(OverlappingActors);
+	CapturedAnimals.Empty();
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (AAnimal* Animal = Cast<AAnimal>(Actor))
+		{
+			CapturedAnimals.Add(Animal);
+		}
+	}*/
+	// 2026.05.27 ウー end
+}
+
+void UPhotoCaptureComponent::FollowCamera()
+{
 	if (APlayerController* PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		if (PC->PlayerCameraManager)
@@ -44,19 +67,6 @@ void UPhotoCaptureComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 			PhotoCaptureBox->SetWorldLocation(BoxLocation);
 			PhotoCaptureBox->SetWorldRotation(CameraRotation);
-		}
-	}
-
-	TArray<AActor*> OverlappingActors;
-	FindCaptureAnimal(OverlappingActors);
-	EnableLightAnimal(OverlappingActors);
-	DisableLightAnimal(OverlappingActors);
-	CapturedAnimals.Empty();
-	for (AActor* Actor : OverlappingActors)
-	{
-		if (AAnimal* Animal = Cast<AAnimal>(Actor))
-		{
-			CapturedAnimals.Add(Animal);
 		}
 	}
 }
@@ -81,6 +91,12 @@ void UPhotoCaptureComponent::InitializePhotoCaptureBox(USceneComponent* AttachPa
 			// サイズ設定
 			PhotoCaptureBox->SetBoxExtent(FVector(900.0f, 150.0f, 150.0f));
 			PhotoCaptureBox->SetRelativeLocation(FVector(1500.0f, 0.0f, 0.0f));
+
+			// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+			// オーバーラップイベントのバインド
+			PhotoCaptureBox->OnComponentBeginOverlap.AddDynamic(this, &UPhotoCaptureComponent::OnPhotoCaptureBoxOverlapBegin);
+			PhotoCaptureBox->OnComponentEndOverlap.AddDynamic(this, &UPhotoCaptureComponent::OnPhotoCaptureBoxOverlapEnd);
+			// 2026.05.27 ウー end
 		}
 	}
 }
@@ -97,13 +113,20 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 			// UIを非表示にしてから写真を撮る、なので同じフレームで動作しない
 			FTimerHandle PhotoDelayTimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(PhotoDelayTimerHandle, [this, GameInstance]() {
-				TakePhoto(GameInstance);
+				// 2026.06.10 ウー start 写真を撮るプロセスを改善、名前を取得できるようにする
+				TArray<int32> DetectedPetsID = DetectAnimals(GameInstance);
+				// 検出した動物を記録する
+				for (int32 PetID : DetectedPetsID)
+					GameInstance->AddAnimalPhotoPoint(PetID);
+				
+				TakePhoto(GameInstance, DetectedPetsID);
 				if (TakePhotoSuccSE)
 					UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSuccSE);
-				DetectAndScoreAnimals();
+				//DetectAndScoreAnimals();
+				// 2026.06.10 ウー end
 				// 写真を撮り終わったらUIを再び表示する
 				SetUIVisibility(true);
-			}, 0.01f, false);
+			}, 0.001f, false);
 		}
 		// 2026.05.07 ウー end
 		else
@@ -113,6 +136,34 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 		}
 	}
 }
+
+// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+void UPhotoCaptureComponent::OnPhotoCaptureBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		if (AWildAnimal* WildAnimal = Cast<AWildAnimal>(OtherActor))
+		{
+			// 野良動物が範囲に入ったとき、ハイライトを有効にする
+			IIOutlineHighlightable::Execute_EnableHighlight(WildAnimal);
+			CapturedAnimals.Add(WildAnimal);
+		}
+	}
+}
+
+void UPhotoCaptureComponent::OnPhotoCaptureBoxOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		if (AWildAnimal* WildAnimal = Cast<AWildAnimal>(OtherActor))
+		{
+			// 野良動物が範囲から出たとき、ハイライトを無効にする
+			IIOutlineHighlightable::Execute_DisableHighlight(WildAnimal);
+			CapturedAnimals.Remove(WildAnimal);
+		}
+	}
+}
+// 2026.05.27 ウー end
 
 void UPhotoCaptureComponent::FindAllNeedCloseUIs()
 {
@@ -136,7 +187,7 @@ void UPhotoCaptureComponent::SetUIVisibility(bool bVisible)
 	}
 }
 
-void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance)
+void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int32> DetectedPetsID)
 {
 	if (!GetWorld())
 	{
@@ -212,7 +263,10 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance)
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 			NewTexture->UpdateResource();
 
-			GameInstance->AddScreenshot(NewTexture);
+			FAnimalPhoto AnimalPhoto = MakePhotoDatas(DetectedPetsID, NewTexture);
+			if(AnimalPhoto.Photo)
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, TEXT("has photo"));
+			GameInstance->AddScreenshot(AnimalPhoto);
 
 			UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d captured! Size: %dx%d"),
 				GameInstance->GetScreenshotCount(), GameInstance->GetMaxPhotosPerGame(), Width, Height);
@@ -233,118 +287,174 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance)
 	SceneCapture->Destroy();
 }
 
-void UPhotoCaptureComponent::DetectAndScoreAnimals()
+//void UPhotoCaptureComponent::DetectAndScoreAnimals()
+//{
+//	if (!PhotoCaptureBox)
+//	{
+//		return;
+//	}
+//
+//	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
+//	if (!GameInstance)
+//	{
+//		return;
+//	}
+//
+//	// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+//	//TArray<AActor*> OverlappingActors;
+//	//FindCaptureAnimal(OverlappingActors);
+//
+//	TSet<int32> DetectedAnimalIDs;
+//
+//	// 直接CapturedAnimalsからIDを取得する
+//	for (TWeakObjectPtr<AWildAnimal> Animal : CapturedAnimals)
+//	{
+//		if (AWildAnimal* WildAnimal = Animal.Get())
+//		{
+//			// 一枚の写真に複数の動物が映った場合、全部の動物を計算に入れます
+//			int32 PetID = GameInstance->SwitchWild2Pet(WildAnimal->GetMyID());
+//			DetectedAnimalIDs.Add(PetID);
+//			GameInstance->AddAnimalPhotoPoint(PetID);
+//		}
+//	}
+//
+//	/*for (AActor* Actor : OverlappingActors)
+//	{
+//		AAnimal* Animal = Cast<AAnimal>(Actor);
+//		if (Animal)
+//		{
+//			if (Animal->Implements<UIOutlineHighlightable>())
+//			{
+//				int32 AnimalID = Animal->GetMyID();
+//				if (!DetectedAnimalIDs.Contains(AnimalID))
+//				{
+//					DetectedAnimalIDs.Add(AnimalID);
+//					int32 PetID = GameInstance->SwitchWild2Pet(AnimalID);
+//					GameInstance->AddAnimalPhotoPoint(PetID);
+//				}
+//			}
+//		}
+//	}*/
+//	// 2026.05.27 ウー end
+//}
+
+TArray<int32> UPhotoCaptureComponent::DetectAnimals(UMyGameInstance* GameInstance)
 {
-	if (!PhotoCaptureBox)
+	TArray<int32> DetectedAnimalIDs;
+
+	// 直接CapturedAnimalsからIDを取得する
+	for (TWeakObjectPtr<AWildAnimal> Animal : CapturedAnimals)
 	{
-		return;
-	}
-
-	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-	if (!GameInstance)
-	{
-		return;
-	}
-
-	TArray<AActor*> OverlappingActors;
-	FindCaptureAnimal(OverlappingActors);
-
-	TSet<int32> DetectedAnimalIDs;
-
-	for (AActor* Actor : OverlappingActors)
-	{
-		AAnimal* Animal = Cast<AAnimal>(Actor);
-		if (Animal)
+		if (AWildAnimal* WildAnimal = Animal.Get())
 		{
-			if (Animal->Implements<UIOutlineHighlightable>())
-			{
-				int32 AnimalID = Animal->GetMyID();
-				if (!DetectedAnimalIDs.Contains(AnimalID))
-				{
-					DetectedAnimalIDs.Add(AnimalID);
-					int32 PetID = GameInstance->SwitchWild2Pet(AnimalID);
-					GameInstance->AddAnimalPhotoPoint(PetID);
-				}
-			}
+			// 一枚の写真に複数の動物が映った場合、全部の動物を計算に入れます
+			int32 PetID = GameInstance->SwitchWild2Pet(WildAnimal->GetMyID());
+			DetectedAnimalIDs.Add(PetID);
 		}
 	}
+
+	return DetectedAnimalIDs;
 }
 
-void UPhotoCaptureComponent::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
+FAnimalPhoto UPhotoCaptureComponent::MakePhotoDatas(TArray<int32> DetectedPetsID, UTexture2D* Texture)
 {
-	if (!PhotoCaptureBox)
-		return;
+	FAnimalPhoto Photo;
 
-	PhotoCaptureBox->GetOverlappingActors(OverlappingActors, AAnimal::StaticClass());
+	if (!AnimalManager)
+		return Photo;
 
-	if (OverlappingActors.Num() == 0)
+	TArray<FName> AnimalNames;
+	for (int32 PetID : DetectedPetsID)
 	{
-		TArray<AActor*> AllAnimals;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAnimal::StaticClass(), AllAnimals);
-
-		FVector BoxLocation = PhotoCaptureBox->GetComponentLocation();
-		FVector BoxExtent = PhotoCaptureBox->GetScaledBoxExtent();
-		FRotator BoxRotation = PhotoCaptureBox->GetComponentRotation();
-
-		for (AActor* Actor : AllAnimals)
+		FName Name = AnimalManager->GetAnimalName(PetID);
+		if (!Name.IsNone())
 		{
-			AAnimal* Animal = Cast<AAnimal>(Actor);
-			if (Animal)
-			{
-				FVector AnimalLocation = Animal->GetActorLocation();
-				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
-
-				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
-					(FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
-					(FMath::Abs(LocalPos.Z) <= BoxExtent.Z);
-
-				if (bInRange)
-				{
-					OverlappingActors.Add(Animal);
-				}
-			}
+			AnimalNames.Add(Name);
 		}
 	}
+
+	Photo.Photo = Texture;
+	Photo.Names = AnimalNames;
+	Photo.bIsRare = false;
+
+	return Photo;
 }
 
-void UPhotoCaptureComponent::EnableLightAnimal(TArray<AActor*>& Animals)
-{
-	for (AActor* Actor : Animals)
-	{
-		if (AAnimal* Animal = Cast<AAnimal>(Actor))
-		{
-			if (Animal->Implements<UIOutlineHighlightable>())
-			{
-				IIOutlineHighlightable::Execute_EnableHighlight(Animal);
-			}
-		}
-	}
-}
+//void UPhotoCaptureComponent::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
+//{
+//	if (!PhotoCaptureBox)
+//		return;
+//
+//	// 2026.05.27 ウー start Tickごとに野良動物を探すの代わりにコリジョンを利用する
+//	/*TArray<AActor*> TempOverlappingActors;
+//	PhotoCaptureBox->GetOverlappingActors(TempOverlappingActors, AAnimal::StaticClass());*/
+//
+//	if (CapturedAnimals.Num() == 0)
+//	{
+//		TArray<AActor*> AllAnimals;
+//		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWildAnimal::StaticClass(), AllAnimals);
+//
+//		FVector BoxLocation = PhotoCaptureBox->GetComponentLocation();
+//		FVector BoxExtent = PhotoCaptureBox->GetScaledBoxExtent();
+//		FRotator BoxRotation = PhotoCaptureBox->GetComponentRotation();
+//
+//		for (AActor* Actor : AllAnimals)
+//		{
+//			AWildAnimal* Animal = Cast<AWildAnimal>(Actor);
+//			if (Animal)
+//			{
+//				FVector AnimalLocation = Animal->GetActorLocation();
+//				FVector LocalPos = BoxRotation.UnrotateVector(AnimalLocation - BoxLocation);
+//
+//				bool bInRange = (FMath::Abs(LocalPos.X) <= BoxExtent.X) &&
+//					(FMath::Abs(LocalPos.Y) <= BoxExtent.Y) &&
+//					(FMath::Abs(LocalPos.Z) <= BoxExtent.Z);
+//
+//				if (bInRange)
+//				{
+//					OverlappingActors.Add(Animal);
+//				}
+//			}
+//		}
+//	}
+//	// 2026.05.27 ウー end
+//}
 
-void UPhotoCaptureComponent::DisableLightAnimal(TArray<AActor*>& Animals)
-{
-	TArray<AAnimal*> LeftAnimals;
-	for (const TWeakObjectPtr<AAnimal>& PrevAnimal : CapturedAnimals)
-	{
-		if (!PrevAnimal.IsValid())
-		{
-			continue; // Destroyされたもの
-		}
+//void UPhotoCaptureComponent::EnableLightAnimal(TArray<AActor*>& Animals)
+//{
+//	for (AActor* Actor : Animals)
+//	{
+//		if (AAnimal* Animal = Cast<AAnimal>(Actor))
+//		{
+//			if (Animal->Implements<UIOutlineHighlightable>())
+//			{
+//				IIOutlineHighlightable::Execute_EnableHighlight(Animal);
+//			}
+//		}
+//	}
+//}
 
-		if (!Animals.Contains(PrevAnimal))
-		{
-			LeftAnimals.Add(PrevAnimal.Get());
-		}
-	}
-
-	for (AAnimal* Animal : LeftAnimals)
-	{
-		if (Animal->Implements<UIOutlineHighlightable>())
-		{
-			IIOutlineHighlightable::Execute_DisableHighlight(Animal);
-		}
-	}
-}
+//void UPhotoCaptureComponent::DisableLightAnimal(TArray<AActor*>& Animals)
+//{
+//	TArray<AWildAnimal*> LeftAnimals;
+//	for (const TWeakObjectPtr<AWildAnimal>& PrevAnimal : CapturedAnimals)
+//	{
+//		if (!PrevAnimal.IsValid())
+//		{
+//			continue; // Destroyされたもの
+//		}
+//
+//		if (!Animals.Contains(PrevAnimal))
+//		{
+//			LeftAnimals.Add(PrevAnimal.Get());
+//		}
+//	}
+//
+//	for (AWildAnimal* Animal : LeftAnimals)
+//	{
+//		IIOutlineHighlightable::Execute_DisableHighlight(Animal);
+//	}
+//}
 
 void UPhotoCaptureComponent::DebugPhotoCaptureBox()
 {

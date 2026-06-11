@@ -5,10 +5,12 @@
 #include "WuBranch/MyGameInstance.h"
 #include "NarisawaBranch/ScreenshotDisplayActor.h"
 #include "Engine/Texture2D.h"
+#include "WuBranch/Struct/AnimalPhoto.h"
 
 UPhotoDisplayComponent::UPhotoDisplayComponent()
+	: DelayTime(2.0f)
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	//PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UPhotoDisplayComponent::BeginPlay()
@@ -37,7 +39,7 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 		return;
 	}
 
-	TArray<UTexture2D*> CapturedScreenshots = GameInstance->GetAllScreenshots();
+	TArray<FAnimalPhoto> CapturedScreenshots = GameInstance->GetAllScreenshots();
 
 	if (CapturedScreenshots.Num() == 0)
 	{
@@ -47,42 +49,51 @@ void UPhotoDisplayComponent::DisplayScreenshotsInGrid(FVector StartLocation, FVe
 
 	//新しい順（最新が右下）に表示
 	//配列のインデックスが大きいほど新しい写真なので、逆順に取得
-	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
+	for (int32 ScreenshotIndex = 0; ScreenshotIndex < CapturedScreenshots.Num(); ScreenshotIndex++)
 	{
-		//最新の写真を左上から配置するため、配列の後ろから取得
-		int32 ScreenshotIndex = CapturedScreenshots.Num() - 1 - i;
-
-		int32 Row = i / PhotoColumns;
-		int32 Col = i % PhotoColumns;
+		int32 Row = ScreenshotIndex / PhotoColumns;
+		int32 Col = ScreenshotIndex % PhotoColumns;
 
 		// 配置位置の計算
 		FVector Location = StartLocation;
-		Location.Y -= Col * GridSpacing.Y;
-		Location.Z -= Row * GridSpacing.Z;
+		Location.Y += Col * GridSpacing.Y;
+		Location.Z += Row * GridSpacing.Z;
 
 		UE_LOG(LogTemp, Log, TEXT("Screenshot %d/%d: Grid[Row=%d, Col=%d] at (Y=%.2f, Z=%.2f)"), 
-			i + 1, CapturedScreenshots.Num(), Row, Col, Location.Y, Location.Z);
+			ScreenshotIndex + 1, CapturedScreenshots.Num(), Row, Col, Location.Y, Location.Z);
 
 		// スクリーンショット表示アクターの生成
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTimerHandle DisplayTimer;
+		FTimerDelegate DisplayDelegate;
+		DisplayDelegate.BindUFunction(this, FName("MakeDisplayActor"), Location, CapturedScreenshots[ScreenshotIndex]);
 
-		AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
-			ScreenshotDisplayActorClass,
-			Location,
-			FRotator(0.0f, 270.0f, 90.0f),
-			SpawnParams
-		);
-
-		if (DisplayActor && CapturedScreenshots[ScreenshotIndex])
-		{
-			DisplayActor->SetScreenshot(CapturedScreenshots[ScreenshotIndex]);
-			
-			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
-			DisplayActor->SetActorScale3D(NewScale);
-		}
+		GetOwner()->GetWorldTimerManager().SetTimer(DisplayTimer, DisplayDelegate, ScreenshotIndex * DelayTime + 0.1f, false);
+		//MakeDisplayActor(Location, CapturedScreenshots[ScreenshotIndex]);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Total %d screenshots displayed in grid (newest: top-left, oldest: bottom-right)"), 
 		CapturedScreenshots.Num());
+}
+
+void UPhotoDisplayComponent::MakeDisplayActor(FVector Location, const FAnimalPhoto& PhotoData)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("Location : %s"), *Location.ToString()));
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
+		ScreenshotDisplayActorClass,
+		Location,
+		FRotator(0.0f, 270.0f, 90.0f),
+		SpawnParams
+	);
+
+	if (DisplayActor)
+	{
+		DisplayActor->SetScreenshot(PhotoData.Photo);
+		DisplayActor->SetText(PhotoData.Names);
+
+		FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
+		DisplayActor->SetActorScale3D(NewScale);
+	}
 }

@@ -19,6 +19,7 @@
 #include "WuBranch/Struct/ShopItem.h"
 #include <WuBranch/Struct/WildPetSwitchTable.h>
 #include "WuBranch/Actor/Component/PhotoDisplayComponent.h"
+#include "WuBranch/Struct/AnimalPhoto.h"
 
 UMyGameInstance::UMyGameInstance()
 	: TotalCoins(0)
@@ -351,26 +352,26 @@ void UMyGameInstance::ReadAnimalFromFile(const FPlayerSaveGame& Data)
 #pragma endregion
 
 #pragma region 写真
-void UMyGameInstance::AddAnimalPhoto(int32 AnimalID, int32 Nums)
-{
-	if (AnimalPhotoNums.Contains(AnimalID))
-		AnimalPhotoNums[AnimalID] += Nums;
-	else
-		AnimalPhotoNums[AnimalID] = Nums;
-}
-
-int UMyGameInstance::GetAnimalPhotoNum(int32 AnimalID) const
-{
-	if (AnimalPhotoNums.Contains(AnimalID))
-		return AnimalPhotoNums[AnimalID];
-	else
-		return 0;
-}
-
-void UMyGameInstance::ResetAnimalPhoto()
-{
-	AnimalPhotoNums.Empty();
-}
+//void UMyGameInstance::AddAnimalPhoto(int32 AnimalID, int32 Nums)
+//{
+//	if (AnimalPhotoNums.Contains(AnimalID))
+//		AnimalPhotoNums[AnimalID] += Nums;
+//	else
+//		AnimalPhotoNums[AnimalID] = Nums;
+//}
+//
+//int UMyGameInstance::GetAnimalPhotoNum(int32 AnimalID) const
+//{
+//	if (AnimalPhotoNums.Contains(AnimalID))
+//		return AnimalPhotoNums[AnimalID];
+//	else
+//		return 0;
+//}
+//
+//void UMyGameInstance::ResetAnimalPhoto()
+//{
+//	AnimalPhotoNums.Empty();
+//}
 
 void UMyGameInstance::AddAnimalPhotoPoint(int32 AnimalID)
 {
@@ -386,58 +387,6 @@ int32 UMyGameInstance::GetAnimalPhotoPoint(int32 AnimalID) const
 		return AnimalPhotoPoints[AnimalID];
 	else
 		return 0;
-}
-
-int32 UMyGameInstance::GetRequiredPointsForAnimal(int32 AnimalID) const
-{
-	if (!ShopItemsDataTable)
-	{
-		return 3; // デフォルト値
-	}
-
-	TArray<FShopItem*> AllShopItems;
-	FString ContextString(TEXT("GetRequiredPointsForAnimal"));
-	ShopItemsDataTable->GetAllRows<FShopItem>(ContextString, AllShopItems);
-
-	for (FShopItem* ShopItem : AllShopItems)
-	{
-		if (ShopItem && ShopItem->ID == AnimalID)
-		{
-			return ShopItem->UnLockLimit;
-		}
-	}
-
-	return 3; // デフォルト値
-}
-
-bool UMyGameInstance::CanPurchaseAnimal(int32 AnimalID) const
-{
-	if (HasMaxAnimals())
-	{
-		return false;
-	}
-
-	int32 CurrentPoints = GetAnimalPhotoPoint(AnimalID);
-	int32 RequiredPoints = GetRequiredPointsForAnimal(AnimalID);
-
-	return CurrentPoints >= RequiredPoints;
-}
-
-bool UMyGameInstance::PurchaseAnimal(int32 AnimalID)
-{
-	if (!CanPurchaseAnimal(AnimalID))
-	{
-		return false;
-	}
-
-	AddAnimal(AnimalID);
-
-	return true;
-}
-
-bool UMyGameInstance::IsAnimalOwned(int32 AnimalID) const
-{
-	return OwnedAnimals.Contains(AnimalID) && OwnedAnimals[AnimalID] > 0;
 }
 
 int32 UMyGameInstance::GetTotalPhotoPoints() const
@@ -482,14 +431,14 @@ void UMyGameInstance::LoadSwitchTable()
 void UMyGameInstance::SavePhotoToFile(FPlayerSaveGame& Data)
 {
 	// 現在のデータをそのまま保存
-	Data.AnimalPhotos = AnimalPhotoNums;
+	//Data.AnimalPhotos = AnimalPhotoNums;
 	Data.AnimalPhotoPoints = AnimalPhotoPoints;
 }
 
 void UMyGameInstance::ReadPhotoFromFile(const FPlayerSaveGame& Data)
 {
 	// 保存されたデータをそのまま読み込む
-	AnimalPhotoNums = Data.AnimalPhotos;
+	//AnimalPhotoNums = Data.AnimalPhotos;
 	AnimalPhotoPoints = Data.AnimalPhotoPoints;
 }
 #pragma endregion
@@ -648,16 +597,16 @@ bool UMyGameInstance::CaptureVRScreenshot()
 	return false;*/
 }
 
-void UMyGameInstance::AddScreenshot(UTexture2D* Screenshot)
+void UMyGameInstance::AddScreenshot(const FAnimalPhoto& Screenshot)
 {
 	CapturedScreenshots.Add(Screenshot);
 	NotifyUpdateScreenShotTime();
 }
 
-int32 UMyGameInstance::GetRemainingScreenshots() const
-{
-	return MaxScreenshotsPerGame - CapturedScreenshots.Num();
-}
+//int32 UMyGameInstance::GetRemainingScreenshots() const
+//{
+//	return MaxScreenshotsPerGame - CapturedScreenshots.Num();
+//}
 
 void UMyGameInstance::ResetScreenshots()
 {
@@ -671,95 +620,95 @@ int UMyGameInstance::GetMaxPhotosPerGame() const
 	return MaxScreenshotsPerGame;
 }
 
-TArray<UTexture2D*> UMyGameInstance::GetAllScreenshots() const
+TArray<FAnimalPhoto> UMyGameInstance::GetAllScreenshots() const
 {
 	return CapturedScreenshots;
 }
 
-void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing)
-{
-	//互換性のために、PhotoDisplayComponentを検索して転送
-	if (UWorld* World = GetWorld())
-	{
-		//レベル内の全てのPhotoDisplayComponentを検索
-		TArray<AActor*> AllActors;
-		UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
-		
-		for (AActor* Actor : AllActors)
-		{
-			if (UPhotoDisplayComponent* PhotoDisplay = Actor->FindComponentByClass<UPhotoDisplayComponent>())
-			{
-				PhotoDisplay->DisplayScreenshotsInGrid(StartLocation, GridSpacing);
-				return;
-			}
-		}
-	}
-
-	//PhotoDisplayComponentが見つからない場合は、元の実装を実行
-	if (!GetWorld())
-	{
-		UE_LOG(LogTemp, Error, TEXT("World is null!"));
-		return;
-	}
-
-	if (!ScreenshotDisplayActorClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ScreenshotDisplayActorClass is not set!"));
-		return;
-	}
-
-	if (CapturedScreenshots.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No screenshots to display!"));
-		return;
-	}
-
-	int32 Columns = 3;
-	int32 Rows = 2;
-
-	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
-	{
-		int32 Row = i / Columns;
-		int32 Col = i % Columns;
-
-		FVector Location = StartLocation;
-		Location.X += 0.0f;
-		Location.Y += Col * GridSpacing.Y;
-		Location.Z += Row * GridSpacing.Z;
-
-		UE_LOG(LogTemp, Log, TEXT("Screenshot %d (Order: %d): Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f)"), 
-			i + 1, i + 1, Row, Col, Location.X, Location.Y, Location.Z);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
-			ScreenshotDisplayActorClass,
-			Location,
-			FRotator(0.0f, 270.0f, 90.0f),
-			SpawnParams
-		);
-
-		if (DisplayActor && CapturedScreenshots[i])
-		{
-			DisplayActor->SetScreenshot(CapturedScreenshots[i]);
-			
-			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
-			DisplayActor->SetActorScale3D(NewScale);
-			
-			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] - Order: oldest to newest"), 
-				i + 1, Row, Col);
-		}
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in chronological order (oldest first)!"), CapturedScreenshots.Num());
-}
+//void UMyGameInstance::DisplayScreenshotsInGrid(FVector StartLocation, FVector GridSpacing)
+//{
+//	//互換性のために、PhotoDisplayComponentを検索して転送
+//	if (UWorld* World = GetWorld())
+//	{
+//		//レベル内の全てのPhotoDisplayComponentを検索
+//		TArray<AActor*> AllActors;
+//		UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
+//		
+//		for (AActor* Actor : AllActors)
+//		{
+//			if (UPhotoDisplayComponent* PhotoDisplay = Actor->FindComponentByClass<UPhotoDisplayComponent>())
+//			{
+//				PhotoDisplay->DisplayScreenshotsInGrid(StartLocation, GridSpacing);
+//				return;
+//			}
+//		}
+//	}
+//
+//	//PhotoDisplayComponentが見つからない場合は、元の実装を実行
+//	if (!GetWorld())
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("World is null!"));
+//		return;
+//	}
+//
+//	if (!ScreenshotDisplayActorClass)
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("ScreenshotDisplayActorClass is not set!"));
+//		return;
+//	}
+//
+//	if (CapturedScreenshots.Num() == 0)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("No screenshots to display!"));
+//		return;
+//	}
+//
+//	int32 Columns = 3;
+//	int32 Rows = 2;
+//
+//	for (int32 i = 0; i < CapturedScreenshots.Num(); i++)
+//	{
+//		int32 Row = i / Columns;
+//		int32 Col = i % Columns;
+//
+//		FVector Location = StartLocation;
+//		Location.X += 0.0f;
+//		Location.Y += Col * GridSpacing.Y;
+//		Location.Z += Row * GridSpacing.Z;
+//
+//		UE_LOG(LogTemp, Log, TEXT("Screenshot %d (Order: %d): Row=%d, Col=%d, Location=(X=%.2f, Y=%.2f, Z=%.2f)"), 
+//			i + 1, i + 1, Row, Col, Location.X, Location.Y, Location.Z);
+//
+//		FActorSpawnParameters SpawnParams;
+//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//
+//		AScreenshotDisplayActor* DisplayActor = GetWorld()->SpawnActor<AScreenshotDisplayActor>(
+//			ScreenshotDisplayActorClass,
+//			Location,
+//			FRotator(0.0f, 270.0f, 90.0f),
+//			SpawnParams
+//		);
+//
+//		if (DisplayActor)
+//		{
+//			DisplayActor->SetScreenshot(CapturedScreenshots[i].Photo);
+//			
+//			FVector NewScale = FVector(3.84f, 2.16f, 1.0f);
+//			DisplayActor->SetActorScale3D(NewScale);
+//			
+//			UE_LOG(LogTemp, Log, TEXT("Screenshot %d displayed at grid position [Row=%d, Col=%d] - Order: oldest to newest"), 
+//				i + 1, Row, Col);
+//		}
+//	}
+//
+//	UE_LOG(LogTemp, Log, TEXT("All %d screenshots displayed in chronological order (oldest first)!"), CapturedScreenshots.Num());
+//}
 
 UTexture2D* UMyGameInstance::GetLastScreenshot() const
 {
 	if (CapturedScreenshots.Num() > 0)
 	{
-		return CapturedScreenshots.Last();
+		return CapturedScreenshots.Last().Photo;
 	}
 	return nullptr;
 }
@@ -773,7 +722,7 @@ UTexture2D* UMyGameInstance::GetScreenshotAtIndex(int32 Index) const
 {
 	if (CapturedScreenshots.IsValidIndex(Index))
 	{
-		return CapturedScreenshots[Index];
+		return CapturedScreenshots[Index].Photo;
 	}
 	return nullptr;
 }

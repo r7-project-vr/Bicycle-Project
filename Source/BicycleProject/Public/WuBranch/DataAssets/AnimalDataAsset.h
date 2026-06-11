@@ -79,6 +79,12 @@ public:
 	EAnimalType AnimalType = EAnimalType::Wild;
 
 	/// <summary>
+	/// 名前
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Common")
+	FName Name;
+
+	/// <summary>
 	/// メッシュ
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visual")

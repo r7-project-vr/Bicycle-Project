@@ -14,6 +14,7 @@
 #include "WuBranch/Struct/AnimalPhoto.h"
 
 UPhotoCaptureComponent::UPhotoCaptureComponent()
+	: AnimalManager(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -114,12 +115,14 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 			FTimerHandle PhotoDelayTimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(PhotoDelayTimerHandle, [this, GameInstance]() {
 				// 2026.06.10 ウー start 写真を撮るプロセスを改善、名前を取得できるようにする
-				TArray<int32> DetectedPetsID = DetectAnimals(GameInstance);
-				// 検出した動物を記録する
-				for (int32 PetID : DetectedPetsID)
-					GameInstance->AddAnimalPhotoPoint(PetID);
+				TArray<AWildAnimal*> DetectedAnimals = DetectAnimals(GameInstance);
 				
-				TakePhoto(GameInstance, DetectedPetsID);
+				TakePhoto(GameInstance, DetectedAnimals);
+				
+				// 検出した動物を記録する
+				TArray<int32> AnimalsID = GetAnimalsID(GameInstance, DetectedAnimals);
+				for (int32 PetID : AnimalsID)
+					GameInstance->AddAnimalPhotoPoint(PetID);
 				if (TakePhotoSuccSE)
 					UGameplayStatics::PlaySound2D(GetWorld(), TakePhotoSuccSE);
 				//DetectAndScoreAnimals();
@@ -187,7 +190,7 @@ void UPhotoCaptureComponent::SetUIVisibility(bool bVisible)
 	}
 }
 
-void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int32> DetectedPetsID)
+void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<AWildAnimal*> DetectedAnimals)
 {
 	if (!GetWorld())
 	{
@@ -205,7 +208,9 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int
 	// エフェクト
 	PC->PlayerCameraManager->StartCameraFade(0.f, 0.8f, 0.1f, FLinearColor::Black);
 
-	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
+	// 写真に写った動物をより明白に写せるように、カメラの位置を調整
+	//FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
+	FVector CameraLocation = CaculateCameraLocation(PC->PlayerCameraManager, DetectedAnimals);
 	FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
 
 	FActorSpawnParameters SpawnParams;
@@ -224,16 +229,35 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int
 	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
 	RenderTarget->InitAutoFormat(Width, Height);
 	RenderTarget->UpdateResourceImmediate(true);
+	
+	//RenderTarget->RenderTargetFormat = RTF_RGBA8;
 
 	USceneCaptureComponent2D* CaptureComponent = SceneCapture->GetCaptureComponent2D();
 	CaptureComponent->TextureTarget = RenderTarget;
 	// 2026.05.07 ウー start
 	// SCS_FinalColorLDRだと暗い部分はあまり見えないので、SCS_SceneColorHDRに変更
 	//CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
+	CaptureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorHDR;
 	// 2026.05.07 ウー end
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
+	// 2026.06.13 ウー 陰ある所を撮ると、暗すぎで見えない問題を解決する
+	//CaptureComponent->PostProcessSettings.bOverride_AutoExposureBias = true;
+	//CaptureComponent->PostProcessSettings.AutoExposureBias = 2.0f;
+	//CaptureComponent->PostProcessSettings.bOverride_ToneCurveAmount = true;
+	//CaptureComponent->PostProcessSettings.ToneCurveAmount = 0.5f;
+	//CaptureComponent->PostProcessSettings.bOverride_LocalExposureShadowContrastScale = true;
+	//CaptureComponent->PostProcessSettings.LocalExposureShadowContrastScale = 0.3f;
+	//CaptureComponent->PostProcessSettings.bOverride_LocalExposureHighlightContrastScale = true;
+	//CaptureComponent->PostProcessSettings.LocalExposureHighlightContrastScale = 1.0f;
+	//CaptureComponent->PostProcessSettings.bOverride_LocalExposureDetailStrength = true;
+	//CaptureComponent->PostProcessSettings.LocalExposureDetailStrength = 1.5f;
+	//CaptureComponent->PostProcessSettings.bOverride_LocalExposureBlurredLuminanceBlend = true;
+	//CaptureComponent->PostProcessSettings.LocalExposureBlurredLuminanceBlend = 0.6f;
+
+	//CaptureComponent->PostProcessSettings.bOverride_LocalExposureMiddleGreyBias = true;
+	//CaptureComponent->PostProcessSettings.LocalExposureMiddleGreyBias = 10.0f;
+	// 2026.06.13 ウー end
 
 	CaptureComponent->CaptureScene();
 
@@ -263,7 +287,8 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int
 			NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
 			NewTexture->UpdateResource();
 
-			FAnimalPhoto AnimalPhoto = MakePhotoDatas(DetectedPetsID, NewTexture);
+			TArray<int32> AnimalsID = GetAnimalsID(GameInstance, DetectedAnimals);
+			FAnimalPhoto AnimalPhoto = MakePhotoDatas(AnimalsID, NewTexture);
 			if(AnimalPhoto.Photo)
 				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, TEXT("has photo"));
 			GameInstance->AddScreenshot(AnimalPhoto);
@@ -338,9 +363,9 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<int
 //	// 2026.05.27 ウー end
 //}
 
-TArray<int32> UPhotoCaptureComponent::DetectAnimals(UMyGameInstance* GameInstance)
+TArray<AWildAnimal*> UPhotoCaptureComponent::DetectAnimals(UMyGameInstance* GameInstance)
 {
-	TArray<int32> DetectedAnimalIDs;
+	TArray<AWildAnimal*> DetectedAnimalIDs;
 
 	// 直接CapturedAnimalsからIDを取得する
 	for (TWeakObjectPtr<AWildAnimal> Animal : CapturedAnimals)
@@ -348,12 +373,53 @@ TArray<int32> UPhotoCaptureComponent::DetectAnimals(UMyGameInstance* GameInstanc
 		if (AWildAnimal* WildAnimal = Animal.Get())
 		{
 			// 一枚の写真に複数の動物が映った場合、全部の動物を計算に入れます
-			int32 PetID = GameInstance->SwitchWild2Pet(WildAnimal->GetMyID());
-			DetectedAnimalIDs.Add(PetID);
+			DetectedAnimalIDs.Add(WildAnimal);
 		}
 	}
 
 	return DetectedAnimalIDs;
+}
+
+TArray<int32> UPhotoCaptureComponent::GetAnimalsID(UMyGameInstance* GameInstance, TArray<AWildAnimal*> Animals)
+{
+	TArray<int32> AnimalsID;
+	for (AWildAnimal* Animal : Animals)
+		AnimalsID.Add(GameInstance->SwitchWild2Pet(Animal->GetMyID()));
+
+	return AnimalsID;
+}
+
+FVector UPhotoCaptureComponent::CaculateCameraLocation(TObjectPtr<APlayerCameraManager> Camera, TArray<AWildAnimal*> Animals)
+{
+	// プレイヤーの位置
+	FVector PlayerLocation = Camera->GetCameraLocation();
+	FVector PlayerForward = Camera->GetActorForwardVector();
+	// ゴーグルがちょっとだけ下に向くと、後の計算によって向いた角度も拡大されるため、先にZ軸を0にする
+	PlayerForward.Z = 0.f;
+
+	// 動物がゼロの場合
+	if(Animals.Num() == 0)
+		return PlayerLocation;
+	else
+	{
+		// 条件に合う野良動物を全部映せるかつ遠い過ぎないよう、プレイヤーに一番近い動物を探し、カメラの適切な位置を計算する
+		float SmallestDis = FLT_MAX;
+		for (AWildAnimal* Animal : Animals)
+		{
+			float Distance = (Animal->GetActorLocation() - PlayerLocation).Length();
+
+			if (SmallestDis > Distance)
+			{
+				SmallestDis = Distance;
+			}
+		}
+		// 最短距離以上だったら、一番近い動物との距離の半分くらいに進んだ位置にカメラを置く
+		// 以下だったら、プレイヤー自身の位置を使う
+		if (SmallestDis >= ShortestDistance)
+			return PlayerLocation + PlayerForward * SmallestDis * 0.7f;
+		else
+			return PlayerLocation;
+	}
 }
 
 FAnimalPhoto UPhotoCaptureComponent::MakePhotoDatas(TArray<int32> DetectedPetsID, UTexture2D* Texture)

@@ -13,6 +13,7 @@ class UWidgetComponent;
 class UMyGameInstance;
 class UAnimalManagerComponent;
 struct FAnimalPhoto;
+class APlayerCameraManager;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BICYCLEPROJECT_API UPhotoCaptureComponent : public UActorComponent
@@ -85,13 +86,28 @@ private:
 	/// <summary>
 	/// 写真を撮る
 	/// </summary>
-	void TakePhoto(UMyGameInstance* GameInstance, TArray<int32> DetectedPetsID);
+	void TakePhoto(UMyGameInstance* GameInstance, TArray<AWildAnimal*> DetectedAnimals);
 
 	/// <summary>
 	/// 撮影時に範囲内の動物を検出
 	/// </summary>
 	//void DetectAndScoreAnimals();
-	TArray<int32> DetectAnimals(UMyGameInstance* GameInstance);
+	TArray<AWildAnimal*> DetectAnimals(UMyGameInstance* GameInstance);
+
+	/// <summary>
+	/// 検出された動物のID
+	/// </summary>
+	/// <param name="Animals">検出された動物</param>
+	/// <returns>動物のID</returns>
+	TArray<int32> GetAnimalsID(UMyGameInstance* GameInstance, TArray<AWildAnimal*> Animals);
+
+	/// <summary>
+	/// カメラの位置を計算
+	/// </summary>
+	/// <param name="Camera"></param>
+	/// <param name="Animals"></param>
+	/// <returns></returns>
+	FVector CaculateCameraLocation(TObjectPtr<APlayerCameraManager> Camera, TArray<AWildAnimal*> Animals);
 
 	/// <summary>
 	/// 検出した動物の名前をゲット
@@ -149,4 +165,10 @@ private:
 	/// 動物マネージャー
 	/// </summary>
 	UAnimalManagerComponent* AnimalManager;
+
+	/// <summary>
+	/// 写真を撮る時の最短距離
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Photo", meta = (AllowPrivateAccess = "true"))
+	float ShortestDistance;
 };

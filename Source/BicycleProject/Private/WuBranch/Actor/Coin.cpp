@@ -38,7 +38,7 @@ void ACoin::BeginPlay()
 	MoveCnt = 0.f;
 	IsRotating = false;
 	IsPause = false;
-	OnActorBeginOverlap.AddDynamic(this, &ACoin::OnOverlapBegin);
+	Collision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlapBegin);
 	//BaseLocation = GetActorLocation();
 	//BaseRotation = GetActorRotation();
 	BaseLocation = Mesh->GetRelativeLocation();
@@ -91,7 +91,7 @@ void ACoin::ChangeBaseHeight(float NewHeight)
 	SetActorLocation(NowLocation);
 }
 
-void ACoin::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+void ACoin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,	const FHitResult& SweepResult)
 {
 	if (OtherActor)
 	{

@@ -1,4 +1,4 @@
-#include "narisawaBranch/ProceduralRoadGenerator.h"
+ï»¿#include "narisawaBranch/ProceduralRoadGenerator.h"
 #include "Components/SplineComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -37,16 +37,16 @@ void AProceduralRoadGenerator::GenerateBuildingsAlongPath(USplineComponent* Path
 		const FRotator BackBuildingRotation = ForwardVector.Rotation();
 		const FRotator FrontBuildingRotation = BackBuildingRotation + FRotator(0.0f, 180.0f, 0.0f);
 
-		// --- ?yÅd—vC³“_zˆÊ’uŒvZ‚ÌƒƒWƒbƒN‚ğ•ª—£E–¾Šm‰» ---
+		// --- ?ã€æœ€é‡è¦ä¿®æ­£ç‚¹ã€‘ä½ç½®è¨ˆç®—ã®ãƒ­ã‚¸ãƒƒã‚¯ã‚’åˆ†é›¢ãƒ»æ˜ç¢ºåŒ– ---
 
-		// ƒXƒeƒbƒvA: ‘OŒã•ûŒü‚ÌŠî“_‚ğŒˆ’è
+		// ã‚¹ãƒ†ãƒƒãƒ—A: å‰å¾Œæ–¹å‘ã®åŸºç‚¹ã‚’æ±ºå®š
 		const FVector FrontBase = LocationOnSpline + (ForwardVector * DistanceOffset);
 		const FVector BackBase = LocationOnSpline - (ForwardVector * DistanceOffset);
 
-		// ƒXƒeƒbƒvB: ‰¡•ûŒü‚ÌƒVƒtƒg—Ê‚ğŒˆ’è
+		// ã‚¹ãƒ†ãƒƒãƒ—B: æ¨ªæ–¹å‘ã®ã‚·ãƒ•ãƒˆé‡ã‚’æ±ºå®š
 		const FVector LateralShift = RightVector * LateralOffset;
 
-		// ƒXƒeƒbƒvC: ‘OŒã‚Æ‰¡‚ÌƒIƒtƒZƒbƒg‚ğ‡¬‚µ‚ÄAƒNƒ‰ƒXƒ^[‚ÌÅI“I‚ÈŠî“_‚ğŒvZ
+		// ã‚¹ãƒ†ãƒƒãƒ—C: å‰å¾Œã¨æ¨ªã®ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åˆæˆã—ã¦ã€ã‚¯ãƒ©ã‚¹ã‚¿ãƒ¼ã®æœ€çµ‚çš„ãªåŸºç‚¹ã‚’è¨ˆç®—
 		const FVector FrontClusterBaseLocation = FrontBase + LateralShift;
 		const FVector BackClusterBaseLocation = BackBase + LateralShift;
 

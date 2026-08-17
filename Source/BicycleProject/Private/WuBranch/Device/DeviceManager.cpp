@@ -183,7 +183,7 @@ void UDeviceManager::DisableSelectAnswerActions()
 void UDeviceManager::EnableTakePhotoActions()
 {
 	// 一つの装置のみの場合
-	//IChoiceProvider::Execute_EnableSelectAnswerAction(Device);
+	//IPhotoProvider::Execute_EnableTakePhotoAction(Device);
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
@@ -194,12 +194,34 @@ void UDeviceManager::EnableTakePhotoActions()
 void UDeviceManager::DisableTakePhotoActions()
 {
 	// 一つの装置のみの場合
-	//IChoiceProvider::Execute_DisableSelectAnswerAction(Device);
+	//IPhotoProvider::Execute_DisableTakePhotoAction(Device);
 
 	// 複数の装置の場合
 	UDevice* Device = GetDevice(EDevicePart::Hand);
 	if (Device && Device->Implements<UPhotoProvider>())
 		IPhotoProvider::Execute_DisableTakePhotoAction(Device);
+}
+
+void UDeviceManager::EnableStretchActions()
+{
+	// 一つの装置のみの場合
+	//IStretchProvider::Execute_EnableStretchAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UStretchProvider>())
+		IStretchProvider::Execute_EnableStretchAction(Device);
+}
+
+void UDeviceManager::DisableStretchActions()
+{
+	// 一つの装置のみの場合
+	//IStretchProvider::Execute_DisableStretchAction(Device);
+
+	// 複数の装置の場合
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UStretchProvider>())
+		IStretchProvider::Execute_DisableStretchAction(Device);
 }
 
 void UDeviceManager::BindMoveEvent(UObject* Object, FName FunctionName)
@@ -293,6 +315,38 @@ void UDeviceManager::BindPhotoReadyEvent(UObject* Object, FName FunctionName)
 	{
 		IPhotoProvider::Execute_BindPhotoReadyEvent(Device, Object, FunctionName);
 		UE_LOG(LogTemp, Log, TEXT("PhotoReady event bound to %s::%s"), *Object->GetName(), *FunctionName.ToString());
+	}
+}
+
+void UDeviceManager::BindLeftHandStretchEvent(UObject* Object, FName FunctionName)
+{
+	if (!Object)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BindLeftHandStretchEvent: Object is null!"));
+		return;
+	}
+	
+	// Handデバイスのみにバインド
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UStretchProvider>())
+	{
+		IStretchProvider::Execute_BindLeftArmStretchEvent(Device, Object, FunctionName);
+	}
+}
+
+void UDeviceManager::BindRightHandStretchEvent(UObject* Object, FName FunctionName)
+{
+	if (!Object)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BindRightHandStretchEvent: Object is null!"));
+		return;
+	}
+
+	// Handデバイスのみにバインド
+	UDevice* Device = GetDevice(EDevicePart::Hand);
+	if (Device && Device->Implements<UStretchProvider>())
+	{
+		IStretchProvider::Execute_BindRightArmStretchEvent(Device, Object, FunctionName);
 	}
 }
 

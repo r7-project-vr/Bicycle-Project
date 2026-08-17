@@ -45,6 +45,18 @@ UKeyboardDevice::UKeyboardDevice()
 	PhotoReadyAction = nullptr;
 	Path = "/Game/WuBranch/Input/Action/PhotoReadyAction";
 	PhotoReadyAction = LoadObject<UInputAction>(nullptr, *Path);
+
+	ArmStretchMap = nullptr;
+	Path = "/Game/WuBranch/Input/ArmStretchMap";
+	ArmStretchMap = LoadObject<UInputMappingContext>(nullptr, *Path);
+
+	LeftArmStretchAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/ArmStretchAction_Left";
+	LeftArmStretchAction = LoadObject<UInputAction>(nullptr, *Path);
+
+	RightArmStretchAction = nullptr;
+	Path = "/Game/WuBranch/Input/Action/ArmStretchAction_Right";
+	RightArmStretchAction = LoadObject<UInputAction>(nullptr, *Path);
 }
 
 void UKeyboardDevice::Tick(float DeltaTime)
@@ -299,6 +311,76 @@ void UKeyboardDevice::BindPhotoReadyEvent_Implementation(UObject* Object, FName 
 	}
 }
 
+void UKeyboardDevice::BindLeftArmStretchEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnLeftArmStretchEvent.Add(Delegate);
+	}
+}
+
+void UKeyboardDevice::BindRightArmStretchEvent_Implementation(UObject* Object, FName FunctionName)
+{
+	if (Object)
+	{
+		FScriptDelegate Delegate;
+		Delegate.BindUFunction(Object, FunctionName);
+		OnRightArmStretchEvent.Add(Delegate);
+	}
+}
+
+void UKeyboardDevice::EnableStretchAction_Implementation()
+{
+	if (!Controller)
+	{
+		UKismetSystemLibrary::PrintString(this, "player controller is null when enable the action of selecting answer", true, false, FColor::Red, 10.f);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null when enable the action of selecting answer!"));
+		return;
+	}
+
+	if (!ArmStretchMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Arm Stretch Context is null!"));
+		return;
+	}
+
+	// Add Input Mapping Context
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
+	{
+		if (!Subsystem->HasMappingContext(ArmStretchMap))
+		{
+			Subsystem->AddMappingContext(ArmStretchMap, 0);
+		}
+	}
+}
+
+void UKeyboardDevice::DisableStretchAction_Implementation()
+{
+	if (!Controller)
+	{
+		UKismetSystemLibrary::PrintString(this, "player controller is null when diable the action of selecting answer", true, false, FColor::Red, 10.f);
+		UE_LOG(LogTemplateDevice, Error, TEXT("Player controller is null!"));
+		return;
+	}
+
+	if (!ArmStretchMap)
+	{
+		UE_LOG(LogTemplateDevice, Error, TEXT("Arm Stretch mapping Context is null!"));
+		return;
+	}
+
+	// Remove Input Mapping Context
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(Controller->GetLocalPlayer()))
+	{
+		if (Subsystem->HasMappingContext(ArmStretchMap))
+		{
+			Subsystem->RemoveMappingContext(ArmStretchMap);
+		}
+	}
+}
+
 void UKeyboardDevice::SetupAction()
 {
 	//if (!MoveAction)
@@ -338,6 +420,20 @@ void UKeyboardDevice::SetupAction()
 			EnhancedInputComponent->BindAction(PhotoReadyAction, ETriggerEvent::Started, this, &UKeyboardDevice::OnPhotoReady);
 		else
 			UE_LOG(LogTemplateDevice, Error, TEXT("PhotoReady Action is null!"));
+
+		if (LeftArmStretchAction)
+		{
+			EnhancedInputComponent->BindAction(LeftArmStretchAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnStretchLeftArm);
+		}
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("ArmStretch_Left Action is null!"));
+
+		if (RightArmStretchAction)
+		{
+			EnhancedInputComponent->BindAction(RightArmStretchAction, ETriggerEvent::Triggered, this, &UKeyboardDevice::OnStretchRightArm);
+		}
+		else
+			UE_LOG(LogTemplateDevice, Error, TEXT("ArmStretch_Right Action is null!"));
 	}
 	else
 	{
@@ -392,4 +488,22 @@ void UKeyboardDevice::OnPhotoReady()
 	// notify
 	if (OnPhotoReadyEvent.IsBound())
 		OnPhotoReadyEvent.Broadcast();
+}
+
+void UKeyboardDevice::OnStretchLeftArm(const FInputActionValue& Value)
+{
+	bool bIsPressed = Value.Get<bool>();
+
+	// notify
+	if (OnLeftArmStretchEvent.IsBound())
+		OnLeftArmStretchEvent.Broadcast(bIsPressed);
+}
+
+void UKeyboardDevice::OnStretchRightArm(const FInputActionValue& Value)
+{
+	bool bIsPressed = Value.Get<bool>();
+
+	// notify
+	if (OnRightArmStretchEvent.IsBound())
+		OnRightArmStretchEvent.Broadcast(bIsPressed);
 }

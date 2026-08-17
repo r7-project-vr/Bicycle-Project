@@ -13,6 +13,7 @@ class UResponderComponent;
 class UAnimalManagerComponent;
 class UPhotoCaptureComponent;
 class AQuestionUIActor;
+class UMyHandRootComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -135,6 +136,11 @@ private:
 	void FindPhotoCapture();
 
 	/// <summary>
+	/// 手を伸ばすものを探す
+	/// </summary>
+	void FindHandStretcher();
+
+	/// <summary>
 	/// ロード先の自転車メッシュ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -167,6 +173,24 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	UPhotoCaptureComponent* PhotoCapture;
+
+	/// <summary>
+	/// 左手のタグ
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	FName LeftHandRootTag;
+
+	/// <summary>
+	/// 右手のタグ
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, Category = "Bike", meta = (AllowPrivateAccess = "true"))
+	FName RightHandRootTag;
+
+	/// <summary>
+	/// 手を伸ばすコンポーネント
+	/// </summary>
+	UMyHandRootComponent* LeftHandRoot;
+	UMyHandRootComponent* RightHandRoot;
 
 	/// <summary>
 	/// UI操作用のヒントライン

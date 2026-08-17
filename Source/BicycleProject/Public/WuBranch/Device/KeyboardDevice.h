@@ -6,6 +6,7 @@
 #include "WuBranch/Device/Device.h"
 #include "WuBranch/Interface/PhotoProvider.h"
 #include "WuBranch/Interface/ChoiceProvider.h"
+#include "WuBranch/Interface/StretchProvider.h"
 #include "KeyboardDevice.generated.h"
 
 class UInputMappingContext;
@@ -17,7 +18,7 @@ struct FInputActionValue;
  * 他のプラットフォームだったら、有線か無線で繋がっているかどうかの判断が必要です
  */
 UCLASS()
-class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject, public IPhotoProvider, public IChoiceProvider
+class BICYCLEPROJECT_API UKeyboardDevice : public UDevice, public FTickableGameObject, public IPhotoProvider, public IChoiceProvider, public IStretchProvider
 {
 	GENERATED_BODY()
 	
@@ -60,6 +61,14 @@ public:
 	void DisableTakePhotoAction_Implementation() override;
 
 	void BindPhotoReadyEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void BindLeftArmStretchEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void BindRightArmStretchEvent_Implementation(UObject* Object, FName FunctionName) override;
+
+	void EnableStretchAction_Implementation() override;
+
+	void DisableStretchAction_Implementation() override;
 
 protected:
 
@@ -110,6 +119,20 @@ private:
 	void OnPhotoReady();
 
 	/// <summary>
+	/// 左手を伸ばす
+	/// </summary>
+	/// <param name="Value"></param>
+	UFUNCTION()
+	void OnStretchLeftArm(const FInputActionValue& Value);
+
+	/// <summary>
+	/// 右手を伸ばす
+	/// </summary>
+	/// <param name="Value"></param>
+	UFUNCTION()
+	void OnStretchRightArm(const FInputActionValue& Value);
+
+	/// <summary>
 	/// プレイヤーコントローラー
 	/// </summary>
 	APlayerController* Controller;
@@ -128,6 +151,11 @@ private:
 	/// 写真を撮るアクションマップ
 	/// </summary>
 	UInputMappingContext* PhotoMap;
+
+	/// <summary>
+	/// 手を伸ばすアクションマップ
+	/// </summary>
+	UInputMappingContext* ArmStretchMap;
 
 	/// <summary>
 	/// 移動アクション
@@ -156,6 +184,16 @@ private:
 	UInputAction* PhotoReadyAction;
 
 	/// <summary>
+	/// 左手を伸ばすアクション
+	/// </summary>
+	UInputAction* LeftArmStretchAction;
+
+	/// <summary>
+	/// 右手を伸ばすアクション
+	/// </summary>
+	UInputAction* RightArmStretchAction;
+
+	/// <summary>
 	/// 選択肢を選ぶイベント
 	/// </summary>
 	UPROPERTY(BlueprintAssignable)
@@ -181,4 +219,16 @@ private:
 	/// 自作デバイスの入力をシミュレートするためのフラグ
 	/// </summary>
 	bool bCanSendMoveInput;
+
+	/// <summary>
+	/// 左手を伸ばすイベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FOnLeftArmStretchEvent OnLeftArmStretchEvent;
+
+	/// <summary>
+	/// 右手を伸ばすイベント
+	/// </summary>
+	UPROPERTY(BlueprintAssignable)
+	FOnRightArmStretchEvent OnRightArmStretchEvent;
 };

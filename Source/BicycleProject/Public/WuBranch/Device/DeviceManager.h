@@ -114,6 +114,16 @@ public:
 	void DisableTakePhotoActions();
 
 	/// <summary>
+	/// 手を伸ばせるようにする
+	/// </summary>
+	void EnableStretchActions();
+
+	/// <summary>
+	/// 手を伸ばせないようにする
+	/// </summary>
+	void DisableStretchActions();
+
+	/// <summary>
 	/// 移動イベントをバインド
 	/// </summary>
 	/// <param name="object">バインドされたい関数があるオブジェクト</param>
@@ -158,6 +168,20 @@ public:
 	/// <param name="obj">対象オブジェクト</param>
 	/// <param name="funcName">関数名</param>
 	void BindPhotoReadyEvent(UObject* Object, FName FunctionName);
+
+	/// <summary>
+	/// 左手を伸ばすイベントをバインド
+	/// </summary>
+	/// <param name="Object">対象オブジェクト</param>
+	/// <param name="FunctionName">関数名</param>
+	void BindLeftHandStretchEvent(UObject* Object, FName FunctionName);
+
+	/// <summary>
+	/// 右手を伸ばすイベントをバインド
+	/// </summary>
+	/// <param name="Object">対象オブジェクト</param>
+	/// <param name="FunctionName">関数名</param>
+	void BindRightHandStretchEvent(UObject* Object, FName FunctionName);
 
 private:
 

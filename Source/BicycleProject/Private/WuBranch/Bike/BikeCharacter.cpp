@@ -14,11 +14,14 @@
 #include "Kismet/GameplayStatics.h"
 #include <WuBranch/UI/QuestionUIActor.h>
 #include <WuBranch/Actor/Component/PositionResetComponent.h>
+#include <WuBranch/Bike/MyHandRootComponent.h>
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
 	: IsOverSpeed(false)
 	, IsPause(false)
+	, LeftHandRoot(nullptr)
+	, RightHandRoot(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -40,6 +43,7 @@ void ABikeCharacter::BeginPlay()
 	FindMover();
 	FindResponder();
 	FindPhotoCapture();
+	FindHandStretcher();
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_targetRotator = FRotator::ZeroRotator;
@@ -121,8 +125,18 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			    DeviceManager->BindScreenshotEvent(PhotoCapture, FName("OnScreenshotTaken"));
 				//DeviceManager->BindPhotoReadyEvent(PhotoCapture, "");
             }
+
+			if (!LeftHandRoot || !RightHandRoot)
+				FindHandStretcher();
+			if (LeftHandRoot && RightHandRoot)
+			{
+				DeviceManager->BindLeftHandStretchEvent(LeftHandRoot, "OnStretchArm");
+				DeviceManager->BindRightHandStretchEvent(RightHandRoot, "OnStretchArm");
+			}
+
 			DeviceManager->EnableDefaultActions();
 			DeviceManager->EnableTakePhotoActions();
+			DeviceManager->EnableStretchActions();
         }
 	}
 }
@@ -302,6 +316,17 @@ void ABikeCharacter::FindPhotoCapture()
 	PhotoCapture = GetComponentByClass<UPhotoCaptureComponent>();
 	if (!PhotoCapture)
 		UE_LOG(LogTemp, Error, TEXT("UPhotoCaptureComponent didnot attach"));
+}
+
+void ABikeCharacter::FindHandStretcher()
+{
+	LeftHandRoot = FindComponentByTag<UMyHandRootComponent>(LeftHandRootTag);
+	if(!LeftHandRoot)
+		UE_LOG(LogTemp, Error, TEXT("Left hand root component didnot attach"));
+
+	RightHandRoot = FindComponentByTag<UMyHandRootComponent>(RightHandRootTag);
+	if (!RightHandRoot)
+		UE_LOG(LogTemp, Error, TEXT("Right hand root component didnot attach"));
 }
 
 void ABikeCharacter::EnableAutoPlay(AQuestionUIActor* Quiz)

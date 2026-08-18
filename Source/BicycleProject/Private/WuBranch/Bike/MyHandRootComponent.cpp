@@ -9,6 +9,10 @@
 #include <WuBranch/UI/QuestionUIActor.h>
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/WidgetComponent.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "WuBranch/MyGameInstance.h"
+#include "WuBranch/Device/DeviceManager.h"
 
 // Sets default values for this component's properties
 UMyHandRootComponent::UMyHandRootComponent()
@@ -52,6 +56,7 @@ void UMyHandRootComponent::BeginPlay()
 	FindOwner();
 	FindVRControllerByTag();
 	FindHandMesh();
+	FindDeviceManager();
 
 	if (HandMesh)
 	{
@@ -61,9 +66,9 @@ void UMyHandRootComponent::BeginPlay()
 		FindHandCollisionAndInteractor();
 		if (HandCollision)
 		{
-			// 手のコリジョンをバインド
-			HandCollision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlapBegin);
-			//HandCollision->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnOverlapEnd);
+			// WidgetInteractionComponentを使ってUIに触ったかどうかを判断
+			// コリジョンのOverlapを使わない理由は、時々UIをすり抜けるからです。
+			HandWidgetInteractor->OnHoveredWidgetChanged.AddDynamic(this, &ThisClass::OnWidgetChanged);
 		}
 	}
 }
@@ -202,55 +207,66 @@ void UMyHandRootComponent::FindHandCollisionAndInteractor()
 	}
 }
 
-void UMyHandRootComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UMyHandRootComponent::FindDeviceManager()
 {
-	// コリジョンに設定された反応できるオブジェクトの何かに触れた
-	if (OtherActor)
+	if (UWorld* World = GetWorld())
+	{
+		UMyGameInstance* MyInstance = Cast<UMyGameInstance>(World->GetGameInstance());
+		if (MyInstance)
+		{
+			DeviceManager = MyInstance->GetDeviceManager();
+		}
+	}
+}
+
+void UMyHandRootComponent::OnWidgetChanged(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent)
+{
+	if (WidgetComponent)
 	{
 		// 今伸ばしているなら
 		if (bIsStretching)
 		{
 			CurrentVelocity = 0.f;
-			PlayTouchedSE(SweepResult.ImpactPoint);
+			FHitResult Result = HandWidgetInteractor->GetLastHitResult();
+			// サウンド再生
+			PlayTouchedSE(Result.ImpactPoint);
+			// エフェクト
+			PlayTouchEffect(Result);
 		}
-			
-		/*if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(OtherActor))
-		{
-			if (HandWidgetInteractor)
-			{
-				HandWidgetInteractor->PressPointerKey(EKeys::LeftMouseButton);
-				if (UWidgetComponent* Widget = HandWidgetInteractor->GetHoveredWidgetComponent())
-				{
-					FName Name = Widget->GetFName();
-					GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, FString::Printf(TEXT("Press key to %s"), *Name.ToString()));
-				}
-			}
-		}*/
 	}
 }
 
-void UMyHandRootComponent::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void UMyHandRootComponent::PlayTouchEffect(const FHitResult& HitResult)
 {
-	if (OtherActor)
+	if (!TouchEffect)
+		return;
+
+	// Overlapから貰ったFHitResultを使わない理由は、GetActorでの値はあるが、ImapctPointの値はずっと(0,0,0)です。
+	// なので、HandWidgetInteractorからHitResultを貰うにした
+	if (!HitResult.GetActor())
 	{
-		if (AQuestionUIActor* Question = Cast<AQuestionUIActor>(OtherActor))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, TEXT("Release key"));
-			if (HandWidgetInteractor)
-				HandWidgetInteractor->ReleasePointerKey(EKeys::LeftMouseButton);
-		}
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Red, TEXT("Didnot Touch"));
+		return;
 	}
+	FVector FaceTo = HitResult.GetActor()->GetActorForwardVector();
+	// エフェクトの一部が選択肢に覆われているため、ちょっと手前に移動する
+	FVector Location = HitResult.ImpactPoint + FaceTo * 5;
+	FRotator Rotation = HitResult.GetActor()->GetActorRotation();
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TouchEffect, Location, Rotation, FVector::OneVector, false);
 }
 
 void UMyHandRootComponent::PrepareRotateArm()
 {
 	// 手の位置と角度を固定
-	//SetRelativeLocation(FVector::ZeroVector);
-	HandMesh->SetRelativeLocation(FVector(HandRotateRadius, 0.f, 0.f));
+	//SetRelativeLocation(FVector::ZeroVector);FVector(HandRotateRadius, 0.f, 0.f)
+	HandMesh->SetRelativeLocation(FVector::ZeroVector);
 	HandMesh->SetRelativeRotation(ExtensionAngle);
 	HandRotateAngle = 0;
 	HandRotateVelocity = 0;
 	PlayRotateSE();
+	// 前進機能を止める
+	
 	bIsRotateArm = true;
 }
 
@@ -305,12 +321,12 @@ void UMyHandRootComponent::Stretch(float DeltaTime)
 	if (CurrentVelocity <= 0 && (NewHandLocation - HandLocationTmp).Length() < 50)
 	{
 		bIsStretching = false;
-		bIsControlled = false;
 		CurrentVelocity = 0.f;
 		Direction = FVector::ZeroVector;
 		ReturnToOriginalTransform();
 		StopRetractSE();
 		bIsPlayingRetractSE = false;
+		bIsControlled = false;
 	}
 }
 
@@ -318,4 +334,22 @@ void UMyHandRootComponent::ReturnToOriginalTransform()
 {
 	HandMesh->SetRelativeLocation(OriginalHandLocation);
 	HandMesh->SetRelativeRotation(OriginalRotation);
+}
+
+void UMyHandRootComponent::EnableMoveAction()
+{
+	if (!DeviceManager)
+		FindDeviceManager();
+
+	if(DeviceManager)
+		DeviceManager->EnableDefaultActions();
+}
+
+void UMyHandRootComponent::DisableMoveAction()
+{
+	if (!DeviceManager)
+		FindDeviceManager();
+
+	if (DeviceManager)
+		DeviceManager->DisableDefaultActions();
 }

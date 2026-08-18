@@ -11,6 +11,9 @@ class USkeletalMeshComponent;
 class UMotionControllerComponent;
 class USphereComponent;
 class UWidgetInteractionComponent;
+class UNiagaraSystem;
+class UWidgetComponent;
+class UDeviceManager;
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BICYCLEPROJECT_API UMyHandRootComponent : public USceneComponent
@@ -80,6 +83,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void StopRetractSE();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UNiagaraSystem* TouchEffect;
+
 private:
 
 	/// <summary>
@@ -102,11 +108,21 @@ private:
 	/// </summary>
 	void FindHandCollisionAndInteractor();
 
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	/// <summary>
+	/// デバイスマネジャーを探す
+	/// </summary>
+	void FindDeviceManager();
 
+	/// <summary>
+	/// 手がUIに触った処理
+	/// </summary>
 	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnWidgetChanged(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent);
+
+	/// <summary>
+	/// 手がUIに触ったエフェクトを再生
+	/// </summary>
+	void PlayTouchEffect(const FHitResult& HitResult);
 
 	/// <summary>
 	/// 腕を回転させ前の準備段階
@@ -132,6 +148,16 @@ private:
 	/// 元の位置と角度に戻る
 	/// </summary>
 	void ReturnToOriginalTransform();
+
+	/// <summary>
+	/// 移動機能をオンにする
+	/// </summary>
+	void EnableMoveAction();
+
+	/// <summary>
+	/// 移動機能をオフにする
+	/// </summary>
+	void DisableMoveAction();
 
 	/// <summary>
 	/// VRコントローラーのタグ
@@ -163,6 +189,11 @@ private:
 	/// VR世界のUIを反応させるコンポーネント
 	/// </summary>
 	UWidgetInteractionComponent* HandWidgetInteractor;
+
+	/// <summary>
+	/// デバイスマネジャー
+	/// </summary>
+	UDeviceManager* DeviceManager;
 
 	/// <summary>
 	/// 制御されているか

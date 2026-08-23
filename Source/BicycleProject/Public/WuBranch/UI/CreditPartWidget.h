@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "WuBranch/Struct/CreditContent.h"
 #include "CreditPartWidget.generated.h"
 
 class UTextBlock;
@@ -27,18 +28,11 @@ public:
 	void SetTitle(FString Content);
 
 	/// <summary>
-	/// サブタイトルを設定
-	/// </summary>
-	/// <param name="Content">サブタイトル文字</param>
-	UFUNCTION(BlueprintCallable)
-	void SetSubTitle(FString Content);
-
-	/// <summary>
 	/// 詳細内容を設定
 	/// </summary>
 	/// <param name="Staffs">内容</param>
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetDetail(const TArray<FString>& Staffs);
+	void SetDetail(const TArray<FCreditContent>& Staffs);
 
 	/// <summary>
 	/// ロゴを設定
@@ -63,12 +57,6 @@ protected:
 	/// </summary>
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TitleText;
-
-	/// <summary>
-	/// サブタイトル
-	/// </summary>
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* SubTitleText;
 
 	/// <summary>
 	/// 会社ロゴ

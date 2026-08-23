@@ -155,7 +155,6 @@ void UCreditWidget::InitializePartWidget(UCreditPartWidget* Target, FCreditInfo*
 	}
 	
 	Target->SetTitle(Data->Title);
-	Target->SetSubTitle(Data->SubTitle);
 	Target->SetLogo(Data->Logo);
 	Target->SetPromotional(Data->Promotional);
 	Target->SetDetail(Data->Contents);

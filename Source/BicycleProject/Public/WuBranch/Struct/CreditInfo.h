@@ -27,17 +27,10 @@ struct BICYCLEPROJECT_API FCreditInfo : public FTableRowBase
 	FString Title;
 
 	/// <summary>
-	/// サブタイトル（部署）
+	/// 内容
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FString SubTitle;
-
-	/// <summary>
-	/// 内容（スタッフ）
-	/// 改行したい場合は新しいStringを追加
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TArray<FString> Contents;
+	TArray<FCreditContent> Contents;
 
 	/// <summary>
 	/// 会社ロゴ

@@ -19,20 +19,6 @@ void UCreditPartWidget::SetTitle(FString Content)
 	}
 }
 
-void UCreditPartWidget::SetSubTitle(FString Content)
-{
-	if (SubTitleText && !Content.IsEmpty())
-	{
-		if (!Content.IsEmpty())
-		{
-			SubTitleText->SetText(FText::FromString(Content));
-			SubTitleText->SetVisibility(ESlateVisibility::HitTestInvisible);
-		}
-		else
-			SubTitleText->SetVisibility(ESlateVisibility::Collapsed);
-	}
-}
-
 void UCreditPartWidget::SetLogo(UTexture2D* Texture, bool bMatchSize)
 {
 	if (LogoImage)

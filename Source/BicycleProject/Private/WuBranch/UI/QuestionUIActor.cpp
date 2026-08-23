@@ -18,6 +18,7 @@
 #include "narisawaBranch/ProceduralRoadGenerator.h"
 #include "WuBranch/UI/QuizUserWidget.h"
 #include "NiagaraComponent.h"
+#include "WuBranch/Enum/TutorialType.h"
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -169,10 +170,13 @@ void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 	}
 
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-	// デフォルトアクションを機能させない
-	GameInstance->GetDeviceManager()->DisableDefaultActions();
-	// プレイヤーに答えを選べるようにする
-	GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+	if (GameInstance)
+	{
+		// デフォルトアクションを機能させない
+		GameInstance->GetDeviceManager()->DisableDefaultActions();
+		// プレイヤーに答えを選べるようにする
+		GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+	}
 
 	// 自転車のスピードを強制的に0まで下げる
 	Bike->StopMove();
@@ -200,10 +204,12 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 
 		// オートプレイ対象の設置
 		// 自転車の移動機能をBikeMovementComponentに移動した
-		if (ABikeCharacter* Bike = Cast<ABikeCharacter>(OtherActor))
+		if (ABikeCharacter* Character = Cast<ABikeCharacter>(OtherActor))
 		{
-			SetTarget(Bike);
-			HandlePlayerEnterArea(Bike);
+			SetTarget(Character);
+			HandlePlayerEnterArea(Character);
+			// チュートリアルを開く
+			Character->OpenTutorial(ETutorialType::Quiz);
 		}
 		/*UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
 		SetTarget(Bike);

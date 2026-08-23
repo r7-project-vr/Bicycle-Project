@@ -32,6 +32,7 @@ UMyGameInstance::UMyGameInstance()
 	, NumOfSets(4)
 	, MaxAnimalCount(10)
 	, ShopItemsDataTable(nullptr)
+	, bIsOpenTutorial(true)
 {
 	DeviceManager = nullptr;
 	FileName = TEXT("PlayerData.json");

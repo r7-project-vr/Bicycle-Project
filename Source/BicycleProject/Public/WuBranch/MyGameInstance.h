@@ -695,4 +695,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Screenshot", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AScreenshotDisplayActor> ScreenshotDisplayActorClass;
 #pragma endregion
+
+#pragma region チュートリアル
+public:
+	
+	FORCEINLINE bool IsTutorialOpen() const { return bIsOpenTutorial; }
+
+private:
+	bool bIsOpenTutorial;
+#pragma endregion
 };

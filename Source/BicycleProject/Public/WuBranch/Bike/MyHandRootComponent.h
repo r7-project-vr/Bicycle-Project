@@ -39,6 +39,11 @@ public:
 	UFUNCTION()
 	void OnStretchArm(bool bIsPrepared);
 
+	/// <summary>
+	/// 強制的にリセットする
+	/// </summary>
+	void ForceReset();
+
 protected:
 
 	/// <summary>
@@ -160,6 +165,11 @@ private:
 	void DisableMoveAction();
 
 	/// <summary>
+	/// 手をリセット
+	/// </summary>
+	void ResetHand();
+
+	/// <summary>
 	/// VRコントローラーのタグ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
@@ -228,9 +238,14 @@ private:
 	FVector OriginalHandLocation;
 
 	/// <summary>
-	/// 今の手の世界座標を記録
+	/// 伸ばし始めた時の座標
 	/// </summary>
-	FVector HandLocationTmp;
+	FVector StretchStartLocation;
+
+	/// <summary>
+	/// 手を伸ばす際の座標
+	/// </summary>
+	FVector StretchingLocation;
 
 	/// <summary>
 	/// 元の手の相対角度
@@ -303,4 +318,14 @@ private:
 	/// 腕を回転させるか
 	/// </summary>
 	bool bIsRotateArm;
+
+	/// <summary>
+	/// 手を伸ばす際の前回の長さ
+	/// </summary>
+	float PreviousStretchLength;
+
+	/// <summary>
+	/// 手を伸ばす際の長さ
+	/// </summary>
+	float StretchLength;
 };

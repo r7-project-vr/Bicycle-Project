@@ -61,6 +61,11 @@ public:
 	void Hide();
 
 	/// <summary>
+	/// タブレットを表示
+	/// </summary>
+	void Show();
+
+	/// <summary>
 	/// コリジョンを起動
 	/// </summary>
 	void EnableCollision();
@@ -81,6 +86,11 @@ public:
 	/// <param name="bIsLeftHand">左手で持つか</param>
 	void RotateScene(bool bIsLeftHand);
 
+	/// <summary>
+	/// 通知を止める
+	/// </summary>
+	void StopNotify();
+
 protected:
 
 	UFUNCTION(BlueprintCallable)
@@ -94,20 +104,11 @@ private:
 	UFUNCTION()
 	void OnComponentOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void MoveUp();
-
-	void MoveDown();
-
 	/// <summary>
 	/// チュートリアルの画像を変更
 	/// </summary>
 	/// <param name="Target">画像</param>
 	void ChangeTexture(UTexture2D* Texture);
-
-	/// <summary>
-	/// タブレットを表示
-	/// </summary>
-	void Show();
 
 	/// <summary>
 	/// フラッシュ一回

@@ -17,10 +17,8 @@
 #include <WuBranch/Bike/MyHandRootComponent.h>
 #include "WuBranch/Actor/Tablet.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Components/SphereComponent.h"
-#include "Components/BoxComponent.h"
-#include "TimerManager.h"
-#include "Components/WidgetComponent.h"
+#include "WuBranch/Actor/Component/TabletBaseComponent.h"
+//#include "TimerManager.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -36,11 +34,6 @@ ABikeCharacter::ABikeCharacter()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-	TabletBase = CreateDefaultSubobject<UBoxComponent>(TEXT("TabletBase"));
-	TabletBase->SetupAttachment(GetMesh());
-	TabletBase->SetCollisionResponseToChannels(ECR_Ignore);
-	TabletBase->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-
 	_handlebarCenteringSpeed = 1.0f;
 	_isRotate = false;
 	HandleBarsAngle = 0.0f;
@@ -55,13 +48,12 @@ void ABikeCharacter::BeginPlay()
 	FindResponder();
 	FindPhotoCapture();
 	FindHandStretcher();
-	FindTabletBaseIcon();
+	FindTabletBase();
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_targetRotator = FRotator::ZeroRotator;
 	IsOverSpeed = false;
 	IsPause = false;
-	TabletCurrentState = ETabletState::Stay;
 
 	// PhotoCaptureBoxを初期化
 	if (PhotoCapture)
@@ -69,23 +61,12 @@ void ABikeCharacter::BeginPlay()
 		PhotoCapture->InitializePhotoCaptureBox(RootComponent);
 	}
 
-	if (TabletBase)
-	{
-		TabletBase->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTabletBaseOverlapBegin);
-	}
-	CloseTabletBase();
-
 	// ゲーム開始時にスクリーンショットをリセット
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)
 	{
 		GameInstance->ResetScreenshots();
 	}
-
-	/*FTimerHandle TutorialTimer;
-	GetWorld()->GetTimerManager().SetTimer(TutorialTimer, [this]() {
-		OpenTutorial(ETutorialType::Quiz);
-		}, 5.0f, false);*/
 }
 
 // Called every frame
@@ -102,9 +83,6 @@ void ABikeCharacter::Tick(float DeltaTime)
 	{
 		IsOverSpeed = true;
 	}
-
-	MoveUpTablet(DeltaTime);
-	MoveDownTablet(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -163,7 +141,6 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 			DeviceManager->EnableDefaultActions();
 			DeviceManager->EnableTakePhotoActions();
-			DeviceManager->EnableStretchActions();
         }
 	}
 }
@@ -281,28 +258,6 @@ void ABikeCharacter::LoadMeshComplete()
 	if (SkeletalMesh)
 	{
 		GetMesh()->SetSkeletalMesh(SkeletalMesh);
-		SpawnTablet();
-	}
-}
-
-void ABikeCharacter::SpawnTablet()
-{
-	const USkeletalMeshSocket* TabletSocket = GetMesh()->GetSocketByName(FName("TabletSocket"));
-	if (!TabletSocket || !TabletSample)
-		return;
-
-	FVector SpawnLocation = TabletSocket->GetSocketLocation(GetMesh());
-	FRotator SpawnRotation = FRotator(180.f, 0.f, 30.f);
-
-	FActorSpawnParameters  SpawnParams;
-	SpawnParams.Owner = this;
-
-	Tablet = GetWorld()->SpawnActor<ATablet>(TabletSample, SpawnLocation, SpawnRotation,SpawnParams);
-	if (Tablet)
-	{
-		TabletSocket->AttachActor(Tablet, GetMesh());
-		Tablet->SetActorRelativeLocation(TabletLowestLocation);
-		Tablet->SetHideHeight(SpawnLocation.Z);
 	}
 }
 
@@ -320,11 +275,22 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 		HandleBarsAngle = 0.0f;
 		_isRotate = false;
 		// 強制コントロール解除
-		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
-		UDeviceManager* DeviceManager = GameInstance->GetDeviceManager();
-		DeviceManager->EnableDefaultActions();
-		// チュートリアルを強制的にオフ
-		CloseTutorial(Tablet);
+		if (UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance()))
+		{
+			if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
+			{
+				DeviceManager->EnableDefaultActions();
+				DeviceManager->DisableStretchActions();
+			}
+		}
+		// タブレットを強制的に回収
+		if (TabletBase)
+			TabletBase->ForceRecycleTablet();
+		// 手を強制的に本来の位置に戻す
+		if (LeftHandRoot)
+			LeftHandRoot->ForceReset();
+		if (RightHandRoot)
+			RightHandRoot->ForceReset();
 		// リセットポイントを変更
 		if (UPositionResetComponent* ResetComp = GetComponentByClass<UPositionResetComponent>())
 		{
@@ -380,13 +346,11 @@ void ABikeCharacter::FindHandStretcher()
 		UE_LOG(LogTemp, Error, TEXT("Right hand root component didnot attach"));
 }
 
-void ABikeCharacter::FindTabletBaseIcon()
+void ABikeCharacter::FindTabletBase()
 {
-	TArray<USceneComponent*> Childs;
-	TabletBase->GetChildrenComponents(true, Childs);
-	for (USceneComponent* Child : Childs)
-		if (UWidgetComponent* Icon = Cast<UWidgetComponent>(Child))
-			TabletBaseIcon = Icon;
+	TabletBase = FindComponentByClass<UTabletBaseComponent>();
+	if(!TabletBase)
+		UE_LOG(LogTemp, Error, TEXT("Tablet Base component didnot attach"));
 }
 
 void ABikeCharacter::EnableAutoPlay(AQuestionUIActor* Quiz)
@@ -407,27 +371,18 @@ void ABikeCharacter::DisableAutoPlay()
 
 void ABikeCharacter::OpenTutorial(ETutorialType Type)
 {
-	if (!Tablet)
-		return;
-
-	TabletCurrentState = ETabletState::Up;
-	Tablet->ShowTutorial(Type);
-}
-
-void ABikeCharacter::OnTabletBaseOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	ATablet* TabletToRetrieve = Cast<ATablet>(OtherActor);
-	if (TabletToRetrieve)
+	if (TabletBase)
 	{
-		CloseTutorial(TabletToRetrieve);
-		TabletCurrentState = ETabletState::Down;
+		TabletBase->StartUseTablet();
 	}
+
+	//Tablet->ShowTutorial(Type);
 }
 
-bool ABikeCharacter::TakeTablet(UPrimitiveComponent* Hand)
+bool ABikeCharacter::TakeTablet(UPrimitiveComponent* Hand, ATablet* Tablet)
 {
-	USphereComponent* HandCollision = Cast<USphereComponent>(Hand);
-	if (!HandCollision)
+	UActorComponent* HandCollision = Cast<UActorComponent>(Hand);
+	if (!HandCollision || !Tablet)
 		return false;
 
 	FName TagName;
@@ -451,106 +406,8 @@ bool ABikeCharacter::TakeTablet(UPrimitiveComponent* Hand)
 		if (HandSocket)
 		{
 			HandSocket->AttachActor(Tablet, HandMesh);
-			OpenTabletBase();
 			return true;
 		}
 	}
 	return false;
-}
-
-void ABikeCharacter::MoveUpTablet(float DeltaTime)
-{
-	if (!Tablet || TabletCurrentState != ETabletState::Up)
-		return;
-
-	const USkeletalMeshSocket* TabletSocket = GetMesh()->GetSocketByName(FName("TabletSocket"));
-	if (!TabletSocket)
-		return;
-
-	// タブレットの世界座標を相対座標に変換
-	FVector TabletWorldLocation = Tablet->GetActorLocation();
-	FTransform SocketTransform = TabletSocket->GetSocketTransform(GetMesh());
-	FVector Current = SocketTransform.InverseTransformPosition(TabletWorldLocation);
-	// 移動
-	FVector DeltaLocation = FMath::VInterpTo(Current, TabletHighestLocation, DeltaTime, TabletMoveVelocity);
-	Tablet->SetActorRelativeLocation(DeltaLocation);
-
-	// 到着
-	if (FVector::Dist(DeltaLocation, TabletHighestLocation) < TabletMovementAccuracy)
-	{
-		// 再配置
-		Tablet->SetActorRelativeLocation(TabletHighestLocation);
-		TabletCurrentState = ETabletState::Highest;
-		// フラッシュの通知エフェクト
-		Tablet->FlashForNotify();
-		
-		Tablet->EnableCollision();
-	}
-}
-
-void ABikeCharacter::MoveDownTablet(float DeltaTime)
-{
-	if (!Tablet || TabletCurrentState != ETabletState::Down)
-		return;
-
-	const USkeletalMeshSocket* TabletSocket = GetMesh()->GetSocketByName(FName("TabletSocket"));
-	if (!TabletSocket)
-		return;
-
-	// タブレットの世界座標を相対座標に変換
-	FVector TabletWorldLocation = Tablet->GetActorLocation();
-	FTransform SocketTransform = TabletSocket->GetSocketTransform(GetMesh());
-	FVector Current = SocketTransform.InverseTransformPosition(TabletWorldLocation);
-	// 移動
-	FVector DeltaLocation = FMath::VInterpTo(Current, TabletLowestLocation, DeltaTime, TabletMoveVelocity);
-	Tablet->SetActorRelativeLocation(DeltaLocation);
-
-	if (FVector::Dist(DeltaLocation, TabletLowestLocation) < TabletMovementAccuracy)
-	{
-		Tablet->SetActorRelativeLocation(TabletLowestLocation);
-		TabletCurrentState = ETabletState::Lowest;
-		//
-		Tablet->Hide();
-	}
-}
-
-void ABikeCharacter::CloseTutorial(ATablet* TabletToRetrieve)
-{
-	if (!TabletToRetrieve)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("TabletToRetrieve is null"));
-		return;
-	}
-	const USkeletalMeshSocket* TabletSocket = GetMesh()->GetSocketByName(FName("TabletSocket"));
-	if (!TabletSocket)
-		return;
-
-	TabletSocket->AttachActor(TabletToRetrieve, GetMesh());
-	TabletToRetrieve->SetActorRelativeLocation(TabletHighestLocation);
-	TabletToRetrieve->CloseScene();
-	TabletToRetrieve->DisableCollision();
-	CloseTabletBase();
-}
-
-void ABikeCharacter::OpenTabletBase()
-{
-	if (!TabletBase)
-		return;
-	TabletBase->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-	if (!TabletBaseIcon)
-		return;
-	TabletBaseIcon->SetHiddenInGame(false);
-}
-
-void ABikeCharacter::CloseTabletBase()
-{
-	if (!TabletBase)
-		return;
-	TabletBase->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	TabletBase->SetHiddenInGame(true);
-
-	if (!TabletBaseIcon)
-		return;
-	TabletBaseIcon->SetHiddenInGame(true);
 }

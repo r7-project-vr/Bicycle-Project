@@ -139,11 +139,13 @@ void ATablet::OpenScene()
 
 void ATablet::EnableCollision()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Tablet Open Collision"));
 	TabletCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void ATablet::DisableCollision()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, TEXT("Tablet Close Collision"));
 	TabletCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -163,6 +165,14 @@ void ATablet::RotateScene(bool bIsLeftHand)
 	else
 		CurrentRotator = FRotator(0.f, 90.f, 0.f);
 	Content->SetRelativeRotation(CurrentRotator);
+}
+
+void ATablet::StopNotify()
+{
+	GetWorld()->GetTimerManager().ClearTimer(NotifyTimer);
+	GetWorld()->GetTimerManager().ClearTimer(FlashTimer);
+	// 光を消す
+	ChangeLightIntensity(0.f);
 }
 
 void ATablet::NextTutorial()
@@ -191,13 +201,11 @@ void ATablet::OnComponentOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 		ABikeCharacter* Character = Cast<ABikeCharacter>(OtherActor);
 		if (Character)
 		{
-			if (Character->TakeTablet(OtherComp))
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Orange, FString::Printf(TEXT("%s(%s) touch Tablet"), *OtherActor->GetFName().ToString(), *OtherComp->GetFName().ToString()));
+			if (Character->TakeTablet(OtherComp, this))
 			{
 				// 通知やフラッシュタイマーを停止
-				GetWorld()->GetTimerManager().ClearTimer(NotifyTimer);
-				GetWorld()->GetTimerManager().ClearTimer(FlashTimer);
-				// 光を消す
-				ChangeLightIntensity(0.f);
+				StopNotify();
 				OpenScene();
 			}
 		}
@@ -241,7 +249,7 @@ void ATablet::FlashOneTime(float Sec)
 
 void ATablet::ChangeLightIntensity(float Intensity)
 {
-	if (FlashDynamicMaterial)
+	if (FlashDynamicMaterial && Light)
 	{
 		FlashDynamicMaterial->SetScalarParameterValue(FName("Intensity"), Intensity);
 		if (Intensity > 0.f)

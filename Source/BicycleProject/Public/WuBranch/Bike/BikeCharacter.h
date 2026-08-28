@@ -13,20 +13,10 @@ class UBikeMovementComponent;
 class UResponderComponent;
 class UAnimalManagerComponent;
 class UPhotoCaptureComponent;
-class UBoxComponent;
 class AQuestionUIActor;
 class UMyHandRootComponent;
+class UTabletBaseComponent;
 class ATablet;
-class UWidgetComponent;
-
-enum class ETabletState : uint8
-{
-	Highest,
-	Up,
-	Stay,
-	Down,
-	Lowest
-};
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -121,7 +111,7 @@ public:
 	/// </summary>
 	/// <param name="Hand">手のコリジョン</param>
 	/// <returns>成功かどうか、true: 成功, false: 失敗</returns>
-	bool TakeTablet(UPrimitiveComponent* Hand);
+	bool TakeTablet(UPrimitiveComponent* Hand, ATablet* Tablet);
 
 private:
 
@@ -134,11 +124,6 @@ private:
 	/// ロード終わったら
 	/// </summary>
 	void LoadMeshComplete();
-
-	/// <summary>
-	/// タブレットを生成(チュートリアル用)
-	/// </summary>
-	void SpawnTablet();
 
 	/// <summary>
 	/// 自転車の方向を変える
@@ -174,37 +159,7 @@ private:
 	/// <summary>
 	/// タブレット台座のアイコンを探す
 	/// </summary>
-	void FindTabletBaseIcon();
-
-	UFUNCTION()
-	void OnTabletBaseOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	/// <summary>
-	/// タブレットを上昇させる
-	/// </summary>
-	/// <param name="DeltaTime"></param>
-	void MoveUpTablet(float DeltaTime);
-
-	/// <summary>
-	/// タブレットを下げる
-	/// </summary>
-	/// <param name="DeltaTime"></param>
-	void MoveDownTablet(float DeltaTime);
-
-	/// <summary>
-	/// チュートリアルをオフ
-	/// </summary>
-	void CloseTutorial(ATablet* TabletToRetrieve);
-
-	/// <summary>
-	/// タブレット台座を表示
-	/// </summary>
-	void OpenTabletBase();
-
-	/// <summary>
-	/// タブレット台座を非表示
-	/// </summary>
-	void CloseTabletBase();
+	void FindTabletBase();
 
 	/// <summary>
 	/// ロード先の自転車メッシュ
@@ -302,54 +257,11 @@ private:
 	/// </summary>
 	bool IsPause;
 
-	/// <summary>
-	/// タブレットのサンプル
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Tutorial", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<ATablet> TabletSample;
+	UTabletBaseComponent* TabletBase;
 
 	/// <summary>
 	/// タブレット
 	/// </summary>
-	ATablet* Tablet;
+	//ATablet* Tablet;
 
-	/// <summary>
-	/// タブレットの台座
-	/// </summary>
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UBoxComponent* TabletBase;
-
-	/// <summary>
-	/// タブレットのアイコン
-	/// </summary>
-	UWidgetComponent* TabletBaseIcon;
-
-	/// <summary>
-	/// タブレット今の状態
-	/// </summary>
-	ETabletState TabletCurrentState;
-
-	/// <summary>
-	/// タブレットの移動速度
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Tutorial", meta = (AllowPrivateAccess = "true"))
-	float TabletMoveVelocity;
-
-	/// <summary>
-	/// 移動精度
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Tutorial", meta = (AllowPrivateAccess = "true"))
-	float TabletMovementAccuracy;
-
-	/// <summary>
-	/// タブレットの最高点
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Tutorial", meta = (AllowPrivateAccess = "true"))
-	FVector TabletHighestLocation;
-
-	/// <summary>
-	/// タブレットの最低点
-	/// </summary>
-	UPROPERTY(EditDefaultsOnly, Category = "Tutorial", meta = (AllowPrivateAccess = "true"))
-	FVector TabletLowestLocation;
 };

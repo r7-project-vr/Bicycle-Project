@@ -172,10 +172,15 @@ void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 	UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance());
 	if (GameInstance)
 	{
-		// デフォルトアクションを機能させない
-		GameInstance->GetDeviceManager()->DisableDefaultActions();
-		// プレイヤーに答えを選べるようにする
-		GameInstance->GetDeviceManager()->EnableSelectAnswerActions();
+		if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
+		{
+			// デフォルトアクションを機能させない
+			DeviceManager->DisableDefaultActions();
+			// プレイヤーに答えを選べるようにする
+			DeviceManager->EnableSelectAnswerActions();
+			// 手を伸ばす機能を解放
+			DeviceManager->EnableStretchActions();
+		}
 	}
 
 	// 自転車のスピードを強制的に0まで下げる
@@ -211,9 +216,6 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 			// チュートリアルを開く
 			Character->OpenTutorial(ETutorialType::Quiz);
 		}
-		/*UBikeComponent* Bike = OtherActor->GetComponentByClass<UBikeComponent>();
-		SetTarget(Bike);
-		HandlePlayerEnterArea(Bike);*/
 	}
 }
 

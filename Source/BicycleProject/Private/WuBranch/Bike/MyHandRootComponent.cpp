@@ -28,7 +28,7 @@ UMyHandRootComponent::UMyHandRootComponent()
 	, OriginalVRLocation(FVector::ZeroVector)
 	, OriginalHandLocation(FVector::ZeroVector)
 	, ExtensionAngle(FRotator(0.f, -90.f, 0.f))
-	, HandLocationTmp(FVector::ZeroVector)
+	, StretchStartLocation(FVector::ZeroVector)
 	, Direction(FVector::ZeroVector)
 	, bIsStretching(false)
 	, Sensitivity(3.f)
@@ -102,6 +102,10 @@ void UMyHandRootComponent::OnStretchArm(bool bIsPrepared)
 		return;
 	}
 
+	// 手が伸ばしている途中なら無視、
+	if (bIsStretching)
+		return;
+
 	if (bIsPrepared)
 	{
 		// 手を伸ばす前の準備段階
@@ -115,7 +119,7 @@ void UMyHandRootComponent::OnStretchArm(bool bIsPrepared)
 		// 手を回転させる準備
 		PrepareRotateArm();
 	}
-	else
+	else if (bIsRotateArm)
 	{
 		if (!Owner)
 			return;
@@ -140,8 +144,23 @@ void UMyHandRootComponent::OnStretchArm(bool bIsPrepared)
 		// 伸ばす初速を設定
 		CurrentVelocity = StretchInitialVelocity;
 		PlayStretchSE();
+		StretchLength = 0.f;
+		PreviousStretchLength = 0.f;
 		bIsStretching = true;
 	}
+}
+
+void UMyHandRootComponent::ForceReset()
+{
+	if (bIsRotateArm)
+	{
+		bIsRotateArm = false;
+		HandRotateVelocity = 0;
+		ReturnToOriginalTransform();
+		bIsControlled = false;
+	}
+	else if(bIsStretching)
+		ResetHand();
 }
 
 void UMyHandRootComponent::FindOwner()
@@ -293,7 +312,8 @@ void UMyHandRootComponent::RecordInitialInfo()
 	OriginalVRLocation = VRController->GetRelativeLocation();
 
 	// 今手の座標を記録
-	HandLocationTmp = HandMesh->GetComponentLocation();
+	StretchStartLocation = HandMesh->GetComponentLocation();
+	StretchingLocation = HandMesh->GetComponentLocation();
 }
 
 void UMyHandRootComponent::Stretch(float DeltaTime)
@@ -302,8 +322,10 @@ void UMyHandRootComponent::Stretch(float DeltaTime)
 
 	// 世界座標を使う、事前にDirectionをキャラクターの向きに合わせる必要がある
 	// 相対位置を使うと、プレイヤーの手の向きにより想定していない方向に移動してしまう問題がある
-	FVector NewHandLocation = HandMesh->GetComponentLocation() + Distance;
-	HandMesh->SetWorldLocation(NewHandLocation);
+	StretchingLocation += Distance;
+	HandMesh->SetWorldLocation(StretchingLocation);
+	//FVector NewHandLocation = HandMesh->GetComponentLocation() + Distance;
+	//HandMesh->SetWorldLocation(NewHandLocation);
 
 	// 次回の速度
 	CurrentVelocity -= StretchVelocityDamping * DeltaTime;
@@ -318,15 +340,12 @@ void UMyHandRootComponent::Stretch(float DeltaTime)
 
 	// 速度がマイナスになり、伸ばした手の相対位置がZeroVectorに近い位置になると
 	// 手が戻ったと意味する。bIsStretcgingをfalseにする
-	if (CurrentVelocity <= 0 && (NewHandLocation - HandLocationTmp).Length() < 50)
+	PreviousStretchLength = StretchLength;
+	StretchLength = (StretchingLocation - StretchStartLocation).Length();
+	if (CurrentVelocity <= 0 && StretchLength < 50)
 	{
-		bIsStretching = false;
-		CurrentVelocity = 0.f;
-		Direction = FVector::ZeroVector;
-		ReturnToOriginalTransform();
 		StopRetractSE();
-		bIsPlayingRetractSE = false;
-		bIsControlled = false;
+		ResetHand();
 	}
 }
 
@@ -352,4 +371,14 @@ void UMyHandRootComponent::DisableMoveAction()
 
 	if (DeviceManager)
 		DeviceManager->DisableDefaultActions();
+}
+
+void UMyHandRootComponent::ResetHand()
+{
+	bIsStretching = false;
+	CurrentVelocity = 0.f;
+	Direction = FVector::ZeroVector;
+	ReturnToOriginalTransform();
+	bIsPlayingRetractSE = false;
+	bIsControlled = false;
 }

@@ -91,6 +91,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	UNiagaraSystem* TouchEffect;
 
+	/// <summary>
+	/// 手を伸ばしている間、手の周りを光らせるマテリアル(オーバーレイ)
+	/// 手が黒いので、夜や黒い看板の前で見えなくなるため
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UMaterialInterface* StretchGlowMaterial;
+
 private:
 
 	/// <summary>
@@ -170,6 +177,12 @@ private:
 	void ResetHand();
 
 	/// <summary>
+	/// 手の周りの光をつける/消す
+	/// </summary>
+	/// <param name="bEnable">true: つける, false: 消す</param>
+	void SetHandGlow(bool bEnable);
+
+	/// <summary>
 	/// VRコントローラーのタグ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
@@ -189,6 +202,12 @@ private:
 	/// 手
 	/// </summary>
 	USkeletalMeshComponent* HandMesh;
+
+	/// <summary>
+	/// 手に元々設定されていたオーバーレイマテリアル
+	/// </summary>
+	UPROPERTY()
+	UMaterialInterface* OriginalOverlayMaterial;
 
 	/// <summary>
 	/// 手のコリジョン

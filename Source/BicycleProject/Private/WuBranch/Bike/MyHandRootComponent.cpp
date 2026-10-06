@@ -16,10 +16,12 @@
 
 // Sets default values for this component's properties
 UMyHandRootComponent::UMyHandRootComponent()
-	: ControllerTag("")
+	: StretchGlowMaterial(nullptr)
+	, ControllerTag("")
 	, Owner(nullptr)
 	, VRController(nullptr)
 	, HandMesh(nullptr)
+	, OriginalOverlayMaterial(nullptr)
 	, HandCollision(nullptr)
 	, bIsControlled(false)
 	, StretchInitialVelocity(100.f)
@@ -62,6 +64,7 @@ void UMyHandRootComponent::BeginPlay()
 	{
 		OriginalHandLocation = HandMesh->GetRelativeLocation();
 		OriginalRotation = HandMesh->GetRelativeRotation();
+		OriginalOverlayMaterial = HandMesh->GetOverlayMaterial();
 		
 		FindHandCollisionAndInteractor();
 		if (HandCollision)
@@ -118,6 +121,9 @@ void UMyHandRootComponent::OnStretchArm(bool bIsPrepared)
 
 		// 手を回転させる準備
 		PrepareRotateArm();
+
+		// 手が戻るまで手の周りを光らせる
+		SetHandGlow(true);
 	}
 	else if (bIsRotateArm)
 	{
@@ -158,6 +164,7 @@ void UMyHandRootComponent::ForceReset()
 		HandRotateVelocity = 0;
 		ReturnToOriginalTransform();
 		bIsControlled = false;
+		SetHandGlow(false);
 	}
 	else if(bIsStretching)
 		ResetHand();
@@ -381,4 +388,13 @@ void UMyHandRootComponent::ResetHand()
 	ReturnToOriginalTransform();
 	bIsPlayingRetractSE = false;
 	bIsControlled = false;
+	SetHandGlow(false);
+}
+
+void UMyHandRootComponent::SetHandGlow(bool bEnable)
+{
+	if (!HandMesh)
+		return;
+
+	HandMesh->SetOverlayMaterial(bEnable && StretchGlowMaterial ? StretchGlowMaterial : OriginalOverlayMaterial);
 }

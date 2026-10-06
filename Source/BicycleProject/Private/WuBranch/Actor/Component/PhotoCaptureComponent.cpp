@@ -242,6 +242,8 @@ void UPhotoCaptureComponent::TakePhoto(UMyGameInstance* GameInstance, TArray<AWi
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
 	// 2026.06.13 ウー 陰ある所を撮ると、暗すぎで見えない問題を解決する
+	// 撮影可能を示す赤い縁取り(ポストプロセスマテリアル)を写真に写さない
+	CaptureComponent->ShowFlags.SetPostProcessMaterial(false);
 	//CaptureComponent->PostProcessSettings.bOverride_AutoExposureBias = true;
 	//CaptureComponent->PostProcessSettings.AutoExposureBias = 2.0f;
 	//CaptureComponent->PostProcessSettings.bOverride_ToneCurveAmount = true;

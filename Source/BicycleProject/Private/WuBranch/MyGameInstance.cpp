@@ -30,12 +30,15 @@ UMyGameInstance::UMyGameInstance()
 	, RPMThreshold(10)
 	, MaxStandardRPM(60)
 	, NumOfSets(4)
+	, bHasGivenStarterAnimals(false)
 	, MaxAnimalCount(10)
 	, ShopItemsDataTable(nullptr)
 	, bIsOpenTutorial(true)
 {
 	DeviceManager = nullptr;
 	FileName = TEXT("PlayerData.json");
+	// 6: いぬ(DA_PetDog), 3: ねこ(DA_PetCat)
+	StarterAnimalIDs = { 6, 3 };
 }
 
 void UMyGameInstance::Init()
@@ -291,10 +294,10 @@ void UMyGameInstance::RemoveAnimal(int32 AnimalID)
 	NotifyUpdateAnimalNum(AnimalID);
 }
 
-TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
-{
-	return Animals;
-}
+//TArray<TSubclassOf<AAnimal>> UMyGameInstance::GetAnimals() const
+//{
+//	return Animals;
+//}
 
 TMap<int32, int32> UMyGameInstance::GetOwnedAnimals() const
 {
@@ -344,11 +347,27 @@ void UMyGameInstance::NotifyUpdateAnimalNum(int32 AnimalID, int Nums)
 void UMyGameInstance::SaveAnimalToFile(FPlayerSaveGame& Data)
 {
 	Data.OwnedAnimals = OwnedAnimals;
+	Data.bHasGivenStarterAnimals = bHasGivenStarterAnimals;
 }
 
 void UMyGameInstance::ReadAnimalFromFile(const FPlayerSaveGame& Data)
 {
 	OwnedAnimals = Data.OwnedAnimals;
+	bHasGivenStarterAnimals = Data.bHasGivenStarterAnimals;
+}
+
+void UMyGameInstance::GiveStarterAnimals()
+{
+	// 持っていない動物だけ1匹ずつ渡す
+	// 以前は振り切られた動物がセーブから減っていたので、渡した後でもいなくなっていたら戻す
+	for (int32 AnimalID : StarterAnimalIDs)
+	{
+		if (GetAnimalNumByID(AnimalID) == 0)
+			AddAnimal(AnimalID);
+	}
+
+	// ファイルへは次のセーブ(ゲーム終了時・ショップ)で保存される
+	bHasGivenStarterAnimals = true;
 }
 #pragma endregion
 
@@ -491,6 +510,7 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 	ReadSetsFromFile(Data);
 	ReadAnimalFromFile(Data);
 	ReadPhotoFromFile(Data);
+	GiveStarterAnimals();
 }
 #pragma endregion
 

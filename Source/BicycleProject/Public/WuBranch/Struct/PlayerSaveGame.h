@@ -102,4 +102,10 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     /// </summary>
     UPROPERTY()
     TMap<int32, int32> AnimalPhotoPoints;
+
+    /// <summary>
+    /// 最初から持っている動物(いぬ・ねこ)をもう渡したか
+    /// </summary>
+    UPROPERTY()
+    bool bHasGivenStarterAnimals = false;
 };

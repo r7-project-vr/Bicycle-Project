@@ -371,7 +371,7 @@ public:
 	/// 全動物をゲット
 	/// </summary>
 	/// <returns>全動物</returns>
-	TArray<TSubclassOf<AAnimal>> GetAnimals() const;
+	//TArray<TSubclassOf<AAnimal>> GetAnimals() const;
 	TMap<int32, int32> GetOwnedAnimals() const;
 
 	/// <summary>
@@ -424,10 +424,26 @@ private:
 	void ReadAnimalFromFile(const FPlayerSaveGame& Data);
 
 	/// <summary>
+	/// 最初から持っている動物を渡す(持っていなければ起動時に1匹ずつ)
+	/// </summary>
+	void GiveStarterAnimals();
+
+	/// <summary>
+	/// 最初から持っている動物のID(それぞれ1匹ずつ)
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<int32> StarterAnimalIDs;
+
+	/// <summary>
+	/// 最初から持っている動物をもう渡したか(記録のみ、持っていなければ起動のたびに渡す)
+	/// </summary>
+	bool bHasGivenStarterAnimals;
+
+	/// <summary>
 	/// 一ゲーム内でついてくる動物
 	/// </summary>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<AAnimal>> Animals;
+	/*UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<AAnimal>> Animals;*/
 
 	/// <summary>
 	/// プレイヤーが持っている動物

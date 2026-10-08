@@ -3,8 +3,10 @@
 
 #include "WuBranch/Actor/Pet.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/DataAssets/AnimalDataAsset.h"
+#include "WuBranch/Actor/Component/AnimalManagerComponent.h"
 
 APet::APet()
 	: AAnimal()
@@ -14,6 +16,14 @@ APet::APet()
 	, StartChaseDistance(0.f)
 	, GiveUpDistance(0.f)
 	, IsPlayedChirp(false)
+	, MinChaseSpeed(300.f)
+	, MaxChaseSpeed(2000.f)
+	, CatchUpRate(1.f)
+	, RecallDistance(2500.f)
+	, TargetSpeed(0.f)
+	, PreviousTargetLocation(FVector::ZeroVector)
+	, bHasPreviousTargetLocation(false)
+	, RecallCoolTime(0.f)
 {
 	
 }
@@ -32,16 +42,38 @@ void APet::Init(ACharacter* Target, UAnimalManagerComponent* Manager, UAnimalDat
 	}
 }
 
+void APet::LeaveBehind()
+{
+	if (!IsFollowing())
+		return;
+
+	// 鳴いてから諦める(次のActionでGiveUpする)
+	PlayChirp();
+	CurrentState = BehaviorState::GivingUp;
+}
+
+bool APet::IsFollowing() const
+{
+	return CurrentTarget != nullptr && CurrentState != BehaviorState::GivingUp;
+}
+
 void APet::BeginPlay()
 {
 	Super::BeginPlay();
 
 	IsChaseTarget = false;
 	ChaseLocation = GetActorLocation();
+	TargetSpeed = 0.f;
+	bHasPreviousTargetLocation = false;
+	RecallCoolTime = 0.f;
+
 }
 
 void APet::DecideBehavior()
 {
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+	UpdateTargetSpeed(DeltaTime);
+
 	FVector MyLocation = GetActorLocation();
 	//
 	if (IsChaseTarget)
@@ -51,15 +83,13 @@ void APet::DecideBehavior()
 	// 追う目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
 
-	float TargetVelocity = CurrentTarget.Get()->GetCharacterMovement()->Velocity.Length();
+	// プレイヤーが動いているか(オートプレイで運ばれている時も含む)
+	bool bIsTargetMoving = TargetSpeed > 10.f;
 
 	switch (CurrentState)
 	{
 	case BehaviorState::None:
-		if (Distance >= GiveUpDistance)
-			CurrentState = BehaviorState::GivingUp;
-		//else if (Distance >= StartChaseDistance)
-		else if(TargetVelocity > 0.f)
+		if(bIsTargetMoving)
 		{
 			// 次の目標を決める
 			/*if (FMath::SRand() <= TargetChaseRate)
@@ -72,15 +102,25 @@ void APet::DecideBehavior()
 		}
 		break;
 	case BehaviorState::Chasing:
-		// 一定以上距離を離れたら追うのをやめる
-		if (Distance >= GiveUpDistance)
-			CurrentState = BehaviorState::GivingUp;
 		// 目標に着いたら(プレイヤー: 200以下、偏移座標: 10以下)
-		else if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 10.f))
-			CurrentState = BehaviorState::None;
+		if ((IsChaseTarget && Distance <= 200.f) || (!IsChaseTarget && Distance <= 10.f))
+		{
+			// プレイヤーが動いている間は止まらずに次の位置へ走る
+			if (bIsTargetMoving)
+				ChangeOffset(GetNewOffset());
+			else
+				CurrentState = BehaviorState::None;
+		}
 		break;
 	case BehaviorState::GivingUp:
 		break;
+	}
+
+	// 障害物に引っかかる等で離れすぎたら、プレイヤーの後ろに呼び戻す
+	RecallCoolTime -= DeltaTime;
+	if (RecallCoolTime <= 0.f && FVector::DistXY(MyLocation, GetMyTargetLocation()) >= RecallDistance)
+	{
+		Recall();
 	}
 }
 
@@ -106,16 +146,48 @@ void APet::Chase(float DeltaTime)
 	// 目標との距離
 	float Distance = FVector::DistXY(MyLocation, ChaseLocation);
 	// 方向
-	FVector Direction = (ChaseLocation - MyLocation).GetSafeNormal();
+	FVector Direction = (ChaseLocation - MyLocation).GetSafeNormal2D();
 
 	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("distance: %lf, StartChaseDistance: %lf"), Distance, StartChaseDistance));
-	Move(DeltaTime, Direction);
+	// プレイヤーの速さに合わせて走る、離れている分だけ速くして追いつく
+	// (Moveは Speed * DeltaTime を入力にするため、フレームレートで速さが変わり最高600cm/sで自転車に置いていかれていた)
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(TargetSpeed + Distance * CatchUpRate, MinChaseSpeed, MaxChaseSpeed);
 
-	// 諦める前に鳴く, 諦める距離の8割
-	if (!IsPlayedChirp && Distance >= GiveUpDistance * 0.8)
+	// 向き変更
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), Direction.Rotation(), DeltaTime, 5.f));
+
+	// 移動、速さはMaxWalkSpeedで決まる
+	GetCharacterMovement()->AddInputVector(Direction);
+}
+
+void APet::UpdateTargetSpeed(float DeltaTime)
+{
+	FVector TargetLocation = GetMyTargetLocation();
+	if (bHasPreviousTargetLocation && DeltaTime > KINDA_SMALL_NUMBER)
 	{
-		PlayChirp();
+		// ワープした時の飛びを抑えるため上限を付けて、なめらかにする
+		float CurrentSpeed = FMath::Min(FVector::DistXY(TargetLocation, PreviousTargetLocation) / DeltaTime, MaxChaseSpeed);
+		TargetSpeed = FMath::FInterpTo(TargetSpeed, CurrentSpeed, DeltaTime, 10.f);
 	}
+	PreviousTargetLocation = TargetLocation;
+	bHasPreviousTargetLocation = true;
+}
+
+void APet::Recall()
+{
+	FVector GroundLocation;
+	UCapsuleComponent* Capsule = GetCapsuleComponent();
+	if (!AnimalManager || !AnimalManager->FindLocationBehindTarget(Capsule->GetScaledCapsuleRadius(), GroundLocation))
+	{
+		// 置ける位置がなかったら少し待ってから試す
+		RecallCoolTime = 1.f;
+		return;
+	}
+
+	SetActorLocation(GroundLocation + FVector(0, 0, Capsule->GetScaledCapsuleHalfHeight()), false, nullptr, ETeleportType::TeleportPhysics);
+	GetCharacterMovement()->StopMovementImmediately();
+	ChangeOffset(GetNewOffset());
+	CurrentState = BehaviorState::Chasing;
 }
 
 FVector APet::GetNewOffset()

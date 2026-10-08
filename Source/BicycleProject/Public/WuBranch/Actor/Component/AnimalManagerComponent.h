@@ -47,7 +47,35 @@ public:
 	/// <returns>動物の名前</returns>
 	FName GetAnimalName(int AnimalID) const;
 
+	/// <summary>
+	/// 対象の後ろで動物を置ける位置を探す(離れすぎた動物を呼び戻す時に使う)
+	/// </summary>
+	/// <param name="CollisionRadius">半径</param>
+	/// <param name="OGroundLocation">地面の位置</param>
+	/// <returns>true: 見つかった, false: 見つからなかった</returns>
+	bool FindLocationBehindTarget(float CollisionRadius, FVector& OGroundLocation);
+
 private:
+
+	/// <summary>
+	/// 漕ぎ過ぎ(赤ゲージ)のペナルティの状態が変わった
+	/// </summary>
+	/// <param name="bIsPenalty">ペナルティ中か</param>
+	UFUNCTION()
+	void OnPenaltyUpdated(bool bIsPenalty);
+
+	/// <summary>
+	/// ついてくる動物を1匹振り切る(一番後ろにいる動物)
+	/// </summary>
+	void LeaveOneAnimal();
+
+	/// <summary>
+	/// 対象の周りで動物を置ける位置を探す
+	/// </summary>
+	/// <param name="CollisionRadius">半径</param>
+	/// <param name="OGroundLocation">地面の位置</param>
+	/// <returns>true: 見つかった, false: 見つからなかった</returns>
+	bool FindLocationNearTarget(float CollisionRadius, FVector& OGroundLocation);
 
 	/// <summary>
 	/// プレイヤーを設定

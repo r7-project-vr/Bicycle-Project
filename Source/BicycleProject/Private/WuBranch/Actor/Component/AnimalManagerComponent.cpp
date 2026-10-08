@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include <Engine/AssetManager.h>
 #include <WuBranch/DataAssets/AnimalDataAsset.h>
+#include "WuBranch/Bike/BikeComponent.h"
 
 // Sets default values for this component's properties
 UAnimalManagerComponent::UAnimalManagerComponent()
@@ -27,6 +28,12 @@ void UAnimalManagerComponent::BeginPlay()
 	// ...
 	RandomStream.Initialize(FDateTime::Now().GetTicks());
 	SetTarget();
+
+	// 漕ぎ過ぎ(赤ゲージ)になったら動物を1匹ずつ振り切る
+	if (UBikeComponent* Bike = GetOwner()->FindComponentByClass<UBikeComponent>())
+	{
+		Bike->OnUpdatePenaltyEvent.AddDynamic(this, &UAnimalManagerComponent::OnPenaltyUpdated);
+	}
 
 	TArray<FPrimaryAssetId> AnimalIDs = GetAllAnimalID();
 	LoadedAnimalCount = AnimalIDs.Num();
@@ -57,10 +64,80 @@ void UAnimalManagerComponent::ReduceAnimal(AAnimal* Animal)
 	if (FollowingAnimals.Num() <= 0 || !FollowingAnimals.Contains(Animal))
 		return;
 
+	// この走行の間だけ外す、持っている動物(セーブ)は減らさないので次のゲームでは戻ってくる
 	FollowingAnimals.Remove(Animal);
 
-	UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
-	GameInstance->RemoveAnimal(Animal->GetMyID());
+	/*UMyGameInstance* GameInstance = GetWorld()->GetGameInstance<UMyGameInstance>();
+	GameInstance->RemoveAnimal(Animal->GetMyID());*/
+}
+
+void UAnimalManagerComponent::OnPenaltyUpdated(bool bIsPenalty)
+{
+	if (bIsPenalty)
+	{
+		LeaveOneAnimal();
+	}
+}
+
+void UAnimalManagerComponent::LeaveOneAnimal()
+{
+	if (!Target)
+		return;
+
+	// 一番後ろ(プレイヤーの進行方向で一番遅れている)の動物が振り切られる
+	FVector TargetLocation = Target->GetActorLocation();
+	FVector TargetForward = Target->GetActorForwardVector();
+	APet* LastPet = nullptr;
+	float LastForwardDistance = TNumericLimits<float>::Max();
+	for (AAnimal* Animal : FollowingAnimals)
+	{
+		APet* Pet = Cast<APet>(Animal);
+		if (!IsValid(Pet) || !Pet->IsFollowing())
+			continue;
+
+		float ForwardDistance = FVector::DotProduct(Pet->GetActorLocation() - TargetLocation, TargetForward);
+		if (ForwardDistance < LastForwardDistance)
+		{
+			LastForwardDistance = ForwardDistance;
+			LastPet = Pet;
+		}
+	}
+
+	if (LastPet)
+	{
+		LastPet->LeaveBehind();
+	}
+}
+
+bool UAnimalManagerComponent::FindLocationBehindTarget(float CollisionRadius, FVector& OGroundLocation)
+{
+	if (!Target)
+		return false;
+
+	FVector TargetLocation = Target->GetActorLocation();
+	FRotator TargetRotation = Target->GetActorRotation();
+	for (int Try = 0; Try < 10; Try++)
+	{
+		// プレイヤーの後ろ側(150度 ~ 210度)、400 ~ 800cm (来た道なので置ける可能性が高い)
+		float Angle = FMath::DegreesToRadians(RandomStream.FRandRange(150.f, 210.f));
+		float Distance = RandomStream.FRandRange(400.f, 800.f);
+		FVector Offset(FMath::Cos(Angle) * Distance, FMath::Sin(Angle) * Distance, 0.f);
+		if (CheckLocation(CollisionRadius, TargetLocation + TargetRotation.RotateVector(Offset), OGroundLocation))
+			return true;
+	}
+	return false;
+}
+
+bool UAnimalManagerComponent::FindLocationNearTarget(float CollisionRadius, FVector& OGroundLocation)
+{
+	// 置ける位置がないとずっと探し続けてゲームが止まるので、回数を制限する
+	for (int Try = 0; Try < 50; Try++)
+	{
+		FVector NewLocation = GetRandomLocationNearPlayer();
+		if (CheckLocation(CollisionRadius, NewLocation, OGroundLocation))
+			return true;
+	}
+	return FindLocationBehindTarget(CollisionRadius, OGroundLocation);
 }
 
 bool UAnimalManagerComponent::IsWildAnimal(int AnimalID) const
@@ -166,11 +243,11 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TArray<TSubclassOf<AAnimal>> A
 
 		// おいていける位置を探す
 		FVector GroundLocation;
-		bool bIsValidLocation = false;
-		do {
-			FVector NewLocation = GetRandomLocationNearPlayer();
-			bIsValidLocation = CheckLocation(CapsuleRadius, NewLocation, GroundLocation);
-		} while (!bIsValidLocation);
+		if (!FindLocationNearTarget(CapsuleRadius, GroundLocation))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Did not find location to place animal"));
+			continue;
+		}
 
 		// 高さの調整
 		FVector SpawnLocation = GroundLocation + FVector(0, 0, CapsuleHalfHeight);
@@ -198,11 +275,11 @@ void UAnimalManagerComponent::ArrangeAroundTarget(TSubclassOf<AAnimal> AnimalCla
 	
 	// おいていける位置を探す
 	FVector GroundLocation;
-	bool bIsValidLocation = false;
-	do {
-		FVector NewLocation = GetRandomLocationNearPlayer();
-		bIsValidLocation = CheckLocation(CapsuleRadius, NewLocation, GroundLocation);
-	} while (!bIsValidLocation);
+	if (!FindLocationNearTarget(CapsuleRadius, GroundLocation))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Did not find location to place animal"));
+		return;
+	}
 
 	// 高さの調整
 	FVector SpawnLocation = GroundLocation + FVector(0, 0, CapsuleHalfHeight);

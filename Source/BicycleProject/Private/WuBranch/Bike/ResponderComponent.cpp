@@ -16,7 +16,7 @@ UResponderComponent::UResponderComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	//PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -149,10 +149,10 @@ void UResponderComponent::HandleSelectAnswer(FRotator Dir)
 	Character->SetTurningAngle(Dir);
 	// 二回目以降選ばせない
 	DisableSelectAnswerAction();
-	// UI補助線を表示しない
+	// 頭のUI補助線を表示しない
 	if (Character)
 	{
-		Character->DisableHintLine();
+		Character->DisableHintLineFromHead();
 	}
 }
 

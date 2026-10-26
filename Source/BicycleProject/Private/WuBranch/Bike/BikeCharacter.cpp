@@ -101,13 +101,6 @@ void ABikeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		{
 			//DeviceManager->CreateAllDevices();
 			DeviceManager->EnableAllDevices();
-			/*if (Bike)
-			{
-				DeviceManager->BindMoveEvent(Bike, "OnMove");
-				DeviceManager->BindSelectLeftEvent(Bike, "OnSelectLeftAnswer");
-				DeviceManager->BindSelectRightEvent(Bike, "OnSelectRightAnswer");
-				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Bind event")));
-			}*/
 			if (!BikeMovement)
 				FindMover();
 			if (BikeMovement)
@@ -218,7 +211,7 @@ void ABikeCharacter::SetTurningAngle(FRotator Angle)
 	_isRotate = true;
 }
 
-void ABikeCharacter::DisableHintLine()
+void ABikeCharacter::DisableHintLineFromHead()
 {
 	if (_widgetInteractionHeadComponent)
 	{

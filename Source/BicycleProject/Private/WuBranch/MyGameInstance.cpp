@@ -7,6 +7,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "WuBranch/Struct/PlayerSaveGame.h"
 #include "WuBranch/System/SaveGameManager.h"
+#include "WuBranch/System/TutorialSystem.h"
 #include "Engine/Texture2D.h"
 #include "Engine/GameViewportClient.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,7 +34,6 @@ UMyGameInstance::UMyGameInstance()
 	, bHasGivenStarterAnimals(false)
 	, MaxAnimalCount(10)
 	, ShopItemsDataTable(nullptr)
-	, bIsOpenTutorial(true)
 {
 	DeviceManager = nullptr;
 	FileName = TEXT("PlayerData.json");
@@ -484,6 +484,7 @@ void UMyGameInstance::SaveAllToFile()
 	SaveSetsToFile(Data);
 	SaveRPMToFile(Data);
 	SavePhotoToFile(Data);
+	SaveTutorialToFile(Data);
 
 	FString Path = FPaths::ProjectSavedDir() / FileName;
 	GetSubsystem<USaveGameManager>()->SaveFile(Path, Data);
@@ -511,6 +512,7 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 	ReadAnimalFromFile(Data);
 	ReadPhotoFromFile(Data);
 	GiveStarterAnimals();
+	ReadTutorialFromFile(Data);
 }
 #pragma endregion
 
@@ -751,5 +753,17 @@ void UMyGameInstance::NotifyUpdateScreenShotTime()
 {
 	if (OnUpdateScreenShotTime.IsBound())
 		OnUpdateScreenShotTime.Broadcast(GetScreenshotCount());
+}
+#pragma endregion
+
+#pragma region チュートリアル
+void UMyGameInstance::SaveTutorialToFile(FPlayerSaveGame& Data)
+{
+	Data.bNeedTutorial = GetSubsystem<UTutorialsystem>()->IsNeedTutorial();
+}
+
+void UMyGameInstance::ReadTutorialFromFile(const FPlayerSaveGame& Data)
+{
+	GetSubsystem<UTutorialsystem>()->SetNeedTutorial(Data.bNeedTutorial);
 }
 #pragma endregion

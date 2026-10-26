@@ -713,11 +713,18 @@ private:
 #pragma endregion
 
 #pragma region チュートリアル
-public:
-	
-	FORCEINLINE bool IsTutorialOpen() const { return bIsOpenTutorial; }
 
 private:
-	bool bIsOpenTutorial;
+
+	/// <summary>
+	/// 自動チュートリアルをファイルに保存
+	/// </summary>
+	void SaveTutorialToFile(FPlayerSaveGame& Data);
+
+	/// <summary>
+	/// ファイルからコインを読み込む
+	/// </summary>
+	void ReadTutorialFromFile(const FPlayerSaveGame& Data);
+
 #pragma endregion
 };

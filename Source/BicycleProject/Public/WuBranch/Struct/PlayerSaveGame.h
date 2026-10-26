@@ -108,4 +108,10 @@ struct BICYCLEPROJECT_API FPlayerSaveGame
     /// </summary>
     UPROPERTY()
     bool bHasGivenStarterAnimals = false;
+
+    /// <summary>
+    /// チュートリアルのオンオフ
+    /// </summary>
+    UPROPERTY()
+    bool bNeedTutorial = true;
 };

@@ -51,7 +51,6 @@ void ATutorialTrigPoint::OnOverlapBeginTriggerArea(UPrimitiveComponent* Overlapp
 		UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>();
 		if (TutorialSystem && TutorialSystem->IsNeedTutorial())
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("Trig Tutorial"));
 			TutorialSystem->OpenTutorial(Type);
 		}
 	}

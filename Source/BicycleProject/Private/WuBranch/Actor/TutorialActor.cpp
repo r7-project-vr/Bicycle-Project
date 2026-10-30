@@ -12,7 +12,7 @@ ATutorialActor::ATutorialActor()
 	, CurrentStep(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -39,11 +39,11 @@ UTutorialTextPanelWidget* ATutorialActor::GetTutorialTextPanelWidget(UWidgetComp
 }
 
 // Called every frame
-void ATutorialActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
+//void ATutorialActor::Tick(float DeltaTime)
+//{
+//	Super::Tick(DeltaTime);
+//
+//}
 
 void ATutorialActor::StartTutorial_Implementation()
 {

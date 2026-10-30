@@ -50,6 +50,14 @@ public:
 	void DestroyAllAnimals();
 
 	/// <summary>
+	/// 動物を生成
+	/// </summary>
+	/// <param name="Target">スポーンする動物のクラス</param>
+	/// <param name="Location">スポーン位置</param>
+	/// <param name="Rotation">スポーン時の回転</param>
+	AWildAnimal* CreateAnimal(TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation);
+
+	/// <summary>
 	/// 普通動物のリスト
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wild Animal|Spawn Settings")
@@ -144,7 +152,15 @@ private:
 	/// <param name="Rotation">スポーン時の回転</param>
 	/// <param name="SpawnBox">スポーン元のBoxComponent（スケール計算用）</param>
 	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox);
-	void CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox, UAnimalDataAsset* Data);
+
+	/// <summary>
+	/// 動物を初期化
+	/// </summary>
+	/// <param name="Animal">動物</param>
+	/// <param name="Character">プレイヤーキャラクター</param>
+	/// <param name="SpawnBox">スポーン元のBoxComponent（スケール計算用）</param>
+	/// <param name="Data">動物のデータ</param>
+	void InitAnimal(AWildAnimal* Animal, ACharacter* Character, UBoxComponent* SpawnBox, UAnimalDataAsset* Data);
 
 	/// <summary>
 	/// ランダムに動物を決定

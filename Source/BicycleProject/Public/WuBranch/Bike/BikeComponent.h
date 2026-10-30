@@ -73,12 +73,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FUpdatePenaltyDelegate OnUpdatePenaltyEvent;
 
-private:
-
 	/// <summary>
 	/// 今踏んでいるマップを探す
 	/// </summary>
 	ATile* FindCurrentTile();
+
+private:
 
 	/// <summary>
 	/// ペナルティをキャンセル

@@ -108,7 +108,7 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 	if (GameInstance)
 	{
 		// 2026.05.07 ウー start 写真を撮る前に一旦UIを非表示にする
-		if (GameInstance->CaptureVRScreenshot())
+		if (GameInstance->HasExceededPhotoLimit())
 		{
 			SetUIVisibility(false);
 			// UIを非表示にしてから写真を撮る、なので同じフレームで動作しない
@@ -386,8 +386,12 @@ TArray<int32> UPhotoCaptureComponent::GetAnimalsID(UMyGameInstance* GameInstance
 {
 	TArray<int32> AnimalsID;
 	for (AWildAnimal* Animal : Animals)
-		AnimalsID.Add(GameInstance->SwitchWild2Pet(Animal->GetMyID()));
-
+	{
+		int32 ID = GameInstance->SwitchWild2Pet(Animal->GetMyID());
+		if(ID != -1)
+			AnimalsID.Add(ID);
+	}
+		
 	return AnimalsID;
 }
 

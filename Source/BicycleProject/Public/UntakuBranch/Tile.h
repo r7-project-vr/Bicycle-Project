@@ -63,6 +63,13 @@ public:
 	void SpawnEnvironmentals(int Seed);
 	// 2025.08.19 ウー end
 
+	// 2026.10.24 ウー start
+	/// <summary>
+	/// 野良動物生成者を取得する
+	/// </summary>
+	UWildAnimalManagerComponent* GetWildAnimalManager();
+	// 2026.10.24 ウー end
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -64,6 +64,7 @@ public:
 	/// チュートリアルは進行中ですか
 	/// </summary>
 	/// <returns>true: はい, false: いいえ</returns>
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsTutorialInProgress() const { return bIsTutorialInProgress; }
 
 private:

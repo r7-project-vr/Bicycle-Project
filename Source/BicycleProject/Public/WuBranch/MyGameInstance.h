@@ -533,7 +533,7 @@ public:
 	/// 野生動物からペットへ変換
 	/// </summary>
 	/// <param name="WildAnimalID">野生動物ID</param>
-	/// <returns>ペットID</returns>
+	/// <returns>ペットID、WildPetSwitchTableに記録していないなら-1</returns>
 	int32 SwitchWild2Pet(int WildAnimalID);
 
 	/// <summary>
@@ -622,7 +622,7 @@ public:
 	/// スクリーンショットをキャプチャ
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "Screenshot")
-	bool CaptureVRScreenshot();
+	bool HasExceededPhotoLimit();
 
 	/// <summary>
 	/// スクリーンショットを追加

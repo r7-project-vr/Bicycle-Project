@@ -321,34 +321,20 @@ void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassO
 	}
 }
 
-void UWildAnimalManagerComponent::CreateAnimal(ACharacter* Character, TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation, UBoxComponent* SpawnBox, UAnimalDataAsset* Data)
+AWildAnimal* UWildAnimalManagerComponent::CreateAnimal(TSubclassOf<AWildAnimal> Target, FVector Location, FRotator Rotation)
 {
 	if (!Target)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid Target Class"));
-		return;
+		return nullptr;
 	}
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	AWildAnimal* Animal = GetWorld()->SpawnActor<AWildAnimal>(Target, Location, Rotation, SpawnParams);
-
-	if (Animal)
-	{
-		// プレイヤーキャラクターで初期化
-		Animal->Init(Character, nullptr, Data);
-
-		// BoxComponentのサイズに基づいてスケールを設定
-		float Scale = CalculateScaleFromBoxSize(SpawnBox);
-		Animal->SetActorScale3D(FVector(Scale, Scale, Scale));
-
-		// スポーン済みリストに追加
-		SpawnedAnimals.Add(Animal);
-
-		UE_LOG(LogTemp, Log, TEXT("Spawned: %s at %s with scale %.2f"),
-			*Target->GetName(), *Location.ToString(), Scale);
-	}
+	
+	return Animal;
 }
 
 // 確率テーブルからランダムに動物を決定
@@ -440,10 +426,30 @@ void UWildAnimalManagerComponent::OnLoadAnimalCompleted()
 		if (AnimalDataMap.Contains(SelectedAnimalID))
 		{
 			UAnimalDataAsset* Data = AnimalDataMap[SelectedAnimalID];
-			if(WildSample)
-				CreateAnimal(Character, WildSample, AdjustedLocation, AdjustedRotation, SpawnLocation, Data);
+			if (WildSample)
+			{
+				AWildAnimal* Animal = CreateAnimal(WildSample, AdjustedLocation, AdjustedRotation);
+				if (Animal)
+					InitAnimal(Animal, Character, SpawnLocation, Data);
+			}
 		}
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Spawn Complete: %d animals spawned"), SpawnedAnimals.Num());
+}
+
+void UWildAnimalManagerComponent::InitAnimal(AWildAnimal* Animal, ACharacter* Character, UBoxComponent* SpawnBox, UAnimalDataAsset* Data)
+{
+	if (Animal)
+	{
+		// プレイヤーキャラクターで初期化
+		Animal->Init(Character, nullptr, Data);
+
+		// BoxComponentのサイズに基づいてスケールを設定
+		float Scale = CalculateScaleFromBoxSize(SpawnBox);
+		Animal->SetActorScale3D(FVector(Scale, Scale, Scale));
+
+		// スポーン済みリストに追加
+		SpawnedAnimals.Add(Animal);
+	}
 }

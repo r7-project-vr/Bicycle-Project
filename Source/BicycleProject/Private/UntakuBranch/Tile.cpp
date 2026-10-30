@@ -213,3 +213,10 @@ void ATile::DestroyAll()
 	Destroy();
 }
 // 2025.08.01 ウー end
+
+// 2026.10.24 ウー start
+UWildAnimalManagerComponent* ATile::GetWildAnimalManager()
+{
+	return WildAnimalManager;
+}
+// 2026.10.24 ウー end

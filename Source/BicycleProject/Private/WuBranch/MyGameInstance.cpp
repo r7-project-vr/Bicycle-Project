@@ -429,8 +429,7 @@ int32 UMyGameInstance::SwitchWild2Pet(int WildAnimalID)
 	if (WildPetSwitchTable.Contains(WildAnimalID))
 		return WildPetSwitchTable[WildAnimalID];
 	else
-		return 3;
-
+		return -1;
 }
 
 void UMyGameInstance::LoadSwitchTable()
@@ -517,7 +516,7 @@ void UMyGameInstance::OnLoadComplete(const FPlayerSaveGame& Data)
 #pragma endregion
 
 #pragma region スクリーンショット
-bool UMyGameInstance::CaptureVRScreenshot()
+bool UMyGameInstance::HasExceededPhotoLimit()
 {
 	return CapturedScreenshots.Num() < MaxScreenshotsPerGame;
 	/*if (CapturedScreenshots.Num() >= MaxScreenshotsPerGame)
@@ -622,8 +621,11 @@ bool UMyGameInstance::CaptureVRScreenshot()
 
 void UMyGameInstance::AddScreenshot(const FAnimalPhoto& Screenshot)
 {
-	CapturedScreenshots.Add(Screenshot);
-	NotifyUpdateScreenShotTime();
+	if (!GetSubsystem<UTutorialsystem>()->IsTutorialInProgress())
+	{
+		CapturedScreenshots.Add(Screenshot);
+		NotifyUpdateScreenShotTime();
+	}
 }
 
 //int32 UMyGameInstance::GetRemainingScreenshots() const

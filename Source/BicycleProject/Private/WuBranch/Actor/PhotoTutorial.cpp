@@ -4,9 +4,9 @@
 #include "WuBranch/Actor/PhotoTutorial.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Bike/BikeCharacter.h"
-#include "WuBranch/Bike/BikeComponent.h"
-#include <UntakuBranch/Tile.h>
-#include "WuBranch/Actor/Component/WildAnimalManagerComponent.h"
+#include "WuBranch/Actor/Component/PhotoCaptureComponent.h"
+//#include <UntakuBranch/Tile.h>
+//#include "WuBranch/Actor/Component/WildAnimalManagerComponent.h"
 #include "WuBranch/Actor/TutorialAnimal.h"
 #include "WuBranch/Actor/TutorialIndicator.h"
 
@@ -16,6 +16,7 @@ void APhotoTutorial::BeginPlay()
 
 	FindPlayer();
 	FindIndicator();
+	OnPhotoTakenDelegate.BindUFunction(this, FName("OnPhotoTaken"));
 }
 
 void APhotoTutorial::ShowTutorialAnimal()
@@ -43,10 +44,8 @@ void APhotoTutorial::ShowTutorialAnimal()
 
 void APhotoTutorial::HideTutorialAnimal()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Hide Tutorial Animal"));
 	if (TutorialAnimal)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Tutorial Animal Fade out start"));
 		TutorialAnimal->FadeOut();
 	}
 }
@@ -65,6 +64,36 @@ void APhotoTutorial::HideIndicator()
 	if (Indicator)
 	{
 		Indicator->HideArrow();
+	}
+}
+
+void APhotoTutorial::DisableUIOperation()
+{
+	if (ABikeCharacter* BikeCharacter = Cast<ABikeCharacter>(Player))
+	{
+		BikeCharacter->DisableUIInteraction();
+	}
+}
+
+void APhotoTutorial::BindPhotoTakenEvent()
+{
+	if (Player)
+	{
+		if (UPhotoCaptureComponent* PhotoCapture = Player->GetComponentByClass<UPhotoCaptureComponent>())
+		{
+			PhotoCapture->PhotoTakenEvent.Add(OnPhotoTakenDelegate);
+		}
+	}
+}
+
+void APhotoTutorial::UnbindPhotoTakenEvent()
+{
+	if (Player)
+	{
+		if (UPhotoCaptureComponent* PhotoCapture = Player->GetComponentByClass<UPhotoCaptureComponent>())
+		{
+			PhotoCapture->PhotoTakenEvent.Remove(OnPhotoTakenDelegate);
+		}
 	}
 }
 
@@ -151,8 +180,26 @@ void APhotoTutorial::GetAnimalLocationAndDir(FVector& OLocation, FRotator& ODir)
 void APhotoTutorial::OnTutorialAnimalFadeOutComplete()
 {
 	FVector Location = TutorialAnimal->GetActorLocation();
-	Location.Z = HightWhenHide;
+	Location.Z = HideAnimalHeight;
 	TutorialAnimal->SetActorLocation(Location);
 	TutorialAnimal->SetActorTickEnabled(false);
 	TutorialAnimal->SetActorHiddenInGame(true);
+}
+
+void APhotoTutorial::EnableUIOperation()
+{
+	if (ABikeCharacter* BikeCharacter = Cast<ABikeCharacter>(Player))
+	{
+		BikeCharacter->EnableUIInteraction();
+	}
+}
+
+void APhotoTutorial::OnPhotoTaken(bool bHasCapturedAnimal)
+{
+	if (bHasCapturedAnimal)
+	{
+		UnbindPhotoTakenEvent();
+		EnableUIOperation();
+		GotoNextStep();
+	}
 }

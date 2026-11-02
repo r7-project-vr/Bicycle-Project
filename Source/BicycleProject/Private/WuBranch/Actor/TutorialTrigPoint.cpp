@@ -10,6 +10,7 @@
 // Sets default values
 ATutorialTrigPoint::ATutorialTrigPoint()
 	: Type(ETutorialType::Controller)
+	, bHasTriggered(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -25,6 +26,8 @@ void ATutorialTrigPoint::BeginPlay()
 	{
 		TrigArea->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnOverlapBeginTriggerArea);
 	}
+
+	bHasTriggered = false;
 }
 
 // Called every frame
@@ -46,12 +49,16 @@ bool ATutorialTrigPoint::FindTrigArea()
 
 void ATutorialTrigPoint::OnOverlapBeginTriggerArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (bHasTriggered)
+		return;
+
 	if (ABikeCharacter* Bike = Cast<ABikeCharacter>(OtherActor))
 	{
 		UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>();
 		if (TutorialSystem && TutorialSystem->IsNeedTutorial())
 		{
 			TutorialSystem->OpenTutorial(Type);
+			bHasTriggered = true;
 		}
 	}
 }

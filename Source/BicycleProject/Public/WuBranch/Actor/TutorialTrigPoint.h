@@ -50,4 +50,9 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	ETutorialType Type;
+
+	/// <summary>
+	/// 既にトリガーされたか
+	/// </summary>
+	bool bHasTriggered;
 };

@@ -24,7 +24,7 @@ void ATutorialActor::BeginPlay()
 	Messages.Empty();
 	Initialize();
 	InitMessages();
-	InitStep();
+	ResetStep();
 
 	//FinishTutorial();
 }
@@ -38,6 +38,22 @@ UTutorialTextPanelWidget* ATutorialActor::GetTutorialTextPanelWidget(UWidgetComp
 	return TutorialTextPanelWidget;
 }
 
+void ATutorialActor::GotoNextStep()
+{
+	// 今が最後のメッセージの場合、チュートリアルを終了する
+	if (CurrentStep == Messages.Num() - 1)
+	{
+		if (UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>())
+		{
+			TutorialSystem->FinishTutorial(TutorialType);
+		}
+		return;
+	}
+
+	CurrentStep = FMath::Clamp(CurrentStep + 1, 0, Messages.Num() - 1);
+	HandleStepTasks();
+}
+
 // Called every frame
 //void ATutorialActor::Tick(float DeltaTime)
 //{
@@ -48,12 +64,12 @@ UTutorialTextPanelWidget* ATutorialActor::GetTutorialTextPanelWidget(UWidgetComp
 void ATutorialActor::StartTutorial_Implementation()
 {
 	SetActorHiddenInGame(false);
+	ResetStep();
 }
 
 void ATutorialActor::FinishTutorial_Implementation()
 {
 	SetActorHiddenInGame(true);
-	ResetStep();
 }
 
 ETutorialType ATutorialActor::GetTutorialType() const
@@ -69,23 +85,8 @@ FString ATutorialActor::GetCurrentMessage()
 	return Messages[CurrentStep];
 }
 
-bool ATutorialActor::GotoNextStep()
-{
-	// 今が最後のメッセージの場合、チュートリアルを終了する
-	if (CurrentStep == Messages.Num() - 1)
-	{
-		if (UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>())
-		{
-			TutorialSystem->FinishTutorial(TutorialType);
-		}
-		return false;
-	}
-	
-	CurrentStep = FMath::Clamp(CurrentStep + 1, 0, Messages.Num() - 1);
-	return true;
-}
-
 void ATutorialActor::ResetStep()
 {
 	CurrentStep = 0;
+	HandleStepTasks();
 }

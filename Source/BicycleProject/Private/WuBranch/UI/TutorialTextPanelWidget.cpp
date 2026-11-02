@@ -34,5 +34,5 @@ void UTutorialTextPanelWidget::SetBorder(int Rows)
 
 	FMargin PaddingValue = BaseBorder + BorderSizeOfRow * FMath::Max(0, Rows - 1);
 	PanelBorder->SetPadding(FMargin(PaddingValue));
-	//PanelText->SetMargin(FMargin(PaddingValue));
+	PanelText->SetMargin(FMargin(PaddingValue));
 }

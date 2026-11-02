@@ -7,7 +7,7 @@
 #include "PhotoTutorial.generated.h"
 
 class ATutorialAnimal;
-class UWildAnimalManagerComponent;
+//class UWildAnimalManagerComponent;
 class UAnimalDataAsset;
 class ATutorialIndicator;
 
@@ -47,6 +47,24 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HideIndicator();
 
+	/// <summary>
+	/// UIに対する操作を無効にする
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void DisableUIOperation();
+
+	/// <summary>
+	/// 写真を撮ったイベントをバインドする
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void BindPhotoTakenEvent();
+
+	/// <summary>
+	/// 写真を撮ったイベントをアンバインドする
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void UnbindPhotoTakenEvent();
+
 private:
 
 	/// <summary>
@@ -84,6 +102,18 @@ private:
 	/// </summary>
 	UFUNCTION()
 	void OnTutorialAnimalFadeOutComplete();
+
+	/// <summary>
+	/// UIに対する操作を有効にする
+	/// </summary>
+	void EnableUIOperation();
+
+	/// <summary>
+	/// 写真を撮ったとき
+	/// </summary>
+	/// <param name="bHasCapturedAnimal"></param>
+	UFUNCTION()
+	void OnPhotoTaken(bool bHasCapturedAnimal);
 
 	/// <summary>
 	/// チュートリアル動物のテンプレート
@@ -128,8 +158,13 @@ private:
 	ATutorialAnimal* TutorialAnimal = nullptr;
 
 	/// <summary>
-	/// 
+	/// 動物を隠すときの高さ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-	float HightWhenHide = 0.f;
+	float HideAnimalHeight = 0.f;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	FScriptDelegate OnPhotoTakenDelegate;
 };

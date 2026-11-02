@@ -36,18 +36,25 @@ protected:
 	void InitMessages();
 
 	/// <summary>
-	/// ステップを初期化
-	/// </summary>
-	UFUNCTION(BlueprintImplementableEvent)
-	void InitStep();
-
-	/// <summary>
 	/// 対象からTutorialTextPanelWidgetを取得
 	/// </summary>
 	/// <param name="Widget">対象</param>
 	/// <returns>TutorialTextPanelWidget</returns>
 	UFUNCTION(BlueprintCallable)
 	UTutorialTextPanelWidget* GetTutorialTextPanelWidget(UWidgetComponent* Widget);
+
+	/// <summary>
+	/// 次のステップに進む
+	/// </summary>
+	/// <returns>true: 進んだ、false: 終了</returns>
+	UFUNCTION(BlueprintCallable)
+	void GotoNextStep();
+
+	/// <summary>
+	/// 各ステップの処理を行う
+	/// </summary>
+	UFUNCTION(BlueprintImplementableEvent)
+	void HandleStepTasks();
 
 public:	
 	// Called every frame
@@ -79,13 +86,6 @@ private:
 	/// <returns></returns>
 	UFUNCTION(BlueprintCallable)
 	FString GetCurrentMessage();
-
-	/// <summary>
-	/// 次のステップに進む
-	/// </summary>
-	/// <returns>true: 進んだ、false: 終了</returns>
-	UFUNCTION(BlueprintCallable)
-	bool GotoNextStep();
 
 	/// <summary>
 	/// ステップをリセット

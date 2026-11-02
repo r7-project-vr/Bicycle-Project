@@ -8,6 +8,8 @@
 #include "WuBranch/Actor/Component/TabletBaseComponent.h"
 #include "WuBranch/Actor/TutorialActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "WuBranch/MyGameInstance.h"
+#include "WuBranch/Device/DeviceManager.h"
 
 void UTutorialsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -72,6 +74,16 @@ void UTutorialsystem::OpenTutorial(ETutorialType TutorialType)
 		ABikeCharacter* Player = Cast<ABikeCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
 		if (Player)
 		{
+			// プレイヤーの移動を先に止める
+			if (UMyGameInstance* GI = Cast<UMyGameInstance>(GetGameInstance()))
+			{
+				if(UDeviceManager* DeviceManager = GI->GetDeviceManager())
+				{
+					DeviceManager->DisableDefaultActions();
+				}
+			}
+			Player->StopMove();
+
 			FVector PlayerForward = Player->GetActorForwardVector();
 			FVector Location = Player->GetActorLocation() + PlayerForward * TutorialData->Distance;
 			Location.Z = Player->GetHeadHeight();
@@ -95,6 +107,15 @@ void UTutorialsystem::FinishTutorial(ETutorialType TutorialType)
 	if (TutorialActors.Contains(TutorialType))
 	{
 		bIsTutorialInProgress = false;
+		// プレイヤーの移動を再開する
+		if (UMyGameInstance* GI = Cast<UMyGameInstance>(GetGameInstance()))
+		{
+			if (UDeviceManager* DeviceManager = GI->GetDeviceManager())
+			{
+				DeviceManager->EnableDefaultActions();
+			}
+		}
+
 		TutorialActors[TutorialType]->FinishTutorial();
 		ABikeCharacter* Player = Cast<ABikeCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
 		if (Player)

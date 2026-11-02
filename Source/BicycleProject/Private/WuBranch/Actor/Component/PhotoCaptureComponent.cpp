@@ -129,6 +129,10 @@ void UPhotoCaptureComponent::OnScreenshotTaken()
 				// 2026.06.10 ウー end
 				// 写真を撮り終わったらUIを再び表示する
 				SetUIVisibility(true);
+
+				// 2026.11.01 ウー start 写真を撮ったことを通知する
+				NotifyTakePhoto(!AnimalsID.IsEmpty());
+				// 2026.11.01 ウー end
 			}, 0.001f, false);
 		}
 		// 2026.05.07 ウー end
@@ -451,6 +455,16 @@ FAnimalPhoto UPhotoCaptureComponent::MakePhotoDatas(TArray<int32> DetectedPetsID
 
 	return Photo;
 }
+
+// 2026.11.01 ウー start
+void UPhotoCaptureComponent::NotifyTakePhoto(bool bHasCapturedAnimal)
+{
+	if (PhotoTakenEvent.IsBound())
+	{
+		PhotoTakenEvent.Broadcast(bHasCapturedAnimal);
+	}
+}
+// 2026.11.01 ウー end
 
 //void UPhotoCaptureComponent::FindCaptureAnimal(TArray<AActor*>& OverlappingActors)
 //{

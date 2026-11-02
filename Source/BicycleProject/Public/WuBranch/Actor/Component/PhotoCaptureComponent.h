@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "PhotoCaptureComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTakePhotoDelegate, bool, bHasCapturedAnimal);
+
 class UBoxComponent;
 class AWildAnimal;
 class USoundBase;
@@ -50,6 +52,14 @@ public:
 	/// PhotoCaptureBoxを取得
 	/// </summary>
 	UBoxComponent* GetPhotoCaptureBox() const { return PhotoCaptureBox; }
+
+	// 2026.11.01 ウー start 写真を撮った時の通知
+	/// <summary>
+	/// 写真を撮った時の通知
+	/// </summary>
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnTakePhotoDelegate PhotoTakenEvent;
+	// 2026.11.01 ウー end
 
 private:
 
@@ -115,6 +125,13 @@ private:
 	/// <param name="DetectedPetsID"></param>
 	/// <returns></returns>
 	FAnimalPhoto MakePhotoDatas(TArray<int32> DetectedPetsID, UTexture2D* Texture);
+
+	// 2026.11.01 ウー start
+	/// <summary>
+	/// 写真を撮ったことを通知する
+	/// </summary>
+	void NotifyTakePhoto(bool bHasCapturedAnimal);
+	// 2026.11.01 ウー end
 
 	/* 2026.06.10 ウー start 使わない
 	/// <summary>

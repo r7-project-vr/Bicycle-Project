@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "WuBranch/Interface/CoinMakerInterface.h"
 #include "CoinSpawnerComponent.generated.h"
 
 class ACoin;
 enum class EQuestionLevel : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BICYCLEPROJECT_API UCoinSpawnerComponent : public USceneComponent
+class BICYCLEPROJECT_API UCoinSpawnerComponent : public USceneComponent, public ICoinMakerInterface
 {
 	GENERATED_BODY()
 
@@ -53,6 +54,8 @@ public:
 	/// バインドしたものを解除
 	/// </summary>
 	void CancelDelegate();
+
+	virtual void HandleCoinCollected(ACoin* Coin) override;
 
 private:
 

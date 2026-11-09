@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WuBranch/Interface/PauseInterface.h"
+#include "WuBranch/Interface/CoinMakerInterface.h"
 #include "Coin.generated.h"
 
 class UBoxComponent;
 class USoundBase;
-class UCoinSpawnerComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ACoin : public AActor, public IPauseInterface
@@ -32,7 +32,7 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="Spawner">生成者</param>
-	void Init(UCoinSpawnerComponent* Spawner);
+	void Init(ICoinMakerInterface* Spawner);
 
 	void Pause_Implementation() override;
 	void ReStart_Implementation() override;
@@ -94,7 +94,7 @@ private:
 	/// <summary>
 	/// 生成者
 	/// </summary>
-	UCoinSpawnerComponent* Maker;
+	ICoinMakerInterface* Maker;
 
 	/// <summary>
 	/// 回転するか

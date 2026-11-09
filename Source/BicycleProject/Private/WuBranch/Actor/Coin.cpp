@@ -8,6 +8,7 @@
 #include "WuBranch/Bike/BikeComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Actor/Component/CoinSpawnerComponent.h"
+#include "WuBranch/System/TutorialSystem.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -56,7 +57,7 @@ void ACoin::Tick(float DeltaTime)
 	PlayAnimation(DeltaTime);
 }
 
-void ACoin::Init(UCoinSpawnerComponent* Spawner)
+void ACoin::Init(ICoinMakerInterface* Spawner)
 {
 	Maker = Spawner;
 }
@@ -96,18 +97,26 @@ void ACoin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	if (OtherActor)
 	{
 		if (OtherActor->IsA(ABikeCharacter::StaticClass()))
-		{
-			AddCoin(OtherActor);
-			
+		{	
 			// エフェクト
 
 			// SE
 			if (PickupSound)
 				UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
 
-			if(Maker)
-				Maker->DestroyCoin(this);
-			Destroy();
+			UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>();
+			bool bIsTutorialInProgress = TutorialSystem && TutorialSystem->IsTutorialInProgress();
+			if (!bIsTutorialInProgress)
+			{
+				AddCoin(OtherActor);
+			}
+
+			if (Maker)
+				Maker->HandleCoinCollected(this);
+			if(!bIsTutorialInProgress)
+			{
+				Destroy();
+			}
 		}
 	}
 }

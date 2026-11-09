@@ -24,7 +24,7 @@ void ATutorialActor::BeginPlay()
 	Messages.Empty();
 	Initialize();
 	InitMessages();
-	ResetStep();
+	//ResetStep();
 
 	//FinishTutorial();
 }

@@ -93,6 +93,11 @@ void UCoinSpawnerComponent::CancelDelegate()
 	}
 }
 
+void UCoinSpawnerComponent::HandleCoinCollected(ACoin* Coin)
+{
+	DestroyCoin(Coin);
+}
+
 void UCoinSpawnerComponent::Spawn(int Num, float StartLocation)
 {
 	if (!CoinTemplate)

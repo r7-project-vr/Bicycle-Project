@@ -19,6 +19,7 @@
 #include "WuBranch/UI/QuizUserWidget.h"
 #include "NiagaraComponent.h"
 #include "WuBranch/Enum/TutorialType.h"
+#include "WuBranch/System/Tutorialsystem.h"
 
 AQuestionUIActor::AQuestionUIActor()
 {
@@ -176,10 +177,6 @@ void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 		{
 			// デフォルトアクションを機能させない
 			DeviceManager->DisableDefaultActions();
-			// プレイヤーに答えを選べるようにする
-			DeviceManager->EnableSelectAnswerActions();
-			// 手を伸ばす機能を解放
-			DeviceManager->EnableStretchActions();
 		}
 	}
 
@@ -194,9 +191,6 @@ void AQuestionUIActor::HandlePlayerEnterArea(ABikeCharacter* Bike)
 		FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
 		Movement->SetSynchPos(Pos);
 	}
-	/*Bike->OnArrivedLocationEvent.AddDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
-	FVector Pos = _autoPlayStart->GetWorldLocationAtSplinePoint(0);
-	Bike->SetSynchPos(Pos);*/
 }
 
 void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -213,8 +207,6 @@ void AQuestionUIActor::OnOverlapBeginParkingArea(UPrimitiveComponent* Overlapped
 		{
 			SetTarget(Character);
 			HandlePlayerEnterArea(Character);
-			// チュートリアルを開く
-			Character->OpenTutorial(ETutorialType::Quiz);
 		}
 	}
 }
@@ -240,7 +232,24 @@ void AQuestionUIActor::OnArrivedEnterLocation()
 	DisplayUI();
 	if (UBikeMovementComponent* Movement = AutoPlayTarget->GetComponentByClass<UBikeMovementComponent>())
 		Movement->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
-	//Bike->OnArrivedLocationEvent.RemoveDynamic(this, &AQuestionUIActor::OnArrivedEnterLocation);
+	if (UMyGameInstance* GameInstance = Cast<UMyGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (UDeviceManager* DeviceManager = GameInstance->GetDeviceManager())
+		{
+			// プレイヤーに答えを選べるようにする
+			DeviceManager->EnableSelectAnswerActions();
+			// 手を伸ばす機能を起動させる
+			DeviceManager->EnableStretchActions();
+		}
+		// クイズのチュートリアルを開く
+		if (UTutorialsystem* TutorialSystem = GameInstance->GetSubsystem<UTutorialsystem>())
+		{
+			if(TutorialSystem->IsNeedTutorial())
+			{
+				TutorialSystem->OpenTutorial(ETutorialType::Quiz);
+			}
+		}
+	}
 }
 
 void AQuestionUIActor::SetTarget(ABikeCharacter* Target)

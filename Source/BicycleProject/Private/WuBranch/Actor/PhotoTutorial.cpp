@@ -5,8 +5,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "WuBranch/Actor/Component/PhotoCaptureComponent.h"
-//#include <UntakuBranch/Tile.h>
-//#include "WuBranch/Actor/Component/WildAnimalManagerComponent.h"
 #include "WuBranch/Actor/TutorialAnimal.h"
 #include "WuBranch/Actor/TutorialIndicator.h"
 
@@ -151,7 +149,6 @@ void APhotoTutorial::SpawnTutorialAnimal()
 
 		if (TutorialAnimal)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("Init tutorial animal"));
 			// プレイヤーキャラクターで初期化
 			TutorialAnimal->Init(Player, nullptr, AnimalData);
 			TutorialAnimal->GetSelfMaterial();

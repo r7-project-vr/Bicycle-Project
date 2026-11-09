@@ -7,7 +7,6 @@
 #include "PhotoTutorial.generated.h"
 
 class ATutorialAnimal;
-//class UWildAnimalManagerComponent;
 class UAnimalDataAsset;
 class ATutorialIndicator;
 
@@ -76,13 +75,6 @@ private:
 	/// 指標を探す
 	/// </summary>
 	void FindIndicator();
-
-	/// <summary>
-	/// 現在の野生動物管理者を取得
-	/// </summary>
-	/// <param name="Character">プレイヤー</param>
-	/// <returns></returns>
-	//UWildAnimalManagerComponent* GetWildAnimalManagerFromCurrentTile(ACharacter* Character);
 
 	/// <summary>
 	/// チュートリアル用の野生動物を生成

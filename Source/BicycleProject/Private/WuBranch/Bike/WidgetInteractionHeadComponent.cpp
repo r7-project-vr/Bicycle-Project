@@ -48,14 +48,12 @@ void UWidgetInteractionHeadComponent::TickComponent(float DeltaTime, ELevelTick 
 void UWidgetInteractionHeadComponent::EnableHintLine()
 {
 	bHintEnabled = true;
-	//Line->SetHiddenInGame(false);
 }
 
 void UWidgetInteractionHeadComponent::DisableHintLine()
 {
 	bHintEnabled = false;
 	CursorWidget->SetHiddenInGame(true);
-	//Line->SetHiddenInGame(true);
 }
 
 void UWidgetInteractionHeadComponent::OnHoverWidget(UWidgetComponent* WidgetComponent, UWidgetComponent* PreviousWidgetComponent)

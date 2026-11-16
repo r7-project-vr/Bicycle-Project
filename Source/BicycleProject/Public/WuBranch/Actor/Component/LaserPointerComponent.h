@@ -27,11 +27,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/// <summary>
-	/// レーザーの表示設定
+	/// レーザーの強制表示を設定
 	/// </summary>
 	/// <param name="bNewVisible"></param>
 	UFUNCTION(BlueprintCallable)
-	void SetLaserVisible(bool bNewVisible);
+	void SetForceLaserVisible(bool bNewVisible);
 
 private:
 
@@ -39,6 +39,16 @@ private:
 	/// WidgetInteractionを探す
 	/// </summary>
 	UWidgetInteractionComponent* FindInteraction();
+
+	/// <summary>
+	/// レーザーの長さを変更する
+	/// </summary>
+	void ChangeLaserLength(bool bIsHitUI, float HitDistance);
+
+	/// <summary>
+	/// レーザーの表示設定
+	/// </summary>
+	void UpdateLaserVisible(bool bIsHitUI, const FHitResult& Hit);
 
 	/// <summary>
 	/// レーザーコンポーネント
@@ -69,4 +79,9 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 	float DotSize = 1.0f;
+
+	/// <summary>
+	/// 強制起動
+	/// </summary>
+	bool bForceVisiable;
 };

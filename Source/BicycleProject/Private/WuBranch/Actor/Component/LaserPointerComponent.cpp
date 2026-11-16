@@ -5,9 +5,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/WidgetInteractionComponent.h"
 #include "Components/WidgetComponent.h"
+#include "WuBranch/Bike/BikeCharacter.h"
 
 // Sets default values for this component's properties
 ULaserPointerComponent::ULaserPointerComponent()
+	: bForceVisiable(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -43,7 +45,7 @@ void ULaserPointerComponent::BeginPlay()
 		return;
 	}
 
-	SetLaserVisible(false);
+	SetForceLaserVisible(false);
 }
 
 // Called every frame
@@ -58,38 +60,14 @@ void ULaserPointerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	const FHitResult& Hit = Interaction->GetLastHitResult();
 	const bool bOverUI = Interaction->IsOverInteractableWidget()
 		|| Interaction->IsOverHitTestVisibleWidget();
-
-	if (Interaction->GetHoveredWidgetComponent())
-	{
-		const float MyLength = (Hit.ImpactPoint - Hit.TraceStart).Length();
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Hovered Widget: %s, Length: %lf, My Length: %lf"), *Interaction->GetHoveredWidgetComponent()->GetName(), Hit.Distance, MyLength));
-	}
-		
-	const float Length = bOverUI ? Hit.Distance : Interaction->InteractionDistance;
-	const float T = Thickness / 100.f;
-	//LaserComp->SetRelativeLocation(FVector(Length * 0.5f, 0.f, 0.f));
-	LaserComp->SetRelativeScale3D(FVector(T, T, Length / 100.f));
-
-	if (!DotComp)
-		return;
-	DotComp->SetVisibility(bOverUI);
-	if (bOverUI)
-	{
-		FVector Normal = Hit.ImpactNormal;
-		// 当たった面と混ざってしまうので少し浮かせる
-		DotComp->SetWorldLocation(Hit.ImpactPoint + Normal * 0.3f);
-		DotComp->SetWorldRotation(FRotationMatrix::MakeFromZ(Normal).Rotator());
-		DotComp->SetWorldScale3D(FVector(DotSize / 100.f));
-	}
+	
+	ChangeLaserLength(bOverUI, Hit.Distance);
+	UpdateLaserVisible(bOverUI, Hit);
 }
 
-void ULaserPointerComponent::SetLaserVisible(bool bNewVisible)
+void ULaserPointerComponent::SetForceLaserVisible(bool bNewVisible)
 {
-	if (LaserComp)
-		LaserComp->SetVisibility(bNewVisible);
-	if (DotComp)
-		DotComp->SetVisibility(bNewVisible);
-	SetComponentTickEnabled(bNewVisible);
+	bForceVisiable = bNewVisible;
 }
 
 UWidgetInteractionComponent* ULaserPointerComponent::FindInteraction()
@@ -107,5 +85,41 @@ UWidgetInteractionComponent* ULaserPointerComponent::FindInteraction()
 	}
 
 	return nullptr;
+}
+
+void ULaserPointerComponent::ChangeLaserLength(bool bIsHitUI, float HitDistance)
+{
+	float Length = bIsHitUI ? HitDistance : Interaction->InteractionDistance;
+	float T = Thickness / 100.f;
+	//LaserComp->SetRelativeLocation(FVector(Length * 0.5f, 0.f, 0.f));
+	LaserComp->SetRelativeScale3D(FVector(T, T, Length / 100.f));
+}
+
+void ULaserPointerComponent::UpdateLaserVisible(bool bIsHitUI, const FHitResult& Hit)
+{
+	bool bFinalVisible = bForceVisiable || bIsHitUI;
+	if (LaserComp)
+		LaserComp->SetVisibility(bFinalVisible);
+	if (DotComp)
+	{
+		DotComp->SetVisibility(bIsHitUI);
+		if (bIsHitUI)
+		{
+			FVector Normal = Hit.ImpactNormal;
+			// 当たった面と混ざってしまうので少し浮かせる
+			DotComp->SetWorldLocation(Hit.ImpactPoint + Normal * 0.3f);
+			DotComp->SetWorldRotation(FRotationMatrix::MakeFromZ(Normal).Rotator());
+			DotComp->SetWorldScale3D(FVector(DotSize / 100.f));
+		}
+	}
+
+	// UIに操作できるかどうかを設定
+	if (ABikeCharacter* Player = Cast<ABikeCharacter>(GetOwner()))
+	{
+		if (bFinalVisible)
+			Player->EnableUIInteraction();
+		else
+			Player->DisableUIInteraction();
+	}
 }
 

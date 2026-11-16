@@ -5,7 +5,6 @@
 #include "WuBranch/Struct/TutorialData.h"
 #include "WuBranch/ProjectSettings/TutorialSettings.h"
 #include "WuBranch/Bike/BikeCharacter.h"
-#include "WuBranch/Actor/Component/TabletBaseComponent.h"
 #include "WuBranch/Actor/TutorialActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "WuBranch/MyGameInstance.h"

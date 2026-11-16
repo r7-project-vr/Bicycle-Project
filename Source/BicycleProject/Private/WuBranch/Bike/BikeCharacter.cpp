@@ -3,6 +3,7 @@
 #include "WuBranch/Bike/BikeCharacter.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 #include "WuBranch/MyGameInstance.h"
 #include "WuBranch/Device/DeviceManager.h"
 #include "WuBranch/Bike/BikeComponent.h"
@@ -15,10 +16,10 @@
 #include <WuBranch/UI/QuestionUIActor.h>
 #include <WuBranch/Actor/Component/PositionResetComponent.h>
 #include <WuBranch/Bike/MyHandRootComponent.h>
-#include "WuBranch/Actor/Tablet.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "WuBranch/Actor/Component/TabletBaseComponent.h"
-//#include "TimerManager.h"
+#include "WuBranch/Actor/Component/HologramComponent.h"
+#include "TimerManager.h"
+#include "WuBranch/System/Tutorialsystem.h"
 
 // Sets default values
 ABikeCharacter::ABikeCharacter()
@@ -44,11 +45,12 @@ void ABikeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FindHead();
 	FindMover();
 	FindResponder();
 	FindPhotoCapture();
 	FindHandStretcher();
-	FindTabletBase();
+	FindHologram();
 	_widgetInteractionHeadComponent = GetComponentByClass<UWidgetInteractionHeadComponent>();
 	LoadBikeMesh();
 	_targetRotator = FRotator::ZeroRotator;
@@ -67,6 +69,15 @@ void ABikeCharacter::BeginPlay()
 	{
 		GameInstance->ResetScreenshots();
 	}
+
+	FTimerHandle TutorialTimer;
+	GetWorld()->GetTimerManager().SetTimer(TutorialTimer, [this]() {
+		UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>();
+		if (TutorialSystem && TutorialSystem->IsNeedTutorial())
+			TutorialSystem->OpenTutorial(ETutorialType::Controller);
+		if (Hologram)
+			Hologram->ActivateHologram();
+		}, 2.0, false);
 }
 
 // Called every frame
@@ -276,9 +287,9 @@ void ABikeCharacter::RotateBike(float DeltaTime)
 				DeviceManager->DisableStretchActions();
 			}
 		}
-		// タブレットを強制的に回収
-		if (TabletBase)
-			TabletBase->ForceRecycleTablet();
+		// ホログラムを強制的に閉じる
+		if (Hologram)
+			Hologram->DeactivateHologram();
 		// 手を強制的に本来の位置に戻す
 		if (LeftHandRoot)
 			LeftHandRoot->ForceReset();
@@ -305,6 +316,13 @@ bool ABikeCharacter::CheckOverSpeed() const
 {
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	return Movement->Velocity.Length() >= Movement->GetMaxSpeed();
+}
+
+void ABikeCharacter::FindHead()
+{
+	Head = GetComponentByClass<UCameraComponent>();
+	if(!Head)
+		UE_LOG(LogTemp, Error, TEXT("UCameraComponent didnot attach"));
 }
 
 void ABikeCharacter::FindMover()
@@ -339,11 +357,11 @@ void ABikeCharacter::FindHandStretcher()
 		UE_LOG(LogTemp, Error, TEXT("Right hand root component didnot attach"));
 }
 
-void ABikeCharacter::FindTabletBase()
+void ABikeCharacter::FindHologram()
 {
-	TabletBase = FindComponentByClass<UTabletBaseComponent>();
-	if(!TabletBase)
-		UE_LOG(LogTemp, Error, TEXT("Tablet Base component didnot attach"));
+	Hologram = FindComponentByClass<UHologramComponent>();
+	if(!Hologram)
+		UE_LOG(LogTemp, Error, TEXT("Hologram component didnot attach"));
 }
 
 void ABikeCharacter::EnableAutoPlay(AQuestionUIActor* Quiz)
@@ -362,45 +380,27 @@ void ABikeCharacter::DisableAutoPlay()
 		Responder->DeleteQuiz();
 }
 
-void ABikeCharacter::OpenTutorial(ETutorialType Type)
+void ABikeCharacter::EnableHologram()
 {
-	if (TabletBase)
+	if (Hologram)
 	{
-		TabletBase->StartUseTablet();
+		Hologram->ActivateHologram();
 	}
-
-	//Tablet->ShowTutorial(Type);
 }
 
-bool ABikeCharacter::TakeTablet(UPrimitiveComponent* Hand, ATablet* Tablet)
+float ABikeCharacter::GetHeadHeight()
 {
-	UActorComponent* HandCollision = Cast<UActorComponent>(Hand);
-	if (!HandCollision || !Tablet)
-		return false;
+	if(!Head)
+		return 0.0f;
 
-	FName TagName;
-	if (HandCollision->ComponentHasTag(FName("RightHand")))
-	{
-		TagName = FName("RightTablet");
-		Tablet->RotateScene(false);
-	}
-	else if (HandCollision->ComponentHasTag(FName("LeftHand")))
-	{
-		TagName = FName("LeftTablet");
-		Tablet->RotateScene(true);
-	}
+	return Head->GetComponentLocation().Z;
+}
 
-	if (TagName.IsNone())
-		return false;
-
-	if (USkeletalMeshComponent* HandMesh = Cast<USkeletalMeshComponent>(Hand->GetAttachParent()))
+UBikeComponent* ABikeCharacter::GetBikeComponent()
+{
+	if (!Bike)
 	{
-		const USkeletalMeshSocket* HandSocket = HandMesh->GetSocketByName(TagName);
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(Tablet, HandMesh);
-			return true;
-		}
+		Bike = FindComponentByClass<UBikeComponent>();
 	}
-	return false;
+	return Bike;
 }

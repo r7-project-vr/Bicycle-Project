@@ -8,6 +8,7 @@
 #include "WuBranch/Enum/TutorialType.h"
 #include "BikeCharacter.generated.h"
 
+class UCameraComponent;
 class UBikeComponent;
 class UBikeMovementComponent;
 class UResponderComponent;
@@ -15,8 +16,7 @@ class UAnimalManagerComponent;
 class UPhotoCaptureComponent;
 class AQuestionUIActor;
 class UMyHandRootComponent;
-class UTabletBaseComponent;
-class ATablet;
+class UHologramComponent;
 
 UCLASS()
 class BICYCLEPROJECT_API ABikeCharacter : public ACharacter, public IPauseInterface
@@ -101,17 +101,47 @@ public:
 	void DisableAutoPlay();
 
 	/// <summary>
-	/// チュートリアルを開く
+	/// ホログラムを起動
 	/// </summary>
-	/// <param name="Type">チュートリアルのタイプ</param>
-	void OpenTutorial(ETutorialType Type);
+	UFUNCTION(BlueprintCallable)
+	void EnableHologram();
 
 	/// <summary>
-	/// タブレットを持つ
+	/// 頭（カメラ）の高さ（ワールド）を取得
 	/// </summary>
-	/// <param name="Hand">手のコリジョン</param>
-	/// <returns>成功かどうか、true: 成功, false: 失敗</returns>
-	bool TakeTablet(UPrimitiveComponent* Hand, ATablet* Tablet);
+	/// <returns>高さ</returns>
+	UFUNCTION(BlueprintCallable)
+	float GetHeadHeight();
+
+	/// <summary>
+	/// BikeComponentを取得
+	/// </summary>
+	/// <returns>BikeComponent</returns>
+	UBikeComponent* GetBikeComponent();
+
+	/// <summary>
+	/// ガイドラインを表示する
+	/// </summary>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ShowGuideLine();
+
+	/// <summary>
+	/// ガイドラインを非表示する
+	/// </summary>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void HideGuideLine();
+
+	/// <summary>
+	/// UIに対する操作を起動
+	/// </summary>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void EnableUIInteraction();
+
+	/// <summary>
+	/// UIに対する操作を停止
+	/// </summary>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void DisableUIInteraction();
 
 private:
 
@@ -137,6 +167,11 @@ private:
 	bool CheckOverSpeed() const;
 
 	/// <summary>
+	/// プレイヤーの頭（カメラ）を探す
+	/// </summary>
+	void FindHead();
+
+	/// <summary>
 	/// 移動のコンポーネントを探す
 	/// </summary>
 	void FindMover();
@@ -159,13 +194,19 @@ private:
 	/// <summary>
 	/// タブレット台座のアイコンを探す
 	/// </summary>
-	void FindTabletBase();
+	void FindHologram();
 
 	/// <summary>
 	/// ロード先の自転車メッシュ
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSoftObjectPtr<USkeletalMesh> _bikeSkeletalNeedLoad;
+
+	/// <summary>
+	/// 頭（カメラ）
+	/// </summary>
+	UPROPERTY()
+	UCameraComponent* Head;
 
 	/// <summary>
 	/// 自転車の機能
@@ -257,11 +298,10 @@ private:
 	/// </summary>
 	bool IsPause;
 
-	UTabletBaseComponent* TabletBase;
-
 	/// <summary>
-	/// タブレット
+	/// ホログラム
 	/// </summary>
-	//ATablet* Tablet;
+	UPROPERTY()
+	UHologramComponent* Hologram;
 
 };

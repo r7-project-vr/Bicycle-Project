@@ -7,9 +7,9 @@
 ATutorialAnimal::ATutorialAnimal()
 	: AWildAnimal()
 	, bIsFadingInOut(false)
-	, DissolveValue(MIN_DISSOLVE_VALUE)
+	, DissolveValue(-0.5f)
 	, DissolveSpeed(0.f)
-	, TargetDissolveValue(MIN_DISSOLVE_VALUE)
+	, TargetDissolveValue(-0.5f)
 	, DynMaterialInst(nullptr)
 {
 }
@@ -17,7 +17,8 @@ ATutorialAnimal::ATutorialAnimal()
 void ATutorialAnimal::BeginPlay()
 {
 	Super::BeginPlay();
-
+	DissolveValue = MIN_DISSOLVE_VALUE;
+	TargetDissolveValue = MIN_DISSOLVE_VALUE;
 }
 
 void ATutorialAnimal::EndPlay(const EEndPlayReason::Type EndPlayReason)

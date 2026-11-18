@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "WuBranch/Bike/BikeComponent.h"
 #include <WuBranch/Bike/BikeCharacter.h>
+#include "WuBranch/System/Tutorialsystem.h"
 
 // Sets default values for this component's properties
 UBikeMovementComponent::UBikeMovementComponent()
@@ -142,6 +143,11 @@ void UBikeMovementComponent::OnMove(FVector2D Direction)
 			BikeCom->ApplyPenalty();
 		return;
 	}
+
+	// チュートリアル中だったら、回転数をUIに表示させるのみ、自転車を移動させない
+	UTutorialsystem* TutorialSystem = GetWorld()->GetGameInstance()->GetSubsystem<UTutorialsystem>();
+	if (TutorialSystem->IsTutorialInProgress())
+		return;
 
 	// 移動方向は自転車今向いている方向を中心に
 	FVector ActorForward = GetOwner()->GetActorForwardVector();

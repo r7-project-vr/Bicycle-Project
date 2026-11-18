@@ -50,6 +50,7 @@ public:
 	/// <summary>
 	/// ペナルティを起動
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void ApplyPenalty();
 
 	/// <summary>

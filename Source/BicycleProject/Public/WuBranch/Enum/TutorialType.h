@@ -13,6 +13,5 @@ enum class ETutorialType : uint8
 	Controller UMETA(Display = "Controller"),
 	Photo UMETA(DisplayName = "Photo"),
 	Coin UMETA(DisplayName = "Coin"),
-	SpeedOver UMETA(DisplayName = "SpeedOver"),
 	Quiz UMETA(DisplayName = "Quiz")
 };

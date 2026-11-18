@@ -143,6 +143,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void DisableUIInteraction();
 
+	/// <summary>
+	/// スピードメーターの位置をゲット
+	/// </summary>
+	/// <returns>ワールド位置</returns>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	FVector GetSpeedoMeterLocation();
+
+	/// <summary>
+	/// チュートリアルアイコンの位置をゲット
+	/// </summary>
+	/// <returns>ワールド位置</returns>
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	FVector GetTutorialIconLocation();
+
 private:
 
 	/// <summary>

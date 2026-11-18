@@ -75,8 +75,6 @@ void ABikeCharacter::BeginPlay()
 		UTutorialsystem* TutorialSystem = GetGameInstance()->GetSubsystem<UTutorialsystem>();
 		if (TutorialSystem && TutorialSystem->IsNeedTutorial())
 			TutorialSystem->OpenTutorial(ETutorialType::Controller);
-		if (Hologram)
-			Hologram->ActivateHologram();
 		}, 2.0, false);
 }
 

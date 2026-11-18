@@ -27,16 +27,19 @@ public:
 	/// 指す目標を設定
 	/// </summary>
 	/// <param name="Target">目標</param>
+	UFUNCTION(BlueprintCallable)
 	void SetTarget(FVector Target);
 
 	/// <summary>
 	/// 表示する
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void ShowArrow();
 
 	/// <summary>
 	/// 隠す
 	/// </summary>
+	UFUNCTION(BlueprintCallable)
 	void HideArrow();
 
 private:
